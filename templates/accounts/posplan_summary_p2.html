@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Positive Activity Plan - Sharing Options</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Work Sans', sans-serif;
+      height: 100vh;
+      width: 100vw;
+      background-color: #f4f0fb;
+      display: flex;
+      overflow: hidden;
+    }
+
+    .media-container {
+      flex: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px;
+      padding-top: 30px;
+      position: relative;
+      order: 1;
+      overflow-y: auto;
+    }
+
+    .sidebar {
+      flex: 1.5;
+      background-color: #fff;
+      padding: 20px;
+      border-left: 2px solid #ccc;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      order: 2;
+      height: 100vh;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .sidebar h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #5a3e8c;
+      font-size: 18px;
+    }
+
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      align-self: flex-start;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: auto;
+    }
+
+    .back-button:hover {
+      background-color: #5a6268;
+      transform: translateY(-1px);
+      color: white;
+      text-decoration: none;
+    }
+
+    .page-content {
+      width: 100%;
+      max-width: 900px;
+      text-align: center;
+    }
+
+    .page-title {
+      color: #5a3e8c;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    .page-subtitle {
+      color: #666;
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .question-section {
+      background: white;
+      border-radius: 16px;
+      padding: 35px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      margin-bottom: 30px;
+    }
+
+    .question-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #5a3e8c;
+      margin-bottom: 25px;
+      text-align: left;
+    }
+
+    .option-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .option {
+      background: #f8f9fa;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      text-align: left;
+    }
+
+    .option:hover {
+      border-color: #5a3e8c;
+      background: #f4f0fb;
+      transform: translateX(5px);
+    }
+
+    .option.selected {
+      border-color: #5a3e8c;
+      background: #e8e2f4;
+      box-shadow: 0 4px 12px rgba(90, 62, 140, 0.15);
+    }
+
+    .option input[type="radio"] {
+      width: 20px;
+      height: 20px;
+      margin-right: 15px;
+      cursor: pointer;
+      accent-color: #5a3e8c;
+    }
+
+    .option-text {
+      font-size: 1.05rem;
+      color: #333;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .prev-button-overlay, .next-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+
+    .prev-button-overlay:hover, .next-button-overlay:hover {
+      background: #b8a5d1;
+      color: #4a3474;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    .next-button-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+    }
+
+    .prev-button-container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+    }
+    
+    /* Special effects for next button */
+    .next-button-overlay {
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    .next-button-overlay.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    .next-button-motivational {
+      animation: popScale 0.6s ease-out forwards, glow 1.5s ease-in-out infinite;
+    }
+    
+    .next-button-pulse {
+      animation: subtlePulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes popScale {
+      0% {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.15);
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes glow {
+      0%, 100% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 20px rgba(90, 62, 140, 0.3);
+      }
+      50% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 30px rgba(90, 62, 140, 0.6);
+      }
+    }
+    
+    @keyframes subtlePulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 2px 12px rgba(90, 62, 140, 0.3);
+      }
+    }
+    
+    /* Hidden audio element */
+    .hidden-audio {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .media-container {
+        flex: 1;
+        padding: 10px;
+      }
+      .sidebar {
+        flex: 0 0 250px;
+        border-left: none;
+        border-top: 2px solid #ccc;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+      }
+      .page-title {
+        font-size: 1.5rem;
+      }
+      .page-subtitle {
+        font-size: 0.95rem;
+      }
+      .question-section {
+        padding: 25px 20px;
+      }
+      .option-text {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="media-container">
+    <!-- Previous button -->
+    <div class="prev-button-container">
+      <a href="../posplan-summary-p1/" class="prev-button-overlay">
+        ← Previous
+      </a>
+    </div>
+    
+    <!-- Next button -->
+    <div class="next-button-container" id="nextButtonContainer" style="display: none;">
+      <a href="../posplan-summary-p3/" class="next-button-overlay" id="nextButton">
+        Next →
+      </a>
+    </div>
+    
+    <div class="page-content">
+      <h1 class="page-title">Your Positive Activity Plan</h1>
+      
+      <!-- Sharing Options Question -->
+      <div class="question-section">
+        <h3 class="question-title">Would you like us to:</h3>
+        
+        <div class="option-group">
+          <div class="option" onclick="selectOption('email')">
+            <input type="radio" name="sharing" value="email" id="sharing_email">
+            <label for="sharing_email" class="option-text">📧 Email it to you</label>
+          </div>
+          <div class="option" onclick="selectOption('counselor')">
+            <input type="radio" name="sharing" value="counselor" id="sharing_counselor">
+            <label for="sharing_counselor" class="option-text">🖨️ Have your counselor print it out</label>
+          </div>
+          <div class="option" onclick="selectOption('none')">
+            <input type="radio" name="sharing" value="none" id="sharing_none">
+            <label for="sharing_none" class="option-text">❌ None of the above</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="sidebar">
+    <h3>Your Positive Activity Plan - Page 2</h3>
+    
+    <!-- Audio Player (hidden) -->
+    <audio 
+      id="audioPlayer"
+      preload="auto"
+      autoplay
+      style="display: none;"
+    >
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_MQqMx4RVXEUqGBx" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+    
+    <!-- Hidden audio element for success sound effect -->
+    <audio id="successSoundEffect" class="hidden-audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_6UG7Rt7QKA7N8oH" type="audio/mpeg">
+    </audio>
+    
+    <a href="../adventure-map/" class="back-button">← Back to Adventure Map</a>
+  </div>
+  
+  <script>
+    const pageId = 'posplan_summary_p2';
+    let selectedValue = null;
+    const audioPlayer = document.getElementById('audioPlayer');
+    const nextButtonContainer = document.getElementById('nextButtonContainer');
+    const nextButton = document.getElementById('nextButton');
+    let audioPlayAttempted = false;
+    let specialEffectsShown = false;
+
+    function markComplete(pageId) {
+      try {
+        localStorage.setItem('completed_' + pageId, 'true');
+        localStorage.setItem('completed_' + pageId + '_timestamp', Date.now().toString());
+        return true;
+      } catch (e) {
+        console.error('Error saving completion status:', e);
+        return false;
+      }
+    }
+
+    function isComplete(pageId) {
+      try {
+        return localStorage.getItem('completed_' + pageId) === 'true';
+      } catch (e) {
+        console.error('Error checking completion status:', e);
+        return false;
+      }
+    }
+
+    function saveSharingResponse(value) {
+      try {
+        let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        if (!data.posplan_summary) data.posplan_summary = {};
+        data.posplan_summary.sharing = value;
+        data.posplan_summary.sharing_timestamp = Date.now();
+        localStorage.setItem('renew_study_data', JSON.stringify(data));
+        return true;
+      } catch (e) {
+        console.error('Error saving sharing response:', e);
+        return false;
+      }
+    }
+
+    function getSharingResponse() {
+      try {
+        const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        return data.posplan_summary?.sharing || null;
+      } catch (e) {
+        console.error('Error getting sharing response:', e);
+        return null;
+      }
+    }
+    
+    // Function to play success sound effect
+    function playSuccessSound() {
+      const soundEffect = document.getElementById('successSoundEffect');
+      if (soundEffect) {
+        soundEffect.currentTime = 0;
+        soundEffect.play().catch(error => {
+          console.log('Sound effect autoplay failed (browser policy):', error);
+        });
+      }
+    }
+
+    // Function to show next button with motivational animation
+    function showNextButtonMotivational() {
+      nextButtonContainer.style.display = 'block';
+      
+      if (!specialEffectsShown) {
+        // First time showing - play sound and big animation
+        playSuccessSound();
+        specialEffectsShown = true;
+        
+        nextButton.classList.add('next-button-motivational', 'visible');
+        
+        // After initial animation completes, switch to subtle pulse
+        setTimeout(() => {
+          nextButton.classList.remove('next-button-motivational');
+          nextButton.classList.add('next-button-pulse', 'visible');
+        }, 1200);
+      } else {
+        // Already shown before - just show with subtle pulse (no sound)
+        nextButton.classList.remove('next-button-motivational');
+        nextButton.classList.add('next-button-pulse', 'visible');
+      }
+    }
+
+    function selectOption(value) {
+      selectedValue = value;
+      
+      // Update visual selection
+      document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+      event.currentTarget.classList.add('selected');
+      
+      // Check radio button
+      document.getElementById('sharing_' + value).checked = true;
+      
+      // Save response
+      saveSharingResponse(value);
+      
+      // Mark page complete and show next button with special effects
+      markComplete(pageId);
+      showNextButtonMotivational();
+    }
+
+    // Load existing response
+    document.addEventListener('DOMContentLoaded', function() {
+      const existingResponse = getSharingResponse();
+      
+      if (existingResponse) {
+        selectedValue = existingResponse;
+        document.getElementById('sharing_' + existingResponse).checked = true;
+        document.querySelector(`[onclick="selectOption('${existingResponse}')"]`).classList.add('selected');
+      }
+
+      // Auto-play audio on page load
+      if (audioPlayer && !audioPlayAttempted) {
+        audioPlayAttempted = true;
+        
+        // Try to play immediately
+        setTimeout(() => {
+          audioPlayer.play().then(() => {
+            console.log('✅ Audio auto-play successful');
+          }).catch((error) => {
+            console.log('❌ Auto-play blocked by browser:', error.message);
+            
+            // If auto-play fails, try again after user interaction
+            document.addEventListener('click', function playOnClick() {
+              audioPlayer.play().then(() => {
+                console.log('✅ Audio started after user interaction');
+                document.removeEventListener('click', playOnClick);
+              }).catch((err) => {
+                console.log('Audio play failed:', err.message);
+              });
+            }, { once: true });
+          });
+        }, 100);
+      }
+
+      // Check if already completed
+      if (isComplete(pageId)) {
+        nextButtonContainer.style.display = 'block';
+        nextButton.classList.add('next-button-pulse', 'visible');
+        specialEffectsShown = true; // Already completed, effects were shown before
+      }
+    });
+  </script>
+</body>
+</html>

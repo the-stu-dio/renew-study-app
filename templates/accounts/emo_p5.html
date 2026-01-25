@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Thoughts and Feelings Complete!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Work Sans', sans-serif;
+      background: linear-gradient(135deg, #5a3e8c 0%, #8e44ad 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .completion-container {
+      text-align: center;
+      max-width: 800px;
+      padding: 60px 40px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+      animation: slideInUp 0.8s ease-out;
+    }
+
+    .completion-icon {
+      font-size: 80px;
+      margin-bottom: 30px;
+      animation: bounceIn 1s ease-out 0.3s both;
+    }
+
+    .completion-title {
+      font-size: 48px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      animation: fadeIn 1s ease-out 0.5s both;
+    }
+
+    .completion-subtitle {
+      font-size: 24px;
+      font-weight: 500;
+      margin-bottom: 30px;
+      opacity: 0.9;
+      animation: fadeIn 1s ease-out 0.7s both;
+    }
+
+    .completion-message {
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 40px;
+      opacity: 0.8;
+      animation: fadeIn 1s ease-out 0.9s both;
+    }
+
+    .unlock-notification {
+      background: rgba(255, 255, 255, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 16px;
+      padding: 30px;
+      margin: 40px 0;
+      animation: fadeIn 1s ease-out 1.1s both;
+    }
+
+    .unlock-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #bb86fc;
+    }
+
+    .unlock-description {
+      font-size: 16px;
+      line-height: 1.5;
+      opacity: 0.9;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 40px;
+      animation: fadeIn 1s ease-out 1.3s both;
+    }
+
+    .action-button {
+      padding: 16px 32px;
+      border: none;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    .action-button:hover .tooltip {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(-10px);
+    }
+
+    .tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%) translateY(-5px);
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 400;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 1000;
+      max-width: 250px;
+      white-space: normal;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: rgba(0, 0, 0, 0.9);
+    }
+
+    .primary-button {
+      background: #bb86fc;
+      color: #333;
+      box-shadow: 0 4px 16px rgba(187, 134, 252, 0.3);
+    }
+
+    .primary-button:hover {
+      background: #a970f5;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(187, 134, 252, 0.4);
+      text-decoration: none;
+      color: #333;
+    }
+
+    .secondary-button {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .secondary-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      text-decoration: none;
+      color: white;
+    }
+
+    .stats-container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin: 40px 0;
+      flex-wrap: wrap;
+      animation: fadeIn 1s ease-out 1.5s both;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 36px;
+      font-weight: 700;
+      color: #bb86fc;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-top: 5px;
+    }
+
+    .resilience-badge {
+      background: linear-gradient(135deg, #bb86fc 0%, #8e44ad 100%);
+      padding: 20px 30px;
+      border-radius: 15px;
+      margin: 30px 0;
+      border: 2px solid rgba(187, 134, 252, 0.3);
+      animation: fadeIn 1s ease-out 1.7s both;
+    }
+
+    .badge-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: white;
+    }
+
+    .badge-description {
+      font-size: 16px;
+      opacity: 0.9;
+      color: white;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes bounceIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+      70% {
+        transform: scale(0.9);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .completion-container {
+        margin: 20px;
+        padding: 40px 20px;
+      }
+      
+      .completion-title {
+        font-size: 36px;
+      }
+      
+      .completion-subtitle {
+        font-size: 20px;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .action-button {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+      }
+      
+      .stats-container {
+        gap: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="completion-container">
+    <div class="completion-icon">🧠</div>
+    
+    <h1 class="completion-title">Excellent Progress!</h1>
+    
+    <h2 class="completion-subtitle">Thoughts and Feelings Section Complete</h2>
+    
+    <p class="completion-message">
+      You've successfully completed the Thoughts and Feelings section! You’ve learned about different ways events may impact how we think and feel. 
+    </p>
+
+    <div class="unlock-notification">
+      <div class="unlock-title">🔓 New Section Unlocked!</div>
+      <div class="unlock-description">
+        The <strong>Skills</strong> section is now available. 
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <a href="{% url 'adventure_map' %}" class="action-button primary-button">
+        🗺️ Continue to Adventure Map
+      </a>
+     <a href="{% url 'profile' %}" class="action-button secondary-button">
+  📝 My profile hasn't been updated
+  <div class="tooltip">You can still click to view your previous responses</div>
+</a>
+      <a href="{% url 'discoveries' %}" class="action-button secondary-button">
+        ✨ See My Discoveries
+        <div class="tooltip">View key takeaways from completed sections</div>
+      </a>
+      
+    </div>
+  </div>
+
+  <!-- Intro audio to play 4.5 seconds after page load -->
+  <audio id="introAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_p9Jr8HFcoxHibBX" type="audio/mpeg">
+  </audio>
+
+  <!-- Congratulatory audio -->
+  <audio id="congratsAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_iowtSJ5lnls26EJ" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    // Direct localStorage functions (consistent with other standardized pages)
+    function markComplete(pageId) {
+      try {
+        localStorage.setItem('completed_' + pageId, 'true');
+        localStorage.setItem('completed_' + pageId + '_timestamp', Date.now().toString());
+        return true;
+      } catch (e) {
+        console.error('Error saving completion status:', e);
+        return false;
+      }
+    }
+
+    function markSectionComplete(sectionId) {
+      try {
+        // Get current data
+        let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        
+        // Ensure required structures exist
+        if (!data.completed_sections) data.completed_sections = [];
+        if (!data.progress) data.progress = {};
+        
+        // Mark section as completed
+        if (!data.completed_sections.includes(sectionId)) {
+          data.completed_sections.push(sectionId);
+        }
+        
+        data.progress[sectionId] = true;
+        data.progress[sectionId + '_timestamp'] = Date.now();
+        
+        // Save back to localStorage
+        localStorage.setItem('renew_study_data', JSON.stringify(data));
+        return true;
+      } catch (e) {
+        console.error('Error saving section completion:', e);
+        return false;
+      }
+    }
+
+    // Mark this page and section as completed
+    function markAllComplete() {
+      markComplete('emo_p5');
+      markSectionComplete('thoughts_feelings');
+      console.log('Thoughts and Feelings section fully completed');
+    }
+
+    // Add some celebratory effects with purple theme for thoughts and feelings completion
+    function createConfetti() {
+      const colors = ['#bb86fc', '#8e44ad', '#9c27b0', '#673ab7', '#3f51b5', '#e1bee7'];
+      
+      for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.style.position = 'fixed';
+          confetti.style.top = '-10px';
+          confetti.style.left = Math.random() * 100 + 'vw';
+          confetti.style.width = '10px';
+          confetti.style.height = '10px';
+          confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.pointerEvents = 'none';
+          confetti.style.animation = 'fall 3s linear forwards';
+          confetti.style.zIndex = '1000';
+          
+          document.body.appendChild(confetti);
+          
+          setTimeout(() => {
+            confetti.remove();
+          }, 3000);
+        }, i * 100);
+      }
+    }
+
+    // Add confetti animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fall {
+        from {
+          transform: translateY(-100vh) rotate(0deg);
+          opacity: 1;
+        }
+        to {
+          transform: translateY(100vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      // Mark completion when page loads
+      markAllComplete();
+      
+      // Play intro audio after 4.5 seconds
+      setTimeout(() => {
+        const introAudio = document.getElementById('introAudio');
+        if (introAudio) {
+          introAudio.play().then(() => {
+            console.log('Intro audio playing');
+          }).catch(error => {
+            console.log('Intro audio autoplay prevented:', error);
+            // If autoplay fails, try to play on first user interaction
+            const playOnInteraction = () => {
+              introAudio.play().catch(e => console.log('Intro audio play failed:', e));
+              document.removeEventListener('click', playOnInteraction);
+              document.removeEventListener('touchstart', playOnInteraction);
+            };
+            document.addEventListener('click', playOnInteraction, { once: true });
+            document.addEventListener('touchstart', playOnInteraction, { once: true });
+          });
+        }
+      }, 4500); // 4.5 seconds
+      
+      // Play congratulatory audio
+      const congratsAudio = document.getElementById('congratsAudio');
+      if (congratsAudio) {
+        setTimeout(() => {
+          congratsAudio.play().catch(error => {
+            console.log('Audio autoplay prevented:', error);
+            // Autoplay was prevented, but that's okay - page continues normally
+          });
+        }, 1500); // Play after 1.5 seconds to let animations start
+      }
+      
+      // Start confetti after page loads
+      setTimeout(createConfetti, 1000);
+    });
+  </script>
+</body>
+</html>

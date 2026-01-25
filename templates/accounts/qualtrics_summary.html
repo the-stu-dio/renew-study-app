@@ -1,0 +1,212 @@
+<!-- accounts/templates/accounts/qualtrics_summary.html -->
+<div style="max-width: 800px; margin: 0 auto; font-family: 'Arial', sans-serif; background-color: #f4f0fb; padding: 20px;">
+    
+    <!-- Header -->
+    <div style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); text-align: center;">
+        <h1 style="font-size: 2rem; color: #5a3e8c; margin-bottom: 10px; font-weight: 700;">{{ nickname }}'s RENEW Summary</h1>
+        <p style="color: #666; margin: 0;">Participant ID: {{ participant_id }}</p>
+        <p style="color: #666; margin: 5px 0 0 0;">Completed: {{ sections_completed_count }}/4 sections</p>
+    </div>
+
+    <!-- Positive Events Section -->
+    {% if positive_events %}
+    <div style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
+        <h2 style="font-size: 1.8rem; color: #5a3e8c; margin-bottom: 20px; font-weight: 600;">🌟 Positive Events Responses</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            {% if positive_events.recreation %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
+                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🏃 Recreational</div>
+                <div style="line-height: 1.6; color: #333;">{{ positive_events.recreation }}</div>
+            </div>
+            {% endif %}
+            {% if positive_events.achievement %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
+                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🏆 Achievement</div>
+                <div style="line-height: 1.6; color: #333;">{{ positive_events.achievement }}</div>
+            </div>
+            {% endif %}
+            {% if positive_events.relationship %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
+                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">❤️ Relationship</div>
+                <div style="line-height: 1.6; color: #333;">{{ positive_events.relationship }}</div>
+            </div>
+            {% endif %}
+            {% if positive_events.other %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
+                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">✨ Other</div>
+                <div style="line-height: 1.6; color: #333;">{{ positive_events.other }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Negative Events Section -->
+    {% if negative_events %}
+    <div style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
+        <h2 style="font-size: 1.8rem; color: #2c3e50; margin-bottom: 20px; font-weight: 600;">⚠️ Negative Events Responses</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            {% if negative_events.adverse %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #2c3e50;">
+                <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px;">⚠️ Adverse Events</div>
+                <div style="line-height: 1.6; color: #333;">{{ negative_events.adverse }}</div>
+            </div>
+            {% endif %}
+            {% if negative_events.neighbor %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #2c3e50;">
+                <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px;">🏘️ Neighborhood Issues</div>
+                <div style="line-height: 1.6; color: #333;">{{ negative_events.neighbor }}</div>
+            </div>
+            {% endif %}
+            {% if negative_events.discriminate %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #2c3e50;">
+                <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px;">🚫 Discrimination</div>
+                <div style="line-height: 1.6; color: #333;">{{ negative_events.discriminate }}</div>
+            </div>
+            {% endif %}
+            {% if negative_events.stress %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #2c3e50;">
+                <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px;">😰 Stressors & Hassles</div>
+                <div style="line-height: 1.6; color: #333;">{{ negative_events.stress }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Iron & Sponge Quiz Results -->
+    {% if iron_sponge %}
+    <div style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
+        <h2 style="font-size: 1.8rem; color: #6c757d; margin-bottom: 20px; font-weight: 600;">🧽 Iron & Sponge Quiz Results</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            {% if iron_sponge.school_type %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #6c757d; text-align: center;">
+                <div style="font-weight: 600; color: #6c757d; margin-bottom: 10px;">🎓 School Domain</div>
+                <div style="display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: 600; margin-bottom: 10px; font-size: 0.9em; 
+                    {% if iron_sponge.school_type == 'iron' %}background: linear-gradient(135deg, #007bff, #0056b3); color: white;
+                    {% elif iron_sponge.school_type == 'sponge' %}background: linear-gradient(135deg, #ffc107, #e0a800); color: white;
+                    {% else %}background: linear-gradient(135deg, #6c757d, #495057); color: white;{% endif %}">
+                    {% if iron_sponge.school_type == 'iron' %}🛡️ Iron-Like
+                    {% elif iron_sponge.school_type == 'sponge' %}🧽 Sponge-Like
+                    {% else %}⚖️ Balanced{% endif %}
+                </div>
+                <div style="font-size: 0.85em; color: #666;">
+                    Iron: {{ iron_sponge.school_iron_count|default:0 }} | 
+                    Sponge: {{ iron_sponge.school_sponge_count|default:0 }} | 
+                    Neither: {{ iron_sponge.school_neither_count|default:0 }}
+                </div>
+            </div>
+            {% endif %}
+            {% if iron_sponge.family_type %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #6c757d; text-align: center;">
+                <div style="font-weight: 600; color: #6c757d; margin-bottom: 10px;">🏠 Family Domain</div>
+                <div style="display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: 600; margin-bottom: 10px; font-size: 0.9em;
+                    {% if iron_sponge.family_type == 'iron' %}background: linear-gradient(135deg, #007bff, #0056b3); color: white;
+                    {% elif iron_sponge.family_type == 'sponge' %}background: linear-gradient(135deg, #ffc107, #e0a800); color: white;
+                    {% else %}background: linear-gradient(135deg, #6c757d, #495057); color: white;{% endif %}">
+                    {% if iron_sponge.family_type == 'iron' %}🛡️ Iron-Like
+                    {% elif iron_sponge.family_type == 'sponge' %}🧽 Sponge-Like
+                    {% else %}⚖️ Balanced{% endif %}
+                </div>
+                <div style="font-size: 0.85em; color: #666;">
+                    Iron: {{ iron_sponge.family_iron_count|default:0 }} | 
+                    Sponge: {{ iron_sponge.family_sponge_count|default:0 }} | 
+                    Neither: {{ iron_sponge.family_neither_count|default:0 }}
+                </div>
+            </div>
+            {% endif %}
+            {% if iron_sponge.friend_type %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #6c757d; text-align: center;">
+                <div style="font-weight: 600; color: #6c757d; margin-bottom: 10px;">👥 Friend Domain</div>
+                <div style="display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: 600; margin-bottom: 10px; font-size: 0.9em;
+                    {% if iron_sponge.friend_type == 'iron' %}background: linear-gradient(135deg, #007bff, #0056b3); color: white;
+                    {% elif iron_sponge.friend_type == 'sponge' %}background: linear-gradient(135deg, #ffc107, #e0a800); color: white;
+                    {% else %}background: linear-gradient(135deg, #6c757d, #495057); color: white;{% endif %}">
+                    {% if iron_sponge.friend_type == 'iron' %}🛡️ Iron-Like
+                    {% elif iron_sponge.friend_type == 'sponge' %}🧽 Sponge-Like
+                    {% else %}⚖️ Balanced{% endif %}
+                </div>
+                <div style="font-size: 0.85em; color: #666;">
+                    Iron: {{ iron_sponge.friend_iron_count|default:0 }} | 
+                    Sponge: {{ iron_sponge.friend_sponge_count|default:0 }} | 
+                    Neither: {{ iron_sponge.friend_neither_count|default:0 }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Journal Responses -->
+    {% if journal_entries %}
+    <div style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
+        <h2 style="font-size: 1.8rem; color: #5a3e8c; margin-bottom: 20px; font-weight: 600;">📝 Journal Responses</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            {% if journal_entries.things_to_change %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
+                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🎯 Things I Want to Work On</div>
+                <div style="line-height: 1.6; color: #333;">{{ journal_entries.things_to_change }}</div>
+            </div>
+            {% endif %}
+            {% if journal_entries.answer1 %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
+                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🌟 An experience that changed you</div>
+                <div style="line-height: 1.6; color: #333;">{{ journal_entries.answer1 }}</div>
+            </div>
+            {% endif %}
+            {% if journal_entries.answer2 %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
+                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🌟 How your thinking has changed</div>
+                <div style="line-height: 1.6; color: #333;">{{ journal_entries.answer2 }}</div>
+            </div>
+            {% endif %}
+            {% if journal_entries.answer3 %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
+                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🌟 Feelings or triggers you notice</div>
+                <div style="line-height: 1.6; color: #333;">{{ journal_entries.answer3 }}</div>
+            </div>
+            {% endif %}
+            {% if journal_entries.answer4 %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
+                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🌟 How it felt to reflect on it</div>
+                <div style="line-height: 1.6; color: #333;">{{ journal_entries.answer4 }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Activity Plan -->
+    {% if activity_plan %}
+    <div style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
+        <h2 style="font-size: 1.8rem; color: #28a745; margin-bottom: 20px; font-weight: 600;">🌟 Your Positive Activity Plan</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            {% if activity_plan.who %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #28a745;">
+                <div style="font-weight: 600; color: #28a745; margin-bottom: 10px;">👥 Who</div>
+                <div style="line-height: 1.6; color: #333;">{{ activity_plan.who.response|default:activity_plan.who.category }}</div>
+            </div>
+            {% endif %}
+            {% if activity_plan.where %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #28a745;">
+                <div style="font-weight: 600; color: #28a745; margin-bottom: 10px;">📍 Where</div>
+                <div style="line-height: 1.6; color: #333;">{{ activity_plan.where.response|default:activity_plan.where.category }}</div>
+            </div>
+            {% endif %}
+            {% if activity_plan.what %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #28a745;">
+                <div style="font-weight: 600; color: #28a745; margin-bottom: 10px;">🎯 What</div>
+                <div style="line-height: 1.6; color: #333;">{{ activity_plan.what.activity }}</div>
+            </div>
+            {% endif %}
+            {% if activity_plan.when %}
+            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #28a745;">
+                <div style="font-weight: 600; color: #28a745; margin-bottom: 10px;">⏰ When</div>
+                <div style="line-height: 1.6; color: #333;">{{ activity_plan.when.timing }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>

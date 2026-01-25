@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% block title %}Let's Get to Know You{% endblock %}
+{% block extra_css %}
+<style>
+    body, html {
+        background-color: #f4f0fb;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+    .conversation {
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+    }
+    .greeting {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #5a3e8c;
+        margin-bottom: 20px;
+        animation: fadeInUp 0.8s ease-out;
+    }
+    .message {
+        font-size: 1.4rem;
+        color: #666;
+        margin-bottom: 40px;
+        font-weight: 400;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    .question {
+        font-size: 1.4rem;
+        color: #5a3e8c;
+        margin-bottom: 30px;
+        font-weight: 600;
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+    .input-section {
+        margin-bottom: 30px;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
+    input[type="text"] {
+        padding: 15px 20px;
+        font-size: 1.1rem;
+        border: 2px solid #ddd;
+        border-radius: 50px;
+        width: 100%;
+        max-width: 300px;
+        text-align: center;
+        font-family: 'Work Sans', sans-serif;
+        background: rgba(255, 255, 255, 0.9);
+        transition: all 0.3s ease;
+        outline: none;
+    }
+    input[type="text"]:focus {
+        border-color: #5a3e8c;
+        box-shadow: 0 0 20px rgba(90, 62, 140, 0.2);
+        transform: scale(1.02);
+        background: white;
+    }
+    input[type="text"]::placeholder {
+        color: #999;
+        font-style: italic;
+    }
+    button {
+        background: #5a3e8c;
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        font-family: 'Work Sans', sans-serif;
+        cursor: pointer;
+        margin-top: 20px;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.8s ease-out 0.8s both;
+    }
+    button:hover {
+        background: #4a3474;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(90, 62, 140, 0.3);
+    }
+    .error-message {
+        color: #dc2626;
+        font-size: 1rem;
+        margin-top: 10px;
+        display: none;
+    }
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    @media (max-width: 480px) {
+        .greeting {
+            font-size: 2rem;
+        }
+        .message {
+            font-size: 1.2rem;
+        }
+        .question {
+            font-size: 1.2rem;
+        }
+        input[type="text"] {
+            max-width: 250px;
+            font-size: 1rem;
+        }
+        button {
+            font-size: 1.1rem;
+            padding: 12px 30px;
+        }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="conversation">
+    <h1 class="greeting">Hey there! 👋</h1>
+    
+    <p class="message">
+        Thanks for joining our study! We're excited to have you here.
+    </p>
+    <p class="question">
+        Let's start by getting to know you a bit better. What should we call you?
+    </p>
+    
+    <div class="input-section">
+        <input type="text" id="nicknameInput" placeholder="Type your name here..." maxlength="30">
+        <div id="errorMessage" class="error-message">Please enter a nickname to continue.</div>
+    </div>
+    <button onclick="saveNickname()">That's me!</button>
+</div>
+
+<!-- Welcome audio -->
+<audio id="welcomeAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_RTxiGDabQbtfYdg" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
+<script>
+function saveNickname() {
+    const nicknameInput = document.getElementById('nicknameInput');
+    const errorMessage = document.getElementById('errorMessage');
+    const nickname = nicknameInput.value.trim();
+    
+    // Hide any previous error message
+    errorMessage.style.display = 'none';
+    
+    if (!nickname) {
+        errorMessage.style.display = 'block';
+        nicknameInput.focus();
+        return;
+    }
+    
+    // Save nickname to localStorage
+    if (RENEWStorage.setNickname(nickname)) {
+        // Redirect to welcome page
+        window.location.href = "{% url 'welcome' %}";
+    } else {
+        errorMessage.textContent = 'Error saving nickname. Please try again.';
+        errorMessage.style.display = 'block';
+    }
+}
+
+// Allow Enter key to submit
+document.getElementById('nicknameInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        saveNickname();
+    }
+});
+
+// Check if nickname already exists on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const existingNickname = RENEWStorage.getNickname();
+    if (existingNickname) {
+        // User already has a nickname, redirect to hub
+        window.location.href = "{% url 'hub' %}";
+    }
+    
+    // Play welcome audio
+    const welcomeAudio = document.getElementById('welcomeAudio');
+    if (welcomeAudio) {
+        welcomeAudio.play().catch(error => {
+            console.log('Audio autoplay prevented:', error);
+            // Autoplay was prevented, but that's okay - continues without breaking
+        });
+    }
+});
+</script>
+{% endblock %}

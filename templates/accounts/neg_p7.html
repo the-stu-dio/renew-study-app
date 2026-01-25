@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Negative Events - Part 7</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Work Sans', sans-serif;
+      height: 100vh;
+      width: 100vw;
+      background-color: #f4f0fb;
+      display: flex;
+      overflow: hidden;
+    }
+    .video-container {
+      flex: 3.15;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      order: 1;
+    }
+    .sidebar {
+      flex: 1.5;
+      background-color: #fff;
+      padding: 20px;
+      border-left: 2px solid #ccc;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      order: 2;
+      height: 100vh;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+    .sidebar h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #5a3e8c;
+      font-size: 18px;
+    }
+    .question-card {
+      display: none;
+      background: #fff;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border: 2px solid #5a3e8c;
+      margin-bottom: 20px;
+    }
+    .question-card.show {
+      display: block;
+      animation: fadeInUp 0.5s ease-out;
+    }
+    .question-title {
+      color: #5a3e8c;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .quiz-option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin-bottom: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #495057;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+    .quiz-option:hover {
+      background: #e3f2fd;
+      border-color: #5a3e8c;
+      color: #5a3e8c;
+      text-decoration: none;
+    }
+    .quiz-option.selected {
+      background: #5a3e8c;
+      border-color: #5a3e8c;
+      color: white;
+    }
+    .quiz-option.correct {
+      background: #d4edda;
+      border-color: #28a745;
+      color: #155724;
+    }
+    .quiz-option.incorrect {
+      background: #f8d7da;
+      border-color: #dc3545;
+      color: #721c24;
+    }
+    .quiz-feedback {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 8px;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+    }
+    .quiz-feedback.show {
+      display: block;
+    }
+    .quiz-feedback.correct {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    .quiz-feedback.incorrect {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      align-self: flex-start;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: auto;
+    }
+    .back-button:hover {
+      background-color: #5a6268;
+      transform: translateY(-1px);
+      color: white;
+      text-decoration: none;
+    }
+    .next-button-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+      display: none; /* Hidden by default */
+    }
+    .next-button-container.visible {
+      display: block; /* Show when visible class is added */
+    }
+    .prev-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+    .prev-button-overlay:hover {
+      background: #b8a5d1;
+      color: #4a3474;
+      text-decoration: none;
+    }
+    .next-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+      font-family: 'Work Sans', sans-serif;
+      position: relative;
+    }
+    .next-button-overlay:hover {
+      background: #b8a5d1;
+      color: #4a3474;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    /* Motivational entrance animation - Purple to White */
+    .next-button-motivational {
+      animation: motivationalEntrance 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    @keyframes motivationalEntrance {
+      0% {
+        opacity: 0;
+        transform: translateX(100px) scale(0.8);
+        box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+        background: #c8b5db;
+      }
+      20% {
+        opacity: 0.7;
+        transform: translateX(-10px) scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      40% {
+        opacity: 1;
+        transform: translateX(5px) scale(1.1);
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      60% {
+        transform: translateX(-2px) scale(1.02);
+        box-shadow: 0 4px 20px rgba(255, 255, 255, 0.7);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      80% {
+        transform: translateX(1px) scale(1.01);
+        box-shadow: 0 4px 15px rgba(248, 249, 250, 0.5);
+        background: linear-gradient(135deg, #f8f9fa, #c8b5db);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background: #c8b5db;
+      }
+    }
+
+    /* Motivational pulse effect for ongoing engagement */
+    .next-button-pulse {
+      position: relative;
+      animation: motivationalPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes motivationalPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+      }
+    }
+
+    /* Motivational glow border effect */
+    .next-button-pulse::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #ffffff, #f8f9fa, #e9ecef, #ffffff);
+      border-radius: 10px;
+      z-index: -1;
+      opacity: 0;
+      animation: motivationalGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes motivationalGlow {
+      0%, 100% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    /* Static visible state - no ongoing animation */
+    .next-button-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Hidden audio element - no visible UI */
+    .hidden-audio {
+      display: none;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .video-wrapper {
+      width: 100%;
+      max-width: 100%;
+      height: 75vh;
+      position: relative;
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border: 0;
+    }
+
+    @media (max-width: 480px) {
+      body { flex-direction: column; }
+      .video-container { flex: 1; padding: 10px; }
+      .sidebar {
+        flex: 0 0 250px;
+        border-left: none;
+        border-top: 2px solid #ccc;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+      }
+      .video-wrapper { height: 50vh; }
+      .quiz-option { font-size: 14px; padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Audio elements for feedback -->
+  <audio id="correctAnswerAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_uVA31s6m1wSzBvp" type="audio/mpeg">
+  </audio>
+  
+  <audio id="wrongAnswerAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_JlGCaH54aF4Lk4q" type="audio/mpeg">
+  </audio>
+
+  <!-- Hidden audio element for motivational sound effect -->
+  <audio id="successSoundEffect" class="hidden-audio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_6UG7Rt7QKA7N8oH" type="audio/mpeg">
+  </audio>
+
+  <div class="video-container">
+    <!-- Previous button -->
+    <div class="prev-button-container" style="position: absolute; top: 20px; left: 20px; z-index: 10;">
+      <a href="{% url 'neg_p6' %}" class="prev-button-overlay">← Previous</a>
+    </div>
+
+    <!-- Next button (hidden initially) -->
+    <div class="next-button-container" id="nextButtonContainer">
+      <a href="{% url 'neg_p8' %}" class="next-button-overlay" id="nextButton">Next →</a>
+    </div>
+
+    <!-- Video wrapper for YouTube API -->
+    <div class="video-wrapper">
+      <div id="myVideo"></div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <h3>Quiz Time!</h3>
+    <div class="question-card" id="questionCard">
+      <div class="question-title">
+        How might Mike be feeling after Coach Ramos's comment?
+      </div>
+      <button class="quiz-option" onclick="selectOption(this, 'A', true)">A. Angry</button>
+      <button class="quiz-option" onclick="selectOption(this, 'B', true)">B. Sad</button>
+      <button class="quiz-option" onclick="selectOption(this, 'C', true)">C. Embarrassed</button>
+      <button class="quiz-option" onclick="selectOption(this, 'D', false)">D. Happy</button>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+    </div>
+
+    <a href="{% url 'adventure_map' %}" class="back-button">← Back to Adventure Map</a>
+  </div>
+
+  <script>
+    // Audio variables
+    let correctAnswerAudio = null;
+    let wrongAnswerAudio = null;
+    let audioEnabled = false;
+
+    // Function to stop all currently playing audio
+    function stopAllAudio() {
+      // Stop correct answer audio
+      if (correctAnswerAudio && !correctAnswerAudio.paused) {
+        correctAnswerAudio.pause();
+        correctAnswerAudio.currentTime = 0;
+      }
+      
+      // Stop wrong answer audio
+      if (wrongAnswerAudio && !wrongAnswerAudio.paused) {
+        wrongAnswerAudio.pause();
+        wrongAnswerAudio.currentTime = 0;
+      }
+    }
+
+    // Function to play success sound effect
+    function playSuccessSound() {
+      const soundEffect = document.getElementById('successSoundEffect');
+      if (soundEffect) {
+        // Reset audio to beginning in case it was played before
+        soundEffect.currentTime = 0;
+        soundEffect.play().catch(error => {
+          console.log('Sound effect autoplay failed (browser policy):', error);
+          // Sound effect is just enhancement, continue normally if blocked
+        });
+      }
+    }
+
+    // Function to show next button with motivational animation
+    function showNextButtonMotivational() {
+      const nextButtonContainer = document.getElementById('nextButtonContainer');
+      const nextButton = document.getElementById('nextButton');
+      
+      console.log('=== showNextButtonMotivational called ===');
+      console.log('Container found:', !!nextButtonContainer);
+      console.log('Button found:', !!nextButton);
+      
+      if (!nextButtonContainer || !nextButton) {
+        console.error('CRITICAL: Could not find next button elements!');
+        return;
+      }
+      
+      // ALWAYS make the container visible - this is the most important part
+      nextButtonContainer.classList.add('visible');
+      console.log('Container visible class added');
+      
+      // Check completion status directly from localStorage
+      const isPageComplete = localStorage.getItem('completed_neg_p7') === 'true';
+      const specialEffectsShown = localStorage.getItem('neg_p7_special_effects_shown') === 'true';
+      
+      console.log('Page complete:', isPageComplete);
+      console.log('Special effects already shown:', specialEffectsShown);
+      
+      if (!specialEffectsShown) {
+        // First time showing - play both the motivational animation AND sound effect
+        console.log('First time showing - playing animation and sound');
+        playSuccessSound();
+        
+        nextButton.classList.remove('next-button-pulse', 'visible');
+        nextButton.classList.add('next-button-motivational');
+        
+        localStorage.setItem('neg_p7_special_effects_shown', 'true');
+        
+        // After initial animation completes, switch to subtle pulse
+        setTimeout(() => {
+          nextButton.classList.remove('next-button-motivational');
+          nextButton.classList.add('next-button-pulse', 'visible');
+          console.log('Animation complete, switched to pulse');
+        }, 1200);
+      } else {
+        // Return visit - NO animation or sound, just show immediately
+        console.log('Return visit - showing without animation');
+        nextButton.classList.remove('next-button-motivational');
+        nextButton.classList.add('next-button-pulse', 'visible');
+      }
+      
+      console.log('Final container classes:', nextButtonContainer.className);
+      console.log('Final button classes:', nextButton.className);
+      console.log('=== End showNextButtonMotivational ===');
+    }
+
+    function markComplete(pageId) {
+      try {
+        localStorage.setItem('completed_' + pageId, 'true');
+        localStorage.setItem('completed_' + pageId + '_timestamp', Date.now().toString());
+      } catch (e) { console.error(e); }
+    }
+    
+    function isComplete(pageId) { 
+      return localStorage.getItem('completed_' + pageId) === 'true'; 
+    }
+
+    let quizCompleted = false;
+    let quizShown = false;
+
+    // Initialize audio on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      correctAnswerAudio = document.getElementById('correctAnswerAudio');
+      wrongAnswerAudio = document.getElementById('wrongAnswerAudio');
+      
+      // Add error handling for both audio files
+      if (correctAnswerAudio) {
+        correctAnswerAudio.addEventListener('error', (e) => {
+          console.error('Correct answer audio file could not be loaded:', e);
+        });
+      }
+      
+      if (wrongAnswerAudio) {
+        wrongAnswerAudio.addEventListener('error', (e) => {
+          console.error('Wrong answer audio file could not be loaded:', e);
+        });
+      }
+
+      // Pre-load audio immediately
+      if (correctAnswerAudio) {
+        correctAnswerAudio.load();
+      }
+      if (wrongAnswerAudio) {
+        wrongAnswerAudio.load();
+      }
+      
+      // Enable immediately on page load
+      audioEnabled = true;
+
+      // Check if already completed
+      if (isComplete('neg_p7')) {
+        console.log('=== PAGE IS ALREADY COMPLETE ===');
+        quizShown = true; // CRITICAL: Prevent tracking interval from interfering
+        document.getElementById('questionCard').classList.add('show');
+        
+        // Call immediately
+        showNextButtonMotivational();
+        
+        // SAFEGUARD: Call again after a short delay to ensure it's visible
+        setTimeout(() => {
+          console.log('=== SAFEGUARD: Calling showNextButtonMotivational again ===');
+          showNextButtonMotivational();
+        }, 500);
+      } else {
+        console.log('Page not yet complete');
+      }
+
+      // Add fallback timer
+      setTimeout(() => {
+        if (!quizShown) {
+          quizShown = true;
+          document.getElementById('questionCard').classList.add('show');
+        }
+      }, 20000); // Show after 20 seconds regardless
+    });
+
+    function selectOption(optionElement, option, isCorrect) {
+      document.querySelectorAll('.quiz-option').forEach(opt => opt.classList.remove('selected','correct','incorrect'));
+      optionElement.classList.add('selected');
+      const feedback = document.getElementById('quizFeedback');
+      
+      if (isCorrect) {
+        optionElement.classList.add('correct');
+        feedback.textContent = "That's right! Nice work!";
+        feedback.className = 'quiz-feedback correct show';
+        
+        // Play the correct answer audio - direct attempt
+        if (correctAnswerAudio) {
+          stopAllAudio();
+          correctAnswerAudio.currentTime = 0;
+          correctAnswerAudio.play().then(() => {
+            console.log('Correct answer audio playing');
+          }).catch(error => {
+            console.error('Failed to play correct audio:', error);
+          });
+        }
+        
+        setTimeout(() => {
+          quizCompleted = true;
+          showNextButtonMotivational(); // Use enhanced version
+          markComplete('neg_p7');
+        }, 1000);
+      } else {
+        optionElement.classList.add('incorrect');
+        feedback.textContent = "Nice try, but try a different answer.";
+        feedback.className = 'quiz-feedback incorrect show';
+        
+        // Play the wrong answer audio - direct attempt
+        if (wrongAnswerAudio) {
+          stopAllAudio();
+          wrongAnswerAudio.currentTime = 0;
+          wrongAnswerAudio.play().then(() => {
+            console.log('Wrong answer audio playing');
+          }).catch(error => {
+            console.error('Failed to play wrong audio:', error);
+          });
+        }
+        
+        setTimeout(() => {
+          feedback.classList.remove('show');
+          optionElement.classList.remove('selected','incorrect');
+        }, 3000);
+      }
+    }
+
+    // YouTube IFrame API
+    let player;
+    
+    function onYouTubeIframeAPIReady() {
+      console.log('YouTube API ready, creating player...');
+      player = new YT.Player('myVideo', {
+        height: '100%',
+        width: '100%',
+        videoId: 'hCb0zxhAd4k',
+        playerVars: {
+          'controls': 1,
+          'autoplay': 1,
+          'rel': 0,
+          'cc_load_policy': 1
+        },
+        events: { 
+          'onReady': function(event) {
+            console.log('Player ready, starting autoplay...');
+            event.target.playVideo();
+            startTracking();
+          },
+          'onError': function(event) {
+            console.error('YouTube player error:', event.data);
+          }
+        }
+      });
+    }
+
+    function startTracking() {
+      setInterval(() => {
+        const currentTime = player.getCurrentTime();
+        if (!quizShown && currentTime >= 20) {
+          quizShown = true;
+          document.getElementById('questionCard').classList.add('show');
+        }
+      }, 500);
+    }
+
+    // Load YouTube API
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+  </script>
+</body>
+</html>

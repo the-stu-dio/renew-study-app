@@ -1,0 +1,1227 @@
+{% extends 'base.html' %}
+
+{% block title %}Adventure Map{% endblock %}
+
+{% block extra_css %}
+<style>
+    body, html {
+        margin: 0;
+        padding: 20px;
+        font-family: 'Work Sans', sans-serif;
+        min-height: 100vh;
+        background-color: #f4f0fb;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .map-container {
+        max-width: 900px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .map-title {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #5a3e8c;
+        margin-bottom: 20px;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .map-subtitle {
+        font-size: 1.3rem;
+        color: #666;
+        margin-bottom: 50px;
+        font-weight: 400;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    /* Congratulations Modal */
+    .congratulations-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+    }
+
+    .congratulations-modal.show {
+        display: flex;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    .congratulations-content {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border-radius: 24px;
+        padding: 50px 40px;
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+        max-width: 600px;
+        width: 90%;
+        position: relative;
+        animation: celebrationBounce 0.8s ease-out;
+        overflow: hidden;
+    }
+
+    .congratulations-content::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        animation: shimmer 3s ease-in-out infinite;
+    }
+
+    .congratulations-content h2 {
+        font-size: 2.8rem;
+        margin-bottom: 20px;
+        font-weight: 700;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .congratulations-content p {
+        font-size: 1.3rem;
+        line-height: 1.6;
+        margin-bottom: 30px;
+        opacity: 0.95;
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .profile-review-btn {
+        background: white;
+        color: #28a745;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile-review-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        text-decoration: none;
+        color: #1e7e34;
+    }
+
+    .close-modal-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .close-modal-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+        text-decoration: none;
+        color: white;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes celebrationBounce {
+        0% { 
+            opacity: 0;
+            transform: scale(0.3) translateY(-100px);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1.05) translateY(10px);
+        }
+        70% {
+            transform: scale(0.95) translateY(-5px);
+        }
+        100% { 
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    .sections-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        margin-top: 40px;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 20px;
+        padding: 40px 25px;
+        text-decoration: none;
+        color: #333;
+        transition: all 0.3s ease;
+        font-family: 'Work Sans', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 400px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .section-card.unlocked {
+        cursor: pointer;
+        border: 3px solid #5a3e8c;
+    }
+
+    .section-card.unlocked:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(90, 62, 140, 0.3);
+        border-color: #4a3474;
+        text-decoration: none;
+        color: #333;
+    }
+
+    .section-card.completed {
+        border: 3px solid #28a745;
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.05));
+    }
+
+    .section-card.completed:hover {
+        border-color: #218838;
+        box-shadow: 0 20px 40px rgba(40, 167, 69, 0.3);
+        text-decoration: none;
+    }
+
+    .section-card.locked {
+        background: #f0f0f0;
+        color: #999;
+        border: 3px solid #ddd;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    /* Remove underlines from all card links */
+    a {
+        text-decoration: none !important;
+    }
+    
+    a:hover {
+        text-decoration: none !important;
+    }
+    
+    a:visited {
+        text-decoration: none !important;
+    }
+    
+    a:focus {
+        text-decoration: none !important;
+    }
+    
+    a .section-card,
+    a .section-card *,
+    a:hover .section-card,
+    a:hover .section-card *,
+    a:visited .section-card,
+    a:visited .section-card *,
+    a:focus .section-card,
+    a:focus .section-card * {
+        text-decoration: none !important;
+    }
+
+    /* Special styling for Thoughts and Feelings section */
+    .section-card.thoughts-feelings.unlocked {
+        border: 3px solid #9C27B0;
+    }
+
+    .section-card.thoughts-feelings.unlocked:hover {
+        box-shadow: 0 20px 40px rgba(156, 39, 176, 0.3);
+        border-color: #7B1FA2;
+        text-decoration: none;
+    }
+
+    .section-card.thoughts-feelings.completed {
+        border: 3px solid #28a745;
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.05));
+    }
+    
+    .section-card.thoughts-feelings.completed:hover {
+        border-color: #218838;
+        box-shadow: 0 20px 40px rgba(40, 167, 69, 0.3);
+        text-decoration: none;
+    }
+    
+    .section-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        text-decoration: none;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        text-decoration: none;
+    }
+
+    .section-description {
+        font-size: 1rem;
+        opacity: 0.8;
+        text-align: center;
+        line-height: 1.5;
+        margin-bottom: 15px;
+        text-decoration: none;
+    }
+
+    .section-status {
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding: 8px 16px;
+        border-radius: 20px;
+        margin-top: 10px;
+        text-decoration: none;
+    }
+
+    .status-unlocked {
+        background: rgba(90, 62, 140, 0.1);
+        color: #5a3e8c;
+    }
+
+    .status-completed {
+        background: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+    }
+
+    .status-locked {
+        background: #f8f8f8;
+        color: #95a5a6;
+    }
+
+    .status-thoughts-feelings {
+        background: rgba(156, 39, 176, 0.1);
+        color: #9C27B0;
+    }
+
+    .lock-icon {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 1.5rem;
+        color: #bdc3c7;
+    }
+
+    .complete-icon {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        font-size: 1.5rem;
+        color: #28a745;
+    }
+
+    .back-button {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: #5a3e8c;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+        background: #4a3474;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(90, 62, 140, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .positive-events {
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    .negative-events {
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
+
+    .thoughts-feelings {
+        animation: fadeInUp 0.8s ease-out 0.8s both;
+    }
+
+    .skills {
+        animation: fadeInUp 0.8s ease-out 1.0s both;
+    }
+
+    /* Survey Modal Styles */
+    .survey-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .survey-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+    }
+
+    .survey-container {
+        position: relative;
+        background: white;
+        border-radius: 16px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideInScale 0.3s ease-out;
+    }
+
+    .survey-header {
+        padding: 30px 30px 20px;
+        border-bottom: 1px solid #e0e0e0;
+        text-align: center;
+        position: relative;
+    }
+
+    .survey-header h2 {
+        color: #5a3e8c;
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0 0 10px;
+    }
+
+    .survey-header p {
+        color: #666;
+        font-size: 16px;
+        margin: 0;
+    }
+
+    .survey-content {
+        padding: 20px 30px;
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: flex-start;
+        cursor: pointer;
+        padding: 15px;
+        border-radius: 8px;
+        transition: background-color 0.2s;
+        position: relative;
+    }
+
+    .checkbox-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        width: 0;
+        height: 0;
+    }
+
+    .checkmark {
+        min-width: 20px;
+        height: 20px;
+        background-color: #fff;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        margin-right: 15px;
+        margin-top: 2px;
+        position: relative;
+        transition: all 0.2s;
+    }
+
+    .checkbox-item input[type="checkbox"]:checked ~ .checkmark {
+        background-color: #5a3e8c;
+        border-color: #5a3e8c;
+    }
+
+    .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+        left: 6px;
+        top: 2px;
+        width: 6px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    .checkbox-item input[type="checkbox"]:checked ~ .checkmark:after {
+        display: block;
+    }
+
+    .checkbox-text {
+        color: #333;
+        font-size: 16px;
+        line-height: 1.5;
+        flex: 1;
+    }
+
+    .survey-footer {
+        padding: 20px 30px 30px;
+        text-align: center;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .submit-survey-btn {
+        background-color: #5a3e8c;
+        color: white;
+        border: none;
+        padding: 12px 40px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 120px;
+    }
+
+    .submit-survey-btn:hover:not(:disabled) {
+        background-color: #4a3474;
+        transform: translateY(-1px);
+    }
+
+    .submit-survey-btn:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    @keyframes slideInScale {
+        from {
+            opacity: 0;
+            transform: scale(0.9) translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .map-title {
+            font-size: 2.2rem;
+        }
+        
+        .map-subtitle {
+            font-size: 1.1rem;
+        }
+        
+        .congratulations-content h2 {
+            font-size: 2rem;
+        }
+        
+        .congratulations-content p {
+            font-size: 1.1rem;
+        }
+        
+        .modal-buttons {
+            flex-direction: column;
+        }
+        
+        .sections-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .section-card {
+            height: 350px;
+            padding: 30px 20px;
+        }
+        
+        .section-icon {
+            font-size: 3rem;
+        }
+        
+        .back-button {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .survey-container {
+            width: 95%;
+            margin: 20px;
+        }
+        
+        .survey-header,
+        .survey-content,
+        .survey-footer {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+        
+        .checkbox-text {
+            font-size: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Audio element for survey -->
+<audio id="surveyAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_20A7b0Q7Ml3GlrL" type="audio/mpeg">
+</audio>
+
+<!-- Audio element for middle audio (plays first when all sections complete) -->
+<audio id="middleAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_MzN4p7AP2cZXCxF" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
+<!-- Audio element for congratulations (plays after middle audio) -->
+<audio id="congratulationsAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_zbV5lqBDsYtNV1O" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
+<!-- Audio element for when positive events is not completed -->
+<audio id="positiveIncompleteAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_HB0qJU706GqpaSo" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
+<!-- Audio element for feedback survey modal -->
+<audio id="feedbackModalAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_p4lICO2KiolR8on" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
+<a href="{% url 'hub' %}" class="back-button">← Back to Hub</a>
+
+<div class="map-container">
+    <h1 class="map-title">Adventure Map</h1>
+    
+    <p class="map-subtitle" id="mapSubtitle">
+        Your learning journey! Complete each section to unlock the next.
+    </p>
+
+    <div class="sections-grid" id="sectionsGrid">
+        <!-- Sections will be populated by JavaScript -->
+    </div>
+</div>
+
+<!-- Congratulations Modal -->
+<div id="congratulationsModal" class="congratulations-modal">
+    <div class="congratulations-content">
+        <h2>🎉 Congratulations! 🎉</h2>
+        <p>You've completed all four sections of RENEW! Before we finish, please review your profile and make any final changes to your responses.</p>
+        <div class="modal-buttons">
+            <a href="{% url 'profile' %}" class="profile-review-btn">
+                📋 Review Profile & Finalize →
+            </a>
+            
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Survey Modal -->
+<div id="feedbackSurveyModal" class="survey-modal" style="display: none;">
+    <div class="survey-overlay"></div>
+    <div class="survey-container">
+        <div class="survey-header">
+            <h2>Quick Feedback</h2>
+            <p>Before moving to the Skills section, <strong>please select at least one option that applies.</strong></p>
+        </div>
+        
+        <div class="survey-content">
+            <div class="checkbox-group">
+                <label class="checkbox-item">
+                    <input type="checkbox" name="statement1" value="true">
+                    <span class="checkmark"></span>
+                    <span class="checkbox-text">I liked learning about how the world around us affects people, and I want to talk to someone more about this.</span>
+                </label>
+                
+                <label class="checkbox-item">
+                    <input type="checkbox" name="statement2" value="true">
+                    <span class="checkmark"></span>
+                    <span class="checkbox-text">I liked learning about how the world around us affects people, and I want to see or read more about it.</span>
+                </label>
+                
+                <label class="checkbox-item">
+                    <input type="checkbox" name="statement3" value="true">
+                    <span class="checkmark"></span>
+                    <span class="checkbox-text">To be honest, I found some of this stuff a little boring, but I want to talk more about thoughts, feelings, and emotions.</span>
+                </label>
+                
+                <label class="checkbox-item">
+                    <input type="checkbox" name="statement4" value="true">
+                    <span class="checkmark"></span>
+                    <span class="checkbox-text">To be honest, I didn't find what we've talked about so far very interesting or helpful.</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="survey-footer">
+            <button type="button" class="submit-survey-btn" id="submitSurveyBtn" disabled onclick="submitFeedbackSurvey()">Continue</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Define URL mappings at the top level
+const URL_MAPPINGS = {
+    'pos_p1': "{% url 'pos_p1' %}",
+    'neg_p1': "{% url 'neg_p1' %}",
+    'emo_p1': "{% url 'emo_p1' %}",
+    'skill_p1': "{% url 'skill_p1' %}"
+};
+
+// Audio variables
+let surveyAudio = null;
+let middleAudio = null;
+let congratulationsAudio = null;
+let audioEnabled = false;
+let isAudioPlaying = false;
+
+// localStorage helper functions
+function isSectionComplete(sectionId) {
+    try {
+        const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        return data.completed_sections?.includes(sectionId) || false;
+    } catch (e) {
+        console.error('Error checking section completion:', e);
+        return false;
+    }
+}
+
+function getSurveyResponse(surveyId) {
+    try {
+        const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        return data.survey_responses?.[surveyId];
+    } catch (e) {
+        console.error('Error getting survey response:', e);
+        return undefined;
+    }
+}
+
+function saveSurveyResponse(surveyId, response) {
+    try {
+        let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        if (!data.survey_responses) data.survey_responses = {};
+        data.survey_responses[surveyId] = response;
+        data.survey_responses[surveyId + '_timestamp'] = Date.now();
+        localStorage.setItem('renew_study_data', JSON.stringify(data));
+        return true;
+    } catch (e) {
+        console.error('Error saving survey response:', e);
+        return false;
+    }
+}
+
+// Audio functions
+function initializeAudio() {
+    surveyAudio = document.getElementById('surveyAudio');
+    middleAudio = document.getElementById('middleAudio');
+    congratulationsAudio = document.getElementById('congratulationsAudio');
+    
+    if (surveyAudio) {
+        surveyAudio.addEventListener('error', (e) => {
+            console.warn('Survey audio file could not be loaded:', e);
+        });
+        
+        surveyAudio.addEventListener('ended', () => {
+            isAudioPlaying = false;
+            updateAudioButton();
+        });
+        
+        surveyAudio.addEventListener('pause', () => {
+            isAudioPlaying = false;
+            updateAudioButton();
+        });
+        
+        surveyAudio.addEventListener('play', () => {
+            isAudioPlaying = true;
+            updateAudioButton();
+        });
+    }
+
+    if (middleAudio) {
+        middleAudio.addEventListener('error', (e) => {
+            console.warn('Middle audio file could not be loaded:', e);
+        });
+    }
+
+    if (congratulationsAudio) {
+        congratulationsAudio.addEventListener('error', (e) => {
+            console.warn('Congratulations audio file could not be loaded:', e);
+        });
+        
+        congratulationsAudio.addEventListener('ended', () => {
+            console.log('Congratulations audio ended');
+        });
+    }
+    
+    // Enable audio on first user interaction
+    const enableAudio = () => {
+        audioEnabled = true;
+        console.log('Audio enabled by user interaction');
+        document.removeEventListener('click', enableAudio);
+        document.removeEventListener('touchstart', enableAudio);
+    };
+    
+    document.addEventListener('click', enableAudio, { once: true });
+    document.addEventListener('touchstart', enableAudio, { once: true });
+}
+
+async function playCongratulationsAudio() {
+    if (!audioEnabled) return;
+
+    try {
+        // Play middle audio FIRST
+        if (middleAudio) {
+            console.log('▶️ Playing middle audio first...');
+            middleAudio.currentTime = 0;
+            
+            const middlePlayPromise = middleAudio.play();
+            if (middlePlayPromise !== undefined) {
+                await middlePlayPromise;
+                console.log('✅ Middle audio playing successfully!');
+                
+                // Wait for middle audio to finish
+                await new Promise((resolve) => {
+                    middleAudio.addEventListener('ended', () => {
+                        console.log('✅ Middle audio ended, now playing congratulations audio...');
+                        resolve();
+                    }, { once: true });
+                });
+            }
+        } else {
+            console.warn('⚠️ Middle audio not found, skipping to congratulations audio');
+        }
+        
+        // THEN play congratulations audio
+        if (congratulationsAudio) {
+            console.log('▶️ Playing congratulations audio...');
+            congratulationsAudio.currentTime = 0;
+            
+            const congratsPlayPromise = congratulationsAudio.play();
+            if (congratsPlayPromise !== undefined) {
+                await congratsPlayPromise;
+                console.log('✅ Congratulations audio playing successfully!');
+            }
+        } else {
+            console.warn('⚠️ Congratulations audio not found');
+        }
+    } catch (error) {
+        console.error('Audio playback failed:', error);
+    }
+}
+
+async function playSurveyAudio() {
+    if (!surveyAudio || !audioEnabled) return;
+
+    try {
+        surveyAudio.currentTime = 0;
+        console.log('Playing survey audio...');
+        
+        const playPromise = surveyAudio.play();
+        if (playPromise !== undefined) {
+            await playPromise;
+            console.log('Survey audio playing successfully!');
+            isAudioPlaying = true;
+            updateAudioButton();
+        }
+    } catch (error) {
+        console.error('Survey audio playback failed:', error);
+    }
+}
+
+function stopSurveyAudio() {
+    if (surveyAudio && !surveyAudio.paused) {
+        surveyAudio.pause();
+        surveyAudio.currentTime = 0;
+        isAudioPlaying = false;
+        updateAudioButton();
+    }
+}
+
+function showCongratulationsModal() {
+    console.log('Showing congratulations modal...');
+    const modal = document.getElementById('congratulationsModal');
+    modal.classList.add('show');
+    
+    
+}
+document.addEventListener('DOMContentLoaded', function() {
+    initializeAudio();
+    loadAdventureMap();
+    setupSurveyValidation();
+});
+
+function loadAdventureMap() {
+    // Get data directly from localStorage
+    let data = {};
+    let nickname = '';
+    
+    try {
+        const renewData = localStorage.getItem('renew_study_data');
+        if (renewData) {
+            data = JSON.parse(renewData);
+            nickname = data.nickname || '';
+        }
+    } catch (e) {
+        console.error('Error loading data:', e);
+    }
+    
+    if (!nickname) {
+        window.location.href = "{% url 'nickname' %}";
+        return;
+    }
+    
+    // Update subtitle with nickname
+    document.getElementById('mapSubtitle').textContent = 
+        `Your learning journey, ${nickname}! Complete each section to unlock the next.`;
+    
+    // Update page title
+    document.title = `Adventure Map - ${nickname}`;
+    
+    // Check section completion status from actual localStorage data
+    const progress = data.progress || {};
+    const completedSections = data.completed_sections || [];
+    const responses = data.responses || {};
+    
+    // Simplified section completion checks
+    const positiveCompleted = completedSections.includes('positive_events') || 
+                             progress.pos_p4 || 
+                             (responses.positive_events && Object.keys(responses.positive_events).length >= 4);
+    
+    const negativeCompleted = completedSections.includes('negative_events') || 
+                             progress.neg_p11;
+    
+    const thoughtsCompleted = completedSections.includes('thoughts_feelings') || 
+                             progress.emo_p5;
+    
+    const skillsCompleted = completedSections.includes('skills');
+    
+    // Check if feedback survey was completed
+    const surveyResponses = data.survey_responses || {};
+    const feedbackCompleted = surveyResponses.feedback_survey !== undefined;
+    
+    // Check if ALL sections are completed
+    const allSectionsCompleted = positiveCompleted && negativeCompleted && thoughtsCompleted && skillsCompleted;
+    
+    console.log('Adventure Map Debug:', {
+        positiveCompleted,
+        negativeCompleted,
+        thoughtsCompleted,
+        skillsCompleted,
+        allSectionsCompleted,
+        feedbackCompleted,
+        progress,
+        completedSections,
+        'Raw localStorage data': data
+    });
+    
+   // Play audio only when ALL sections are completed (not for individual completions)
+const hasVisitedBefore = localStorage.getItem('adventure_map_visited') === 'true';
+if (hasVisitedBefore && allSectionsCompleted) {
+    // Check if we haven't played congratulations audio for full completion yet
+    const hasPlayedFullCompletionAudio = localStorage.getItem('full_completion_audio_played') === 'true';
+    if (!hasPlayedFullCompletionAudio) {
+        // Force enable audio and play congratulations sound
+        audioEnabled = true;
+        setTimeout(() => {
+            playCongratulationsAudio();
+            // Mark that we've played the full completion audio
+            localStorage.setItem('full_completion_audio_played', 'true');
+        }, 1000); // Delay for page load
+    }
+}
+
+// Mark that user has visited adventure map
+localStorage.setItem('adventure_map_visited', 'true');
+
+// Mark that user has visited adventure map
+localStorage.setItem('adventure_map_visited', 'true');
+    
+    // Show congratulations modal if all sections are completed
+    if (allSectionsCompleted) {
+        console.log('All sections completed! Showing congratulations modal...');
+        document.getElementById('mapSubtitle').textContent = 
+            `Amazing work, ${nickname}! You've completed your entire RENEW journey!`;
+        
+        // Show modal after a short delay for better UX
+        setTimeout(() => {
+            showCongratulationsModal();
+        }, 1000);
+    } else {
+        console.log('Not all sections completed yet. Missing:', {
+            positive: !positiveCompleted,
+            negative: !negativeCompleted,
+            thoughts: !thoughtsCompleted,
+            skills: !skillsCompleted
+        });
+        
+        // Play audio if positive events is not completed
+        if (!positiveCompleted) {
+            const positiveIncompleteAudio = document.getElementById('positiveIncompleteAudio');
+            if (positiveIncompleteAudio) {
+                setTimeout(() => {
+                    positiveIncompleteAudio.play().catch(error => {
+                        console.log('Positive incomplete audio autoplay prevented:', error);
+                        // Autoplay was prevented - try to play on first user interaction
+                        const playOnInteraction = () => {
+                            positiveIncompleteAudio.play().catch(e => console.log('Audio play failed:', e));
+                            // Remove listeners after first play
+                            document.removeEventListener('click', playOnInteraction);
+                            document.removeEventListener('touchstart', playOnInteraction);
+                            document.removeEventListener('keydown', playOnInteraction);
+                        };
+                        
+                        document.addEventListener('click', playOnInteraction);
+                        document.addEventListener('touchstart', playOnInteraction);
+                        document.addEventListener('keydown', playOnInteraction);
+                    });
+                }, 1000); // Play after 1 second delay
+            }
+        }
+    }
+    
+    // Generate sections HTML
+    const sectionsGrid = document.getElementById('sectionsGrid');
+    sectionsGrid.innerHTML = `
+        ${generateSectionCard('positive', 'Positive Events', '🌟', 'pos_p1', 
+            'Explore uplifting stories and experiences that bring joy and hope.', 
+            true, positiveCompleted)}
+            
+        ${generateSectionCard('negative', 'Negative Events', '⚡', 'neg_p1',
+            'Learn to navigate challenging situations and build resilience.',
+            positiveCompleted, negativeCompleted)}
+            
+        ${generateSectionCard('thoughts', 'Thoughts and Feelings', '🧠', 'emo_p1',
+            'Explore the connection between your thoughts, emotions, and experiences.',
+            negativeCompleted, thoughtsCompleted, 'thoughts-feelings')}
+            
+        ${generateSectionCard('skills', 'Skills', '🎯', 'skill_p1',
+            'Develop and practice essential life skills and strategies.',
+            thoughtsCompleted, skillsCompleted, 'skills', true, feedbackCompleted)}
+    `;
+}
+
+function generateSectionCard(id, title, icon, urlKey, description, unlocked, completed, extraClass = '', needsSurvey = false, surveyCompleted = false) {
+    let statusClass, statusText, cardClass, linkStart = '', linkEnd = '', topIcon = '';
+    const sectionUrl = URL_MAPPINGS[urlKey];
+    
+    if (completed) {
+        statusClass = 'status-completed';
+        statusText = 'Completed!';
+        cardClass = `completed ${extraClass}`;
+        topIcon = '<div class="complete-icon">✅</div>';
+        linkStart = `<a href="${sectionUrl}">`;
+        linkEnd = '</a>';
+    } else if (unlocked) {
+        if (extraClass === 'thoughts-feelings') {
+            statusClass = 'status-thoughts-feelings';
+        } else {
+            statusClass = 'status-unlocked';
+        }
+        statusText = id === 'positive' ? 'Ready to Start!' : 'Now Available!';
+        cardClass = `unlocked ${extraClass}`;
+        
+        if (needsSurvey && !surveyCompleted) {
+            linkStart = '<div onclick="handleSkillsClick()" style="cursor: pointer;">';
+            linkEnd = '</div>';
+        } else {
+            linkStart = `<a href="${sectionUrl}">`;
+            linkEnd = '</a>';
+        }
+    } else {
+        statusClass = 'status-locked';
+        statusText = getUnlockMessage(id);
+        cardClass = `locked ${extraClass}`;
+        topIcon = '<div class="lock-icon">🔒</div>';
+        linkStart = '<div>';
+        linkEnd = '</div>';
+    }
+    
+    return `
+        ${linkStart}
+            <div class="section-card ${cardClass} ${id}">
+                ${topIcon}
+                <div class="section-icon">${icon}</div>
+                <div class="section-title">${title}</div>
+                <div class="section-description">${description}</div>
+                <div class="section-status ${statusClass}">${statusText}</div>
+            </div>
+        ${linkEnd}
+    `;
+}
+
+function getUnlockMessage(sectionId) {
+    const messages = {
+        negative: 'Complete Positive Events to Unlock',
+        thoughts: 'Complete Negative Events to Unlock',
+        skills: 'Complete Thoughts and Feelings to Unlock'
+    };
+    return messages[sectionId] || 'Locked';
+}
+
+function handleSkillsClick() {
+    const thoughtsCompleted = isSectionComplete('thoughts_feelings');
+    const feedbackCompleted = getSurveyResponse('feedback_survey') !== undefined;
+    
+    console.log('Skills click debug:', { thoughtsCompleted, feedbackCompleted });
+    
+    if (!thoughtsCompleted) {
+        alert('Please complete the Thoughts and Feelings section first!');
+        return;
+    }
+    
+    if (!feedbackCompleted) {
+        document.getElementById('feedbackSurveyModal').style.display = 'flex';
+        
+        // Play feedback modal audio
+        const feedbackAudio = document.getElementById('feedbackModalAudio');
+        if (feedbackAudio) {
+            feedbackAudio.play().then(() => {
+                console.log('Feedback modal audio playing');
+            }).catch(error => {
+                console.log('Feedback modal audio autoplay prevented:', error);
+            });
+        }
+    } else {
+        window.location.href = URL_MAPPINGS['skill_p1'];
+    }
+}
+
+function setupSurveyValidation() {
+    const checkboxes = document.querySelectorAll('#feedbackSurveyModal input[type="checkbox"]');
+    const submitBtn = document.getElementById('submitSurveyBtn');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const isAnyChecked = Array.from(checkboxes).some(cb => cb.checked);
+            submitBtn.disabled = !isAnyChecked;
+        });
+    });
+}
+
+function submitFeedbackSurvey() {
+    const checkboxes = document.querySelectorAll('#feedbackSurveyModal input[type="checkbox"]');
+    const isAnyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+    
+    if (!isAnyChecked) {
+        alert('Please select at least one option before continuing.');
+        return;
+    }
+    
+    const formData = {
+        statement1: document.querySelector('input[name="statement1"]').checked,
+        statement2: document.querySelector('input[name="statement2"]').checked,
+        statement3: document.querySelector('input[name="statement3"]').checked,
+        statement4: document.querySelector('input[name="statement4"]').checked
+    };
+    
+    stopSurveyAudio();
+    
+    if (saveSurveyResponse('feedback_survey', formData)) {
+        document.getElementById('feedbackSurveyModal').style.display = 'none';
+        window.location.href = URL_MAPPINGS['skill_p1'];
+    } else {
+        alert('Error saving survey response. Please try again.');
+    }
+}
+
+function closeCongratulationsModal() {
+    document.getElementById('congratulationsModal').classList.remove('show');
+}
+
+document.addEventListener('click', function(e) {
+    const congratsModal = document.getElementById('congratulationsModal');
+    const feedbackModal = document.getElementById('feedbackSurveyModal');
+    
+    if (e.target === congratsModal) {
+        closeCongratulationsModal();
+    }
+    
+    if (e.target === feedbackModal) {
+        stopSurveyAudio();
+        feedbackModal.style.display = 'none';
+    }
+});
+
+// Set up overlay click handler
+window.addEventListener('load', function() {
+    const overlay = document.querySelector('.survey-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            stopSurveyAudio();
+            document.getElementById('feedbackSurveyModal').style.display = 'none';
+        });
+    }
+});
+</script>
+{% endblock %}

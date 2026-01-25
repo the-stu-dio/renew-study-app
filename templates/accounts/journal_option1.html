@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Things I Want to Work On</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Work Sans', sans-serif;
+      min-height: 100vh;
+      background-color: #f4f0fb;
+      background-image: url('https://illinois.qualtrics.com/ControlPanel/File.php?F=F_6ptIeZFIGFVqxck');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-attachment: fixed;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .header {
+      background: white;
+      padding: 20px;
+      border-radius: 12px 12px 0 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0;
+    }
+
+    .header h1 {
+      color: #5a3e8c;
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0;
+      font-family: 'Work Sans', sans-serif;
+    }
+
+    .prev-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+      font-family: 'Work Sans', sans-serif;
+    }
+
+    .prev-button-overlay:hover {
+      background: #b8a5d1;
+      color: #4a3474;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    .notepad-wrapper {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 0 0 12px 12px;
+      padding: 40px 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+      min-height: 600px;
+      overflow: hidden;
+      backdrop-filter: blur(5px);
+    }
+
+    /* Notepad styling effects */
+    .notepad-wrapper::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: linear-gradient(to right, 
+        #f0f0f0 0%, 
+        #f0f0f0 30px, 
+        transparent 30px, 
+        transparent 40px,
+        #f0f0f0 40px,
+        #f0f0f0 70px,
+        transparent 70px,
+        transparent 80px,
+        #f0f0f0 80px
+      );
+      background-size: 80px 100%;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .notepad-content {
+      position: relative;
+      z-index: 2;
+      background: repeating-linear-gradient(
+        transparent,
+        transparent 28px,
+        rgba(200, 181, 219, 0.2) 28px,
+        rgba(200, 181, 219, 0.2) 30px
+      );
+      min-height: 500px;
+      padding-left: 25px;
+      padding-top: 20px;
+    }
+
+    .journal-prompt {
+      font-family: 'Work Sans', sans-serif;
+      font-size: 20px;
+      color: #5a3e8c;
+      font-weight: 600;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .prompt-text {
+      font-family: 'Work Sans', sans-serif;
+      font-size: 16px;
+      color: #2c3e50;
+      margin-bottom: 25px;
+      line-height: 1.6;
+      background: rgba(90, 62, 140, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 4px solid #5a3e8c;
+      position: relative;
+    }
+
+    .textarea-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .journal-textarea {
+      width: 100%;
+      min-height: 300px;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: vertical;
+      font-family: 'Work Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #2c3e50;
+      padding: 10px 50px 10px 0;
+      margin-bottom: 25px;
+    }
+
+    .journal-textarea::placeholder {
+      color: #888;
+      font-style: italic;
+      opacity: 0.7;
+    }
+
+    .voice-button {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: #5a3e8c;
+      transition: all 0.2s ease;
+      padding: 5px;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .voice-button:hover {
+      background-color: #f0f0f0;
+    }
+
+    .voice-button.recording {
+      color: #fff;
+      background-color: #e74c3c;
+      animation: pulse 1.5s infinite;
+    }
+
+    .voice-button.not-supported {
+      color: #ccc;
+      cursor: not-allowed;
+    }
+
+    @keyframes pulse {
+      0% { 
+        opacity: 1; 
+        transform: scale(1);
+      }
+      50% { 
+        opacity: 0.8; 
+        transform: scale(1.1);
+      }
+      100% { 
+        opacity: 1; 
+        transform: scale(1);
+      }
+    }
+
+    .voice-status {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+      text-align: right;
+      min-height: 16px;
+    }
+
+    .voice-status.recording {
+      color: #e74c3c;
+      font-weight: 600;
+    }
+
+    .voice-status.error {
+      color: #e74c3c;
+    }
+
+    .voice-status.countdown {
+      color: #f39c12;
+      font-weight: 600;
+    }
+
+    .save-button {
+      background-color: #5a3e8c;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-right: 15px;
+      display: inline-block;
+      font-family: 'Work Sans', sans-serif;
+    }
+
+    .save-button:hover {
+      background-color: #4a3474;
+      transform: translateY(-1px);
+    }
+
+    .save-button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .completion-message {
+      background: transparent;
+      border: none;
+      border-radius: 12px;
+      padding: 15px 0;
+      text-align: left;
+      display: none;
+      animation: fadeInUp 0.5s ease-out;
+      margin-top: 10px;
+    }
+
+    .completion-message.visible {
+      display: block;
+    }
+
+    .completion-message h3 {
+      color: #28a745;
+      margin-bottom: 10px;
+      font-family: 'Work Sans', sans-serif;
+    }
+
+    .completion-message p {
+      color: #666;
+      margin-bottom: 20px;
+      font-family: 'Work Sans', sans-serif;
+    }
+
+    .next-button {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+      font-family: 'Work Sans', sans-serif;
+    }
+
+    .next-button:hover {
+      background: #b8a5d1;
+      color: #4a3474;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    .character-count {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+      text-align: right;
+      font-family: 'Work Sans', sans-serif;
+    }
+
+    .character-count.minimum-met {
+      color: #28a745;
+    }
+
+    @keyframes fadeInUp {
+      from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0); 
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      
+      .container {
+        max-width: 100%;
+      }
+      
+      .header h1 {
+        font-size: 20px;
+      }
+      
+      .notepad-wrapper {
+        padding: 30px 20px;
+        min-height: 500px;
+      }
+      
+      .journal-textarea {
+        font-size: 15px;
+        min-height: 250px;
+      }
+
+      .prompt-text {
+        padding-right: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Things I Want to Change</h1>
+      <a href="{% url 'journal_p2' %}" class="prev-button-overlay">Let's check out the other option!</a>
+    </div>
+
+    <div class="notepad-wrapper">
+      <div class="notepad-content">
+        <div class="journal-prompt">Journal Topic</div>
+        
+        <div class="prompt-text">
+          Tell us about something you wish you could change about yourself. It could be a problem at home or at school, a feeling you have, or a friendship you want it to be different. If it's easier, pretend this is a movie about your life, and you can tell me what the problem looks like (e.g., is there a bad guy? Or a hero? How does the hero feel, and what problem are they trying to fix)?
+        </div>
+
+        <div class="textarea-container">
+          <textarea 
+            class="journal-textarea" 
+            id="journalTextarea"
+            placeholder="Start writing your reflection here or click the microphone to speak..."
+          ></textarea>
+          <button type="button" class="voice-button" id="voiceButton" title="Click to start voice recording">
+            <span id="voiceIcon">🎤</span>
+          </button>
+        </div>
+        
+        <div class="voice-status" id="voiceStatus"></div>
+        <div class="character-count" id="characterCount" style="display: none;">0 characters (minimum 50 recommended)</div>
+        
+        <div style="display: flex; gap: 15px; align-items: center;">
+          <button type="button" class="save-button" id="saveButton">Save My Reflection</button>
+          <a href="{% url 'journal_p2' %}" class="next-button" id="nextOptionButton" style="display: none;">Complete the Journaling Section</a>
+        </div>
+        
+        <div class="completion-message" id="completionMessage" style="display: none;">
+          <!-- Removed "Reflection Saved!" heading -->
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio element for prompt -->
+  <audio id="promptAudio" preload="auto" style="display: none;">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_lLINHbfk8pZRsUj" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    // Direct localStorage functions (consistent with other standardized pages)
+    function markComplete(pageId) {
+      try {
+        localStorage.setItem('completed_' + pageId, 'true');
+        localStorage.setItem('completed_' + pageId + '_timestamp', Date.now().toString());
+        return true;
+      } catch (e) {
+        console.error('Error saving completion status:', e);
+        return false;
+      }
+    }
+
+    function isComplete(pageId) {
+      try {
+        return localStorage.getItem('completed_' + pageId) === 'true';
+      } catch (e) {
+        console.error('Error checking completion status:', e);
+        return false;
+      }
+    }
+
+    function saveJournalEntry(topic, content) {
+      try {
+        let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        if (!data.journal_entries) data.journal_entries = {};
+        data.journal_entries[topic] = {
+          content: content,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('renew_study_data', JSON.stringify(data));
+        return true;
+      } catch (e) {
+        console.error('Error saving journal entry:', e);
+        return false;
+      }
+    }
+
+    function getJournalEntry(topic) {
+      try {
+        const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        return data.journal_entries?.[topic]?.content || '';
+      } catch (e) {
+        console.error('Error getting journal entry:', e);
+        return '';
+      }
+    }
+
+    // Auto-play audio when page loads (plays only once)
+    let audioPlayed = false;
+    
+    function playPromptAudio() {
+      // Check if audio was already played in this session
+      const hasPlayedThisSession = sessionStorage.getItem('journal_option1_audio_played');
+      
+      if (!hasPlayedThisSession && !audioPlayed) {
+        const audio = document.getElementById('promptAudio');
+        
+        if (audio) {
+          audio.play()
+            .then(() => {
+              console.log('Prompt audio started playing');
+              audioPlayed = true;
+              // Mark as played in this session
+              sessionStorage.setItem('journal_option1_audio_played', 'true');
+            })
+            .catch(err => {
+              console.log('Audio autoplay failed (user interaction may be required):', err);
+              // Try to play on first user interaction
+              const playOnInteraction = () => {
+                audio.play()
+                  .then(() => {
+                    audioPlayed = true;
+                    sessionStorage.setItem('journal_option1_audio_played', 'true');
+                  })
+                  .catch(e => console.log('Audio play failed:', e));
+                document.removeEventListener('click', playOnInteraction);
+                document.removeEventListener('touchstart', playOnInteraction);
+              };
+              document.addEventListener('click', playOnInteraction, { once: true });
+              document.addEventListener('touchstart', playOnInteraction, { once: true });
+            });
+        }
+      }
+    }
+
+    // Voice recognition variables
+    let recognition = null;
+    let isRecording = false;
+    let silenceTimer = null;
+    let silenceCountdown = null;
+    let lastSpeechTime = null;
+    const SILENCE_THRESHOLD = 4000;
+    const COUNTDOWN_DURATION = 3000;
+    
+    const voiceButton = document.getElementById('voiceButton');
+    const voiceIcon = document.getElementById('voiceIcon');
+    const voiceStatus = document.getElementById('voiceStatus');
+    const textarea = document.getElementById('journalTextarea');
+
+    // Check for speech recognition support
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+      
+      recognition.onstart = function() {
+        isRecording = true;
+        voiceButton.classList.add('recording');
+        voiceIcon.textContent = '⏹️';
+        voiceButton.title = 'Click to stop recording or wait for auto-stop';
+        voiceStatus.textContent = 'Listening... Speak now!';
+        voiceStatus.classList.add('recording');
+        lastSpeechTime = Date.now();
+        startSilenceDetection();
+      };
+      
+      recognition.onresult = function(event) {
+        let finalTranscript = '';
+        
+        lastSpeechTime = Date.now();
+        clearSilenceTimer();
+        startSilenceDetection();
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          }
+        }
+        
+        if (finalTranscript) {
+          const currentText = textarea.value;
+          const newText = currentText + (currentText ? ' ' : '') + finalTranscript;
+          textarea.value = newText;
+        }
+      };
+      
+      recognition.onerror = function(event) {
+        stopRecording();
+        voiceStatus.classList.add('error');
+        voiceStatus.textContent = 'Voice recognition error. Try again.';
+        setTimeout(() => {
+          voiceStatus.textContent = '';
+          voiceStatus.classList.remove('error');
+        }, 4000);
+      };
+      
+      recognition.onend = function() {
+        stopRecording();
+      };
+      
+      function startSilenceDetection() {
+        clearSilenceTimer();
+        silenceTimer = setTimeout(() => {
+          startCountdown();
+        }, SILENCE_THRESHOLD);
+      }
+      
+      function startCountdown() {
+        let remainingTime = 3;
+        voiceStatus.classList.remove('recording');
+        voiceStatus.classList.add('countdown');
+        
+        const updateCountdown = () => {
+          if (remainingTime > 0) {
+            voiceStatus.textContent = `Auto-stopping in ${remainingTime}...`;
+            remainingTime--;
+            silenceCountdown = setTimeout(updateCountdown, 1000);
+          } else {
+            recognition.stop();
+          }
+        };
+        updateCountdown();
+      }
+      
+      function clearSilenceTimer() {
+        if (silenceTimer) clearTimeout(silenceTimer);
+        if (silenceCountdown) clearTimeout(silenceCountdown);
+        voiceStatus.classList.remove('countdown');
+        if (isRecording) voiceStatus.classList.add('recording');
+      }
+      
+      function stopRecording() {
+        isRecording = false;
+        voiceButton.classList.remove('recording');
+        voiceIcon.textContent = '🎤';
+        voiceButton.title = 'Click to start voice recording';
+        voiceStatus.classList.remove('recording', 'countdown');
+        voiceStatus.textContent = '';
+        clearSilenceTimer();
+      }
+      
+      voiceButton.addEventListener('click', function() {
+        if (isRecording) {
+          recognition.stop();
+        } else {
+          try {
+            recognition.start();
+          } catch (error) {
+            voiceStatus.textContent = 'Error starting voice recognition.';
+            voiceStatus.classList.add('error');
+          }
+        }
+      });
+    } else {
+      voiceButton.classList.add('not-supported');
+      voiceButton.disabled = true;
+      voiceButton.title = 'Voice recognition not available in this browser';
+      voiceStatus.textContent = 'Voice recognition not available';
+    }
+
+    const saveButton = document.getElementById('saveButton');
+    const characterCount = document.getElementById('characterCount');
+    const completionMessage = document.getElementById('completionMessage');
+    
+    // Load existing content if available
+    function loadExistingContent() {
+      const existingContent = getJournalEntry('things_to_change');
+      if (existingContent) {
+        textarea.value = existingContent;
+      }
+    }
+
+    // Auto-save to localStorage as user types
+    function autoSave() {
+      if (textarea.value.trim()) {
+        saveJournalEntry('things_to_change', textarea.value);
+      }
+    }
+
+    // Save and mark complete
+    saveButton.addEventListener('click', function() {
+      if (!textarea.value.trim()) {
+        alert('Please write something in your journal before saving.');
+        return;
+      }
+
+      // Stop any ongoing recording
+      if (recognition && isRecording) {
+        recognition.stop();
+      }
+      
+      const nextOptionButton = document.getElementById('nextOptionButton');
+      saveButton.textContent = 'Saving...';
+      saveButton.disabled = true;
+      
+      if (saveJournalEntry('things_to_change', textarea.value)) {
+        // Mark this page as completed
+        markComplete('journal_option1');
+        
+        // Show success feedback
+        saveButton.textContent = 'Saved! ✓';
+        saveButton.style.backgroundColor = '#28a745';
+        
+        // Show next button next to save button (no completion message)
+        nextOptionButton.style.display = 'inline-block';
+        
+        setTimeout(() => {
+          saveButton.textContent = 'Save My Reflection';
+          saveButton.style.backgroundColor = '#5a3e8c';
+          saveButton.disabled = false;
+        }, 2000);
+      } else {
+        saveButton.textContent = 'Save Failed - Try Again';
+        saveButton.disabled = false;
+        alert('Error saving journal entry. Please try again.');
+      }
+    });
+
+    // Auto-save as user types (debounced)
+    let autoSaveTimeout;
+    textarea.addEventListener('input', function() {
+      clearTimeout(autoSaveTimeout);
+      autoSaveTimeout = setTimeout(autoSave, 1000); // Auto-save after 1 second of no typing
+    });
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      // Auto-play the prompt audio when page loads
+      playPromptAudio();
+
+      // Load existing content
+      loadExistingContent();
+      
+      // If already completed, show completion message
+      if (isComplete('journal_option1')) {
+        completionMessage.classList.add('visible');
+      }
+    });
+  </script>
+</body>
+</html>

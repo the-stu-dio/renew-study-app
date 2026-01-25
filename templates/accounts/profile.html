@@ -1,0 +1,2319 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    body, html {
+        margin: 0;
+        padding: 20px;
+        font-family: 'Work Sans', sans-serif;
+        min-height: 100vh;
+        background-color: #f4f0fb;
+        color: #333;
+    }
+
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .profile-header {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .profile-title {
+        font-size: 2.5rem;
+        color: #5a3e8c;
+        margin-bottom: 0;
+        font-weight: 700;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: none;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin: 30px 0;
+    }
+
+    .action-btn-large {
+        padding: 15px 30px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .finish-btn {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .finish-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        text-decoration: none;
+        color: white;
+    }
+
+    .finish-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .finish-btn:hover::before {
+        left: 100%;
+    }
+
+    .section-card {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        color: #5a3e8c;
+        margin-bottom: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .negative-section .section-title {
+        color: #2c3e50;
+    }
+
+    .quiz-section .section-title {
+        color: #6c757d;
+    }
+
+    .posplan-section .section-title {
+        color: #28a745;
+    }
+
+    .responses-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .response-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        border-left: 4px solid #5a3e8c;
+        position: relative;
+        transition: all 0.3s ease;
+        min-height: 120px;
+    }
+
+    /* Updated hidden response styling - completely opaque */
+.response-card.hidden {
+    background: #fee;
+    border-left-color: #e74c3c;
+    border: 2px solid #e74c3c;
+    position: relative;
+}
+
+/* Make hidden content completely invisible - includes all content types */
+.response-card.hidden .response-text,
+.response-card.hidden .response-category,
+.response-card.hidden .domain-result,
+.response-card.hidden .domain-breakdown,
+.response-card.hidden .quiz-responses {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.response-card.hidden::after {
+    content: 'Just for me';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(231, 76, 60, 0.95);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    pointer-events: none;
+    z-index: 10;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+    .negative-section .response-card {
+        border-left-color: #2c3e50;
+    }
+
+    .quiz-section .response-card {
+        border-left-color: #6c757d;
+    }
+
+    .posplan-section .response-card {
+        border-left-color: #28a745;
+    }
+
+    /* Ensure hidden cards in different sections maintain neutral color */
+    .negative-section .response-card.hidden,
+    .quiz-section .response-card.hidden,
+    .posplan-section .response-card.hidden {
+        border-left-color: #ccc;
+    }
+
+    .response-category {
+        font-weight: 600;
+        color: #5a3e8c;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .negative-section .response-category {
+        color: #2c3e50;
+    }
+
+    .quiz-section .response-category {
+        color: #6c757d;
+    }
+
+    .posplan-section .response-category {
+        color: #28a745;
+    }
+
+    .response-text {
+        line-height: 1.6;
+        margin-bottom: 30px;
+        color: #333;
+        padding-right: 90px;
+        min-height: 40px;
+    }
+
+    .response-meta {
+        font-size: 0.85rem;
+        color: #666;
+        margin-bottom: 10px;
+        padding-right: 60px;
+    }
+
+    .response-actions {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        display: flex;
+        gap: 8px;
+    }
+
+    .action-btn {
+        padding: 8px 10px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        background: transparent;
+        position: relative;
+    }
+
+    .action-btn:hover .action-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(-5px);
+    }
+
+    .action-tooltip {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(0px);
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 400;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+
+    .action-tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 4px solid transparent;
+        border-top-color: rgba(0, 0, 0, 0.9);
+    }
+
+    .btn-edit {
+        color: #17a2b8;
+    }
+
+    .btn-edit:hover {
+        background: rgba(23, 162, 184, 0.1);
+        color: #138496;
+        text-decoration: none;
+    }
+
+    .btn-toggle {
+        color: #6c757d;
+    }
+
+    .btn-toggle:hover {
+        background: rgba(108, 117, 125, 0.1);
+        color: #5a6268;
+    }
+
+    .btn-hide {
+        color: #e74c3c;
+    }
+
+    .btn-hide:hover {
+        background: rgba(231, 76, 60, 0.1);
+        color: #c0392b;
+    }
+
+    .btn-show {
+        color: #28a745;
+    }
+
+    .btn-show:hover {
+        background: rgba(40, 167, 69, 0.1);
+        color: #1e7e34;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+
+    .back-button {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: #5a3e8c;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+        background: #4a3474;
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 30px;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal h3 {
+        color: #5a3e8c;
+        margin-bottom: 20px;
+        font-weight: 600;
+    }
+
+    .modal textarea {
+        width: 100%;
+        min-height: 100px;
+        padding: 15px 50px 15px 15px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-family: inherit;
+        resize: vertical;
+        box-sizing: border-box;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    .modal textarea:focus {
+        border-color: #5a3e8c;
+        outline: none;
+    }
+
+    .textarea-container {
+        position: relative;
+        width: 100%;
+    }
+
+    .voice-button {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        color: #5a3e8c;
+        transition: all 0.2s ease;
+        padding: 5px;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .voice-button:hover {
+        background-color: #f0f0f0;
+    }
+
+    .voice-button.recording {
+        color: #fff;
+        background-color: #e74c3c;
+        animation: pulse 1.5s infinite;
+    }
+
+    .voice-button.not-supported {
+        color: #ccc;
+        cursor: not-allowed;
+    }
+
+    @keyframes pulse {
+        0% { 
+            opacity: 1; 
+            transform: scale(1);
+        }
+        50% { 
+            opacity: 0.8; 
+            transform: scale(1.1);
+        }
+        100% { 
+            opacity: 1; 
+            transform: scale(1);
+        }
+    }
+
+    .voice-status {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+        text-align: center;
+        min-height: 16px;
+    }
+
+    .voice-status.recording {
+        color: #e74c3c;
+        font-weight: 600;
+    }
+
+    .voice-status.error {
+        color: #e74c3c;
+    }
+
+    .voice-status.countdown {
+        color: #f39c12;
+        font-weight: 600;
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+
+    .modal-buttons .action-btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .success-message {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: #f0fff4;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+        padding: 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        z-index: 2000;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        display: none;
+    }
+
+    /* Privacy Guide Modal */
+.privacy-guide-modal {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.privacy-guide-content {
+    background-color: white;
+    margin: 8% auto;
+    padding: 40px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 650px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    text-align: center;
+    position: relative;
+}
+
+.privacy-guide-title {
+    font-size: 2rem;
+    color: #5a3e8c;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.privacy-guide-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.privacy-guide-highlight {
+    background: #fee;
+    border: 2px solid #e74c3c;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.privacy-guide-highlight-icon {
+    font-size: 2rem;
+    color: #e74c3c;
+}
+
+.privacy-guide-highlight-text {
+    flex: 1;
+    font-weight: 600;
+    color: #333;
+}
+
+.privacy-guide-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.privacy-guide-btn {
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.privacy-guide-btn-primary {
+    background: linear-gradient(135deg, #5a3e8c, #4a3474);
+    color: white;
+}
+
+.privacy-guide-btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(90, 62, 140, 0.4);
+}
+
+.privacy-guide-btn-primary:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.privacy-guide-btn-secondary {
+    background: #f8f9fa;
+    color: #333;
+    border: 2px solid #ddd;
+}
+
+.privacy-guide-btn-secondary:hover {
+    background: #e9ecef;
+    transform: translateY(-1px);
+}
+
+/* Secret Submission Modal */
+.secret-submission-modal {
+    display: none;
+    position: fixed;
+    z-index: 4000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.secret-submission-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 30px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.secret-submission-title {
+    font-size: 1.5rem;
+    color: #e74c3c;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.secret-submission-text {
+    color: #333;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.secret-submission-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.secret-btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.secret-btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.secret-btn-danger:hover {
+    background: #c0392b;
+}
+
+.secret-btn-cancel {
+    background: #f8f9fa;
+    color: #333;
+    border: 2px solid #ddd;
+}
+
+.secret-btn-cancel:hover {
+    background: #e9ecef;
+}
+
+
+    /* Quiz Result Styles */
+    .domain-result {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .result-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: 0.9em;
+    }
+
+    .iron-badge {
+        background: linear-gradient(135deg, #007bff, #0056b3);
+        color: white;
+    }
+
+    .sponge-badge {
+        background: linear-gradient(135deg, #ffc107, #e0a800);
+        color: white;
+    }
+
+    .balanced-badge {
+        background: linear-gradient(135deg, #6c757d, #495057);
+        color: white;
+    }
+
+    .domain-breakdown {
+        font-size: 0.85em;
+        color: #666;
+        margin-bottom: 10px;
+    }
+
+    .breakdown-item {
+        display: inline;
+        margin: 0 5px;
+    }
+
+    .iron-count {
+        color: #007bff;
+        font-weight: 600;
+    }
+
+    .sponge-count {
+        color: #ffc107;
+        font-weight: 600;
+    }
+
+    .neither-count {
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .quiz-responses {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .quiz-responses h6 {
+        font-size: 0.9em;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 10px;
+    }
+
+    .quiz-response-item {
+        margin-bottom: 8px;
+        font-size: 0.8em;
+        line-height: 1.3;
+    }
+
+    .quiz-response-item .question-text {
+        color: #6c757d;
+        display: block;
+    }
+
+    .quiz-response-item .response-value {
+        font-weight: 600;
+        margin-top: 2px;
+        display: block;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .responses-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {        
+        .responses-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .response-actions {
+            justify-content: center;
+        }
+        
+        .back-button {
+            position: relative;
+            top: auto;
+            left: auto;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .modal-content {
+            margin: 10% auto;
+            width: 95%;
+            padding: 20px;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .action-btn-large {
+            width: 100%;
+            max-width: 300px;
+        }
+    }
+    
+    <!-- Add this CSS to your existing styles -->
+<style>
+/* Print button styling */
+.print-section {
+    margin-top: 40px;
+    text-align: center;
+    padding: 30px;
+    border-top: 2px solid #e0e0e0;
+}
+
+.print-button {
+    background: linear-gradient(135deg, #5a3e8c, #4a3474);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(90, 62, 140, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Work Sans', sans-serif;
+}
+
+.print-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(90, 62, 140, 0.4);
+}
+
+.print-text {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* Print-specific styles */
+@media print {
+    /* Hide elements that shouldn't print */
+    .back-button,
+    .print-section,
+    .response-actions,
+    .action-buttons {
+        display: none !important;
+    }
+    
+    /* Ensure good print layout */
+    body {
+        background: white !important;
+        background-image: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .profile-container {
+        max-width: none !important;
+        margin: 0 !important;
+    }
+    
+    .section-card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        margin-bottom: 20px !important;
+        page-break-inside: avoid;
+    }
+    
+    .response-card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        page-break-inside: avoid;
+        margin-bottom: 15px !important;
+    }
+    
+    /* Ensure hidden content stays hidden in print */
+    .response-card.hidden .response-text,
+    .response-card.hidden .response-category,
+    .response-card.hidden .domain-result,
+    .response-card.hidden .domain-breakdown,
+    .response-card.hidden .quiz-responses {
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+    
+    .response-card.hidden::after {
+        content: 'Just for me' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        background: #e74c3c !important;
+        color: white !important;
+        padding: 12px 20px !important;
+        border-radius: 20px !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        z-index: 10 !important;
+    }
+    
+    /* Adjust colors for print */
+    .section-title {
+        color: #333 !important;
+    }
+    
+    .profile-title {
+        color: #333 !important;
+    }
+    
+    .response-category {
+        color: #333 !important;
+    }
+    
+    /* Force page breaks between major sections */
+    .section-card {
+        page-break-before: auto;
+    }
+    
+    /* Prevent orphaned content */
+    h1, h2, h3 {
+        page-break-after: avoid;
+    }
+}
+
+@media (max-width: 768px) {
+    .print-section {
+        padding: 20px 10px;
+    }
+    
+    .print-button {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'hub' %}" class="back-button">← Back to Hub</a>
+
+<!-- Success message -->
+<div id="successMessage" class="success-message">
+    Response updated successfully!
+</div>
+
+<div class="profile-container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <h1 class="profile-title" id="profileTitle">👤 Profile</h1>
+    </div>
+
+    <!-- Positive Events Responses -->
+    <div class="section-card" id="positiveSection">
+        <h2 class="section-title">
+            🌟 Positive Events Responses
+        </h2>
+        
+        <div id="positiveResponsesContainer">
+            <div class="empty-state">
+                <div class="empty-state-icon">📝</div>
+                <h3>No positive responses yet</h3>
+                <p>Complete the <a href="{% url 'pos_p3' %}">Positive Events cards</a> to add your responses here.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Negative Events Responses -->
+    <div class="section-card negative-section" id="negativeSection">
+        <h2 class="section-title">
+            ⚠️ Negative Events Responses
+        </h2>
+        
+        <div id="negativeResponsesContainer">
+            <div class="empty-state">
+                <div class="empty-state-icon">⚠️</div>
+                <h3>No negative event responses yet</h3>
+                <p>Complete the <a href="{% url 'neg_p4' %}">Negative Events cards</a> to add your responses here.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Iron & Sponge Quiz Results -->
+    <div class="section-card quiz-section" id="quizResultsSection" style="display: none;">
+        <h2 class="section-title">
+            🧽 Iron & Sponge Quiz Results
+        </h2>
+        
+        <div id="quizResultsContainer">
+            <!-- Quiz results will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Journal Responses Section -->
+    <div class="section-card" id="journalSection" style="display: none;">
+        <h2 class="section-title">
+            📝 Journal Responses
+        </h2>
+        
+        <div id="journalContainer">
+            <!-- Journal responses will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Positive Activity Plan Section -->
+    <div class="section-card posplan-section" id="posplanSection" style="display: none;">
+        <h2 class="section-title">
+            🌟 Your Positive Activity Plan
+        </h2>
+        
+        <div id="posplanContainer">
+            <!-- Activity plan will be populated by JavaScript -->
+        </div>
+    </div>
+
+<!-- Action buttons moved to end of profile -->
+<div class="action-buttons">
+    <button class="action-btn-large finish-btn" onclick="redirectToQualtricsSurvey()">
+        🎯 Finish RENEW
+    </button>
+</div>
+</div>
+
+
+<!-- Audio element for review popup -->
+<audio id="reviewPopupAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_DAczvFKZCVXl2d6" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
+<!-- Privacy Guide Modal -->
+<div id="privacyGuideModal" class="privacy-guide-modal">
+    <div class="privacy-guide-content">
+        <h2 class="privacy-guide-title">🎉 Great job completing RENEW!</h2>
+        
+        <div class="privacy-guide-text">
+            <p>Before you finish, you have the option to keep some responses private. Review your responses and click the <strong>hide button (🙈)</strong> if you want to keep any content just for yourself.</p>
+            
+            <p>If you're comfortable sharing everything with your counselor, no need to hide anything.</p>
+        </div>
+        
+       <div class="privacy-guide-text">
+  <p>When you're ready, <strong>scroll down and click "Finish RENEW"</strong> to end your session.<br>
+  If you’d like to explore RENEW a little more before finishing, go ahead!</p>
+</div>
+        
+        <div class="privacy-guide-buttons">
+            <button id="privacyGuideButton" class="privacy-guide-btn privacy-guide-btn-primary" onclick="closePrivacyGuide()" disabled>
+                Got it! Let me review
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Secret Submission Modal -->
+<div id="secretSubmissionModal" class="secret-submission-modal">
+    <div class="secret-submission-content">
+        <h3 class="secret-submission-title">🚨 Data Submission</h3>
+        
+        <div class="secret-submission-text">
+            <p>This will submit your current RENEW data immediately, even if sections are incomplete.</p>
+            
+            <p>Are you sure you want to proceed?</p>
+        </div>
+        
+        <div class="secret-submission-buttons">
+            <button class="secret-btn secret-btn-danger" onclick="forceSubmitData()">
+                Submit Current Data
+            </button>
+            <button class="secret-btn secret-btn-cancel" onclick="closeSecretModal()">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3>Edit Response</h3>
+        <div class="textarea-container">
+            <textarea id="editResponseText" placeholder="Edit your response or click the microphone to speak..."></textarea>
+            <button type="button" class="voice-button" id="voiceButton" title="Click to start voice recording">
+                <span id="voiceIcon">🎤</span>
+            </button>
+        </div>
+        <div class="voice-status" id="voiceStatus"></div>
+        <div class="modal-buttons">
+            <button type="button" class="action-btn btn-toggle" onclick="closeEditModal()">Cancel</button>
+            <button type="button" class="action-btn btn-edit" onclick="saveEditedResponse()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<div class="print-section">
+    <div class="print-text">
+        Want a copy of your RENEW profile? You can print or save this page for your records.
+    </div>
+    <button class="print-button" onclick="printProfile()">
+        🖨️ Print Profile
+    </button>
+</div>
+
+
+<script>
+    // Individual response privacy settings
+    let individualPrivacySettings = {
+        positive_events: {},
+        negative_events: {},
+        journal_responses: {},
+        activity_plan: {},
+        quiz_results: {}
+    };
+
+    // Voice recognition variables
+    let recognition = null;
+    let isRecording = false;
+    let silenceTimer = null;
+    let silenceCountdown = null;
+    let lastSpeechTime = null;
+    const SILENCE_THRESHOLD = 4000;
+    const COUNTDOWN_DURATION = 3000;
+
+    const voiceButton = document.getElementById('voiceButton');
+    const voiceIcon = document.getElementById('voiceIcon');
+    const voiceStatus = document.getElementById('voiceStatus');
+    const editResponseText = document.getElementById('editResponseText');
+
+    // Current editing context
+    let currentEditingCategory = null;
+    let currentEditingType = null;
+    let currentEditingStep = null;
+    
+    function redirectToQualtricsSurvey() {
+    // Redirect to the Qualtrics survey page
+    window.location.href = "{% url 'completion_video' %}";
+}
+
+// Check if all required sections are completed
+    function checkAllSectionsCompleted() {
+        try {
+            const renewData = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+            const completedSections = renewData.completed_sections || [];
+            const progress = renewData.progress || {};
+            const responses = renewData.responses || {};
+            
+            console.log('Checking completion:', { completedSections, progress, responses });
+            
+            // Simplified section completion checks
+            const positiveCompleted = completedSections.includes('positive_events') || 
+                                    progress.pos_p4 || 
+                                    (responses.positive_events && Object.keys(responses.positive_events).length >= 4);
+            
+            const negativeCompleted = completedSections.includes('negative_events') || 
+                                    progress.neg_p11;
+            
+            const thoughtsCompleted = completedSections.includes('thoughts_feelings') || 
+                                    progress.emo_p5;
+            
+            const skillsCompleted = completedSections.includes('skills');
+            
+            console.log('Section completion status:', {
+                positiveCompleted,
+                negativeCompleted, 
+                thoughtsCompleted,
+                skillsCompleted
+            });
+            
+            return positiveCompleted && negativeCompleted && thoughtsCompleted && skillsCompleted;
+        } catch (e) {
+            console.error('Error checking completion status:', e);
+            return false;
+        }
+    }
+
+    // Update finish button visibility
+    function updateFinishButtonVisibility() {
+        const actionButtons = document.querySelector('.action-buttons');
+        
+        if (checkAllSectionsCompleted()) {
+            console.log('All sections completed - showing finish button');
+            actionButtons.style.display = 'flex';
+        } else {
+            console.log('Sections incomplete - hiding finish button');
+            actionButtons.style.display = 'none';
+        }
+    }
+
+    // Load individual privacy settings from localStorage
+    function loadPrivacySettings() {
+        try {
+            const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+            
+            // Load individual response privacy settings
+            individualPrivacySettings = data.individual_privacy_settings || {
+                positive_events: {},
+                negative_events: {},
+                journal_responses: {},
+                activity_plan: {},
+                quiz_results: {}
+            };
+        } catch (e) {
+            console.error('Error loading privacy settings:', e);
+        }
+    }
+
+    // Save individual privacy settings to localStorage
+    function savePrivacySettings() {
+        try {
+            let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+            data.individual_privacy_settings = individualPrivacySettings;
+            localStorage.setItem('renew_study_data', JSON.stringify(data));
+        } catch (e) {
+            console.error('Error saving privacy settings:', e);
+        }
+    }
+
+    // Enhanced toggle individual response privacy with immediate visual feedback
+    function toggleResponsePrivacy(section, key) {
+        if (!individualPrivacySettings[section]) {
+            individualPrivacySettings[section] = {};
+        }
+        
+        individualPrivacySettings[section][key] = !individualPrivacySettings[section][key];
+        savePrivacySettings();
+        
+        // Find the specific response card and update its visual state immediately
+        const responseCard = document.querySelector(`[data-category="${key}"][data-section="${section}"]`);
+        if (responseCard) {
+            const isPrivate = individualPrivacySettings[section][key];
+            const hideButton = responseCard.querySelector('.btn-hide, .btn-show');
+            
+            if (isPrivate) {
+                // Hide the response
+                responseCard.classList.add('hidden');
+                hideButton.className = 'action-btn btn-show';
+                hideButton.innerHTML = '👁️<div class="action-tooltip">Show to counselor</div>';
+            } else {
+                // Show the response
+                responseCard.classList.remove('hidden');
+                hideButton.className = 'action-btn btn-hide';
+                hideButton.innerHTML = '🙈<div class="action-tooltip">Hide from counselor</div>';
+            }
+        } else {
+            // Fallback to full reload if card not found
+            loadProfileData();
+        }
+    }
+
+    // Check if individual response is private
+    function isResponsePrivate(section, key) {
+        return individualPrivacySettings[section] && individualPrivacySettings[section][key];
+    }
+    
+    // Check if all four sections are completed
+function checkIfAllSectionsCompleted() {
+    const positiveResponses = RENEWStorage.getResponses('positive_events');
+    const negativeResponses = RENEWStorage.getResponses('negative_events');
+    const journalThingsToChange = getJournalEntry('things_to_change');
+    const journalExperiences = getJournalEntry('experiences_shaped_me');
+    const posplanWho = getPosplanResponse('who');
+    const posplanWhere = getPosplanResponse('where');
+    const posplanWhat = getPosplanResponse('what');
+    const posplanWhen = getPosplanResponse('when');
+    
+    // Check if each section has content
+    const hasPositiveEvents = Object.keys(positiveResponses).length > 0;
+    const hasNegativeEvents = Object.keys(negativeResponses).length > 0;
+    const hasJournalEntries = (journalThingsToChange && journalThingsToChange.content) || (journalExperiences && journalExperiences.content);
+    const hasActivityPlan = posplanWho || posplanWhere || posplanWhat || posplanWhen;
+    
+    return hasPositiveEvents && hasNegativeEvents && hasJournalEntries && hasActivityPlan;
+}
+
+// Show privacy guide modal
+function showPrivacyGuide() {
+    // Check if user has already seen the privacy guide
+    const hasSeenPrivacyGuide = localStorage.getItem('renew_privacy_guide_seen');
+    
+    if (!hasSeenPrivacyGuide && checkIfAllSectionsCompleted()) {
+        document.getElementById('privacyGuideModal').style.display = 'block';
+        // Mark as seen
+        localStorage.setItem('renew_privacy_guide_seen', 'true');
+        
+        // Play audio when modal shows
+        playReviewPopupAudio();
+    }
+}
+
+// Play review popup audio
+function playReviewPopupAudio() {
+    const reviewAudio = document.getElementById('reviewPopupAudio');
+    const reviewButton = document.getElementById('privacyGuideButton');
+    
+    if (reviewAudio) {
+        reviewAudio.currentTime = 0;
+        reviewAudio.play().then(() => {
+            console.log('✅ Review popup audio playing');
+            
+            // Enable button when audio ends
+            reviewAudio.addEventListener('ended', function() {
+                console.log('✅ Audio ended, enabling button');
+                if (reviewButton) {
+                    reviewButton.disabled = false;
+                }
+            }, { once: true });
+            
+        }).catch((error) => {
+            console.log('❌ Audio play blocked:', error.message);
+            // If audio fails to play, enable button immediately
+            if (reviewButton) {
+                reviewButton.disabled = false;
+            }
+            
+            // Try again after user interaction
+            document.addEventListener('click', function playOnClick() {
+                reviewAudio.play().then(() => {
+                    console.log('✅ Audio started after user interaction');
+                    
+                    // Enable button when audio ends
+                    reviewAudio.addEventListener('ended', function() {
+                        console.log('✅ Audio ended, enabling button');
+                        if (reviewButton) {
+                            reviewButton.disabled = false;
+                        }
+                    }, { once: true });
+                    
+                }).catch((err) => {
+                    console.log('Audio play failed:', err.message);
+                    // If still fails, enable button
+                    if (reviewButton) {
+                        reviewButton.disabled = false;
+                    }
+                });
+                document.removeEventListener('click', playOnClick);
+            }, { once: true });
+        });
+    } else {
+        // If audio element doesn't exist, enable button immediately
+        if (reviewButton) {
+            reviewButton.disabled = false;
+        }
+    }
+}
+
+// Close privacy guide modal
+function closePrivacyGuide() {
+    document.getElementById('privacyGuideModal').style.display = 'none';
+}
+
+
+// Data collection function - Updated to match your actual localStorage structure
+function collectAllRenewData() {
+    try {
+        const renewStudyData = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        const quizResults = JSON.parse(localStorage.getItem('ironSpongeResults') || '{}');
+        
+        return {
+            // Basic info
+            nickname: renewStudyData.nickname || '',
+            timestamp: new Date().toISOString(),
+            started_at: renewStudyData.started_at || '',
+            
+            // Main response data
+            positive_events: renewStudyData.responses?.positive_events || {},
+            negative_events: renewStudyData.responses?.negative_events || {},
+            
+            // Journal entries (your actual structure)
+            journal_entries: renewStudyData.journal_entries || {},
+            
+            // Activity plan (your actual structure) 
+            posplan_responses: renewStudyData.posplan_responses || {},
+            posplan_survey: renewStudyData.posplan_survey || {},
+            
+            // Quiz results from both localStorage locations
+            quiz_results: renewStudyData.quiz_results || {},
+            iron_sponge_results: quizResults,
+            
+            // Privacy settings (both types)
+            privacy_settings: renewStudyData.privacy_settings || {},
+            individual_privacy_settings: renewStudyData.individual_privacy_settings || {},
+            
+            // Additional data from your structure
+            completed_sections: renewStudyData.completed_sections || [],
+            progress: renewStudyData.progress || {},
+            survey_responses: renewStudyData.survey_responses || {},
+            notes: renewStudyData.notes || {}
+        };
+    } catch (error) {
+        console.error('Error collecting data:', error);
+        return null;
+    }
+}
+
+// Submit data to Qualtrics - Updated for your data structure
+function submitToQualtrics(data, isEmergency = false) {
+    try {
+        if (typeof Qualtrics === 'undefined') {
+            throw new Error('Qualtrics not found. Make sure RENEW is embedded in a Qualtrics survey.');
+        }
+        
+        // Basic info
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_nickname', data.nickname);
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_timestamp', data.timestamp);
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_started_at', data.started_at);
+        
+        // Main responses
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_positive_events', JSON.stringify(data.positive_events));
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_negative_events', JSON.stringify(data.negative_events));
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_journal_entries', JSON.stringify(data.journal_entries));
+        
+        // Activity plan
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_posplan_responses', JSON.stringify(data.posplan_responses));
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_posplan_survey', JSON.stringify(data.posplan_survey));
+        
+        // Quiz results
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_quiz_results', JSON.stringify(data.quiz_results));
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_iron_sponge_results', JSON.stringify(data.iron_sponge_results));
+        
+        // Privacy settings
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_privacy_settings', JSON.stringify(data.privacy_settings));
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_individual_privacy_settings', JSON.stringify(data.individual_privacy_settings));
+        
+        // Progress and completion data
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_completed_sections', JSON.stringify(data.completed_sections));
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_progress', JSON.stringify(data.progress));
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_survey_responses', JSON.stringify(data.survey_responses));
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_notes', JSON.stringify(data.notes));
+        
+        // Submission metadata
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_submission_type', isEmergency ? 'emergency' : 'normal');
+        Qualtrics.SurveyEngine.setEmbeddedData('renew_completed', isEmergency ? 'partial' : 'true');
+        
+        if (isEmergency) {
+            Qualtrics.SurveyEngine.setEmbeddedData('renew_completion_status', JSON.stringify(data.completion_status));
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Qualtrics submission error:', error);
+        throw error;
+    }
+}
+
+// Finish renew
+
+    function finishRenew() {
+    const finishBtn = document.querySelector('.finish-btn');
+    const originalText = finishBtn.innerHTML;
+    
+    finishBtn.innerHTML = '⏳ Preparing completion...';
+    finishBtn.disabled = true;
+    
+    try {
+        const data = collectAllRenewData();
+        
+        if (!data) {
+            throw new Error('Failed to collect data');
+        }
+        
+        // Save data to localStorage for later submission after video
+        localStorage.setItem('renew_ready_for_submission', JSON.stringify(data));
+        localStorage.setItem('renew_completion_status', 'ready_for_video');
+        
+        // Redirect to completion video
+        window.location.href = "{% url 'completion_video' %}";
+        
+    } catch (error) {
+        console.error('Preparation error:', error);
+        
+        finishBtn.innerHTML = originalText;
+        finishBtn.disabled = false;
+        
+        alert('There was an error preparing your completion. Please try again.');
+    }
+}
+
+    // Initialize voice recognition
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+        
+        recognition.onstart = function() {
+            isRecording = true;
+            voiceButton.classList.add('recording');
+            voiceIcon.textContent = '⏹️';
+            voiceStatus.textContent = 'Listening... Speak now!';
+            voiceStatus.classList.add('recording');
+            lastSpeechTime = Date.now();
+            startSilenceDetection();
+        };
+        
+        recognition.onresult = function(event) {
+            let finalTranscript = '';
+            
+            lastSpeechTime = Date.now();
+            clearSilenceTimer();
+            startSilenceDetection();
+            
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript;
+                }
+            }
+            
+            if (finalTranscript) {
+                const currentText = editResponseText.value;
+                const newText = currentText + (currentText ? ' ' : '') + finalTranscript;
+                editResponseText.value = newText;
+            }
+        };
+        
+        recognition.onerror = function(event) {
+            stopRecording();
+            voiceStatus.classList.add('error');
+            voiceStatus.textContent = 'Voice recognition error. Try again.';
+            setTimeout(() => {
+                voiceStatus.textContent = '';
+                voiceStatus.classList.remove('error');
+            }, 3000);
+        };
+        
+        recognition.onend = function() {
+            stopRecording();
+        };
+        
+        function startSilenceDetection() {
+            clearSilenceTimer();
+            silenceTimer = setTimeout(() => startCountdown(), SILENCE_THRESHOLD);
+        }
+        
+        function startCountdown() {
+            let remainingTime = 3;
+            voiceStatus.classList.remove('recording');
+            voiceStatus.classList.add('countdown');
+            
+            const updateCountdown = () => {
+                if (remainingTime > 0) {
+                    voiceStatus.textContent = `Auto-stopping in ${remainingTime}...`;
+                    remainingTime--;
+                    silenceCountdown = setTimeout(updateCountdown, 1000);
+                } else {
+                    recognition.stop();
+                }
+            };
+            updateCountdown();
+        }
+        
+        function clearSilenceTimer() {
+            if (silenceTimer) clearTimeout(silenceTimer);
+            if (silenceCountdown) clearTimeout(silenceCountdown);
+            voiceStatus.classList.remove('countdown');
+            if (isRecording) voiceStatus.classList.add('recording');
+        }
+        
+        function stopRecording() {
+            isRecording = false;
+            voiceButton.classList.remove('recording');
+            voiceIcon.textContent = '🎤';
+            voiceStatus.classList.remove('recording', 'countdown');
+            clearSilenceTimer();
+        }
+        
+        voiceButton.addEventListener('click', function() {
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch (error) {
+                    voiceStatus.textContent = 'Error starting voice recognition.';
+                    voiceStatus.classList.add('error');
+                }
+            }
+        });
+    } else {
+        voiceButton.classList.add('not-supported');
+        voiceButton.disabled = true;
+        voiceStatus.textContent = 'Voice recognition not available';
+    }
+
+    // localStorage helper functions for journal entries
+    function getJournalEntry(topic) {
+        try {
+            const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+            return data.journal_entries?.[topic] || null;
+        } catch (e) {
+            console.error('Error getting journal entry:', e);
+            return null;
+        }
+    }
+
+    function saveJournalEntry(topic, content) {
+        try {
+            let renewData = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+            if (!renewData.journal_entries) renewData.journal_entries = {};
+            renewData.journal_entries[topic] = {
+                content: content,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('renew_study_data', JSON.stringify(renewData));
+            return true;
+        } catch (e) {
+            console.error('Error saving journal entry:', e);
+            return false;
+        }
+    }
+
+    function saveIndividualJournalAnswer(answerKey, newText) {
+        try {
+            let renewData = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+            if (!renewData.journal_entries) renewData.journal_entries = {};
+            
+            // Get existing experiences entry
+            const experiencesEntry = renewData.journal_entries['experiences_shaped_me'];
+            if (!experiencesEntry) return false;
+            
+            // Parse existing content
+            let content = experiencesEntry.content;
+            let parsed = {};
+            
+            try {
+                parsed = JSON.parse(content);
+            } catch (e) {
+                // If not JSON, create new structure
+                parsed = {};
+            }
+            
+            // Update the specific answer
+            parsed[answerKey] = newText;
+            
+            // Save back to localStorage
+            renewData.journal_entries['experiences_shaped_me'] = {
+                content: JSON.stringify(parsed),
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('renew_study_data', JSON.stringify(renewData));
+            return true;
+        } catch (e) {
+            console.error('Error saving individual journal answer:', e);
+            return false;
+        }
+    }
+
+    // localStorage helper functions for posplan
+    function getPosplanResponse(step) {
+        try {
+            const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+            return data.posplan_responses?.[step] || null;
+        } catch (e) {
+            console.error('Error getting posplan response:', e);
+            return null;
+        }
+    }
+
+    function savePosplanResponse(step, data) {
+        try {
+            let renewData = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+            if (!renewData.posplan_responses) renewData.posplan_responses = {};
+            renewData.posplan_responses[step] = {
+                ...data,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('renew_study_data', JSON.stringify(renewData));
+            return true;
+        } catch (e) {
+            console.error('Error saving posplan response:', e);
+            return false;
+        }
+    }
+
+    // Modal functions
+    function openEditModal(category, responseType, currentText, step = null) {
+        currentEditingCategory = category;
+        currentEditingType = responseType;
+        currentEditingStep = step;
+        editResponseText.value = currentText;
+        document.getElementById('editModal').style.display = 'block';
+        
+        if (recognition && isRecording) {
+            recognition.stop();
+        }
+        
+        // Focus the textarea
+        setTimeout(() => editResponseText.focus(), 100);
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+        
+        if (recognition && isRecording) {
+            recognition.stop();
+        }
+        
+        voiceStatus.textContent = '';
+        voiceStatus.classList.remove('recording', 'error', 'countdown');
+    }
+
+    function saveEditedResponse() {
+        const newText = editResponseText.value.trim();
+        if (!newText) {
+            alert('Please enter a response');
+            return;
+        }
+
+        let success = false;
+
+        if (currentEditingType === 'posplan') {
+            // Handle posplan editing
+            const fieldToData = {
+                'who': { category: 'edited', response: newText },
+                'where': { category: 'edited', response: newText },
+                'what': { activity: newText },
+                'when': { timing: newText }
+            };
+            
+            success = savePosplanResponse(currentEditingStep, fieldToData[currentEditingStep]);
+        } else if (currentEditingType === 'journal') {
+            // Handle full journal editing
+            success = saveJournalEntry(currentEditingCategory, newText);
+        } else if (currentEditingType === 'journal_individual') {
+            // Handle individual journal question editing
+            success = saveIndividualJournalAnswer(currentEditingCategory, newText);
+        } else {
+            // Handle existing event responses using RENEWStorage
+            success = RENEWStorage.saveResponse(currentEditingType + '_events', currentEditingCategory, newText);
+        }
+
+        if (success) {
+            closeEditModal();
+            showSuccessMessage();
+            loadProfileData(); // Refresh the display
+        } else {
+            alert('Error saving response. Please try again.');
+        }
+    }
+
+    function showSuccessMessage() {
+        const successMsg = document.getElementById('successMessage');
+        successMsg.style.display = 'block';
+        setTimeout(() => {
+            successMsg.style.display = 'none';
+        }, 3000);
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('editModal');
+        if (event.target == modal) {
+            closeEditModal();
+        }
+    }
+
+    // Load journal responses with hide/show buttons and data attributes
+    function loadJournalResponses() {
+        const thingsToChangeEntry = getJournalEntry('things_to_change');
+        const experiencesEntry = getJournalEntry('experiences_shaped_me');
+
+        const journalSection = document.getElementById('journalSection');
+        const journalContainer = document.getElementById('journalContainer');
+
+        // Check if any journal data exists
+        if (!thingsToChangeEntry && !experiencesEntry) {
+            journalSection.style.display = 'none';
+            return;
+        }
+
+        journalSection.style.display = 'block';
+        let html = '<div class="responses-grid">';
+
+        // Things I Want to Work On
+        if (thingsToChangeEntry && thingsToChangeEntry.content) {
+            const content = thingsToChangeEntry.content;
+            const preview = content.length > 200 ? content.substring(0, 200) + '...' : content;
+            const isPrivate = isResponsePrivate('journal_responses', 'things_to_change');
+            const hideButtonText = isPrivate ? 'Show' : 'Hide';
+            const hideButtonClass = isPrivate ? 'btn-show' : 'btn-hide';
+            const hideButtonIcon = isPrivate ? '👁️' : '🙈';
+            const hiddenClass = isPrivate ? 'hidden' : '';
+            
+            html += `
+                <div class="response-card ${hiddenClass}" data-category="things_to_change" data-section="journal_responses">
+                    <div class="response-category">🎯 Things I Want to Work On</div>
+                    <div class="response-text">${preview}</div>
+                    <div class="response-actions">
+                        <button class="action-btn btn-edit" onclick="openEditModal('things_to_change', 'journal', \`${content.replace(/`/g, '\\`')}\`)">
+                            ✏️
+                            <div class="action-tooltip">Edit journal entry</div>
+                        </button>
+                        <button class="action-btn ${hideButtonClass}" onclick="toggleResponsePrivacy('journal_responses', 'things_to_change')">
+                            ${hideButtonIcon}
+                            <div class="action-tooltip">${hideButtonText} from counselor</div>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Experiences That Shaped Me - Individual Question Cards
+        if (experiencesEntry && experiencesEntry.content) {
+            let content = experiencesEntry.content;
+
+            try {
+                // Try to parse as JSON (multi-question format)
+                const parsed = JSON.parse(content);
+                const questions = [
+                    { key: 'answer1', label: 'An experience that changed you', value: parsed.answer1 },
+                    { key: 'answer2', label: 'How your thinking has changed', value: parsed.answer2 },
+                    { key: 'answer3', label: 'Feelings or triggers you notice', value: parsed.answer3 },
+                    { key: 'answer4', label: 'How it felt to reflect on it', value: parsed.answer4 }
+                ];
+
+                questions.forEach(q => {
+                    if (q.value && q.value.trim()) {
+                        const preview = q.value.length > 150 ? q.value.substring(0, 150) + '...' : q.value;
+                        const isPrivate = isResponsePrivate('journal_responses', q.key);
+                        const hideButtonText = isPrivate ? 'Show' : 'Hide';
+                        const hideButtonClass = isPrivate ? 'btn-show' : 'btn-hide';
+                        const hideButtonIcon = isPrivate ? '👁️' : '🙈';
+                        const hiddenClass = isPrivate ? 'hidden' : '';
+                        
+                        html += `
+                            <div class="response-card ${hiddenClass}" data-category="${q.key}" data-section="journal_responses">
+                                <div class="response-category">🌟 ${q.label}</div>
+                                <div class="response-text">${preview}</div>
+                                <div class="response-actions">
+                                    <button class="action-btn btn-edit" onclick="openEditModal('${q.key}', 'journal_individual', \`${q.value.replace(/`/g, '\\`')}\`)">
+                                        ✏️
+                                        <div class="action-tooltip">Edit this reflection</div>
+                                    </button>
+                                    <button class="action-btn ${hideButtonClass}" onclick="toggleResponsePrivacy('journal_responses', '${q.key}')">
+                                        ${hideButtonIcon}
+                                        <div class="action-tooltip">${hideButtonText} from counselor</div>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            } catch (e) {
+                // Not JSON, treat as simple string
+                const preview = content.length > 200 ? content.substring(0, 200) + '...' : content;
+                const isPrivate = isResponsePrivate('journal_responses', 'experiences_shaped_me');
+                const hideButtonText = isPrivate ? 'Show' : 'Hide';
+                const hideButtonClass = isPrivate ? 'btn-show' : 'btn-hide';
+                const hideButtonIcon = isPrivate ? '👁️' : '🙈';
+                const hiddenClass = isPrivate ? 'hidden' : '';
+                
+                html += `
+                    <div class="response-card ${hiddenClass}" data-category="experiences_shaped_me" data-section="journal_responses">
+                        <div class="response-category">🌟 Experiences That Shaped Me</div>
+                        <div class="response-text">${preview}</div>
+                        <div class="response-actions">
+                            <button class="action-btn btn-edit" onclick="openEditModal('experiences_shaped_me', 'journal', \`${content.replace(/`/g, '\\`')}\`)">
+                                ✏️
+                                <div class="action-tooltip">Edit journal entry</div>
+                            </button>
+                            <button class="action-btn ${hideButtonClass}" onclick="toggleResponsePrivacy('journal_responses', 'experiences_shaped_me')">
+                                ${hideButtonIcon}
+                                <div class="action-tooltip">${hideButtonText} from counselor</div>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        html += '</div>';
+        journalContainer.innerHTML = html;
+    }
+
+    // Load positive activity plan with hide/show buttons and data attributes
+    function loadActivityPlan() {
+        const whoData = getPosplanResponse('who');
+        const whereData = getPosplanResponse('where');
+        const whatData = getPosplanResponse('what');
+        const whenData = getPosplanResponse('when');
+
+        const posplanSection = document.getElementById('posplanSection');
+        const posplanContainer = document.getElementById('posplanContainer');
+
+        // Check if any posplan data exists
+        if (!whoData && !whereData && !whatData && !whenData) {
+            posplanSection.style.display = 'none';
+            return;
+        }
+
+        posplanSection.style.display = 'block';
+
+        // Extract values with fallbacks
+        const whoText = whoData?.response || whoData?.category || 'Not specified';
+        const whereText = whereData?.response || whereData?.category || 'Not specified';
+        const whatText = whatData?.activity || 'Not specified';
+        const whenText = whenData?.timing || 'Not specified';
+
+        // Show the editable cards with hide/show buttons and proper hidden classes
+        const planItems = [
+            { key: 'who', emoji: '👥', label: 'Who', text: whoText },
+            { key: 'where', emoji: '📍', label: 'Where', text: whereText },
+            { key: 'what', emoji: '🎯', label: 'What', text: whatText },
+            { key: 'when', emoji: '⏰', label: 'When', text: whenText }
+        ];
+
+        let html = '<div class="responses-grid">';
+        
+        planItems.forEach(item => {
+            const isPrivate = isResponsePrivate('activity_plan', item.key);
+            const hideButtonText = isPrivate ? 'Show' : 'Hide';
+            const hideButtonClass = isPrivate ? 'btn-show' : 'btn-hide';
+            const hideButtonIcon = isPrivate ? '👁️' : '🙈';
+            const hiddenClass = isPrivate ? 'hidden' : '';
+            
+            html += `
+                <div class="response-card ${hiddenClass}" data-category="${item.key}" data-section="activity_plan">
+                    <div class="response-category">${item.emoji} ${item.label}</div>
+                    <div class="response-text">${item.text}</div>
+                    <div class="response-actions">
+                        <button class="action-btn btn-edit" onclick="openEditModal('${item.key}', 'posplan', '${item.text.replace(/'/g, "\\'")}', '${item.key}')">
+                            ✏️
+                            <div class="action-tooltip">Edit ${item.label.toLowerCase()}</div>
+                        </button>
+                        <button class="action-btn ${hideButtonClass}" onclick="toggleResponsePrivacy('activity_plan', '${item.key}')">
+                            ${hideButtonIcon}
+                            <div class="action-tooltip">${hideButtonText} from counselor</div>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        posplanContainer.innerHTML = html;
+    }
+
+    // Load and display profile data
+    function loadProfileData() {
+        const nickname = RENEWStorage.getNickname();
+        const positiveResponses = RENEWStorage.getResponses('positive_events');
+        const negativeResponses = RENEWStorage.getResponses('negative_events');
+        
+        // Update profile title
+        document.getElementById('profileTitle').textContent = nickname ? `👤 ${nickname}'s Profile` : '👤 Profile';
+        
+        // Load quiz results
+        loadQuizResults();
+        
+        // Load journal responses
+        loadJournalResponses();
+        
+        // Load activity plan
+        loadActivityPlan();
+        
+        // Load positive responses
+        loadResponseSection('positive', positiveResponses, 'positiveResponsesContainer');
+        
+        // Load negative responses
+        loadResponseSection('negative', negativeResponses, 'negativeResponsesContainer');
+        
+        // Check if all sections are completed and show privacy guide
+        setTimeout(() => {
+            showPrivacyGuide();
+        }, 1000); // Small delay to ensure all sections are loaded
+    }
+
+    function loadQuizResults() {
+    const quizResults = JSON.parse(localStorage.getItem('ironSpongeResults') || '{}');
+    const quizSection = document.getElementById('quizResultsSection');
+    const quizContainer = document.getElementById('quizResultsContainer');
+    
+    if (Object.keys(quizResults).length === 0) {
+        quizSection.style.display = 'none';
+        return;
+    }
+    
+    quizSection.style.display = 'block';
+    
+    const domainInfo = {
+        school: { emoji: '🎓', name: 'School Domain' },
+        friend: { emoji: '👥', name: 'Friend Domain' },
+        family: { emoji: '🏠', name: 'Family Domain' }
+    };
+
+    let html = '<div class="responses-grid">';
+    
+    Object.entries(domainInfo).forEach(([domain, info]) => {
+        const result = quizResults[domain];
+        if (!result) return;
+        
+        let badgeClass, badgeText, description;
+        
+        switch(result.type) {
+            case 'iron':
+                badgeClass = 'iron-badge';
+                badgeText = '🛡️ Iron-Like';
+                description = 'Events in this domain tend to bounce off you more easily.';
+                break;
+            case 'sponge':
+                badgeClass = 'sponge-badge';
+                badgeText = '🧽 Sponge-Like';
+                description = 'You tend to absorb and feel events in this domain more deeply.';
+                break;
+            default:
+                badgeClass = 'balanced-badge';
+                badgeText = '⚖️ Balanced';
+                description = 'You respond to events in this domain similarly to most people.';
+        }
+        
+        // Get domain-specific responses
+        const domainResponses = getDomainQuizResponses(domain, quizResults.responses || {});
+        
+        // Check if this quiz result is private
+        const isPrivate = isResponsePrivate('quiz_results', domain);
+        const hideButtonText = isPrivate ? 'Show' : 'Hide';
+        const hideButtonClass = isPrivate ? 'btn-show' : 'btn-hide';
+        const hideButtonIcon = isPrivate ? '👁️' : '🙈';
+        const hiddenClass = isPrivate ? 'hidden' : '';
+        
+        html += `
+            <div class="response-card ${hiddenClass}" data-category="${domain}" data-section="quiz_results">
+                <div class="response-category">
+                    ${info.emoji} ${info.name}
+                </div>
+                <div class="domain-result">
+                    <div class="result-badge ${badgeClass}">${badgeText}</div>
+                    <p class="mb-0">${description}</p>
+                </div>
+                <div class="domain-breakdown">
+                    <span class="breakdown-item">
+                        <span class="iron-count">${result.counts.iron}</span> Iron
+                    </span>
+                    <span class="breakdown-item">
+                        <span class="sponge-count">${result.counts.sponge}</span> Sponge  
+                    </span>
+                    <span class="breakdown-item">
+                        <span class="neither-count">${result.counts.neither}</span> Neither
+                    </span>
+                </div>
+                <div class="quiz-responses">
+                    <h6>Your Responses:</h6>
+                    ${domainResponses}
+                </div>
+                <div class="response-actions">
+                    <button class="action-btn ${hideButtonClass}" onclick="toggleResponsePrivacy('quiz_results', '${domain}')">
+                        ${hideButtonIcon}
+                        <div class="action-tooltip">${hideButtonText} from counselor</div>
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    quizContainer.innerHTML = html;
+}
+
+    function getDomainQuizResponses(domain, responses) {
+        const questions = {
+            school: [
+                { id: 'question1', text: 'I got an A in a class' },
+                { id: 'question5', text: 'I failed a test I studied hard for' },
+                { id: 'question9', text: 'I received an award at school' }
+            ],
+            friend: [
+                { id: 'question2', text: 'My friend teased me' },
+                { id: 'question4', text: 'My friends excluded me from their group activity' },
+                { id: 'question7', text: 'My friends said I did the best presentation in our group project' }
+            ],
+            family: [
+                { id: 'question3', text: 'My parents told me they were proud of my good grades' },
+                { id: 'question6', text: 'My parents got angry at me for making a mistake' },
+                { id: 'question8', text: 'My parent ignored my feelings' }
+            ]
+        };
+
+        const domainQuestions = questions[domain] || [];
+        let responsesHtml = '';
+
+        domainQuestions.forEach(q => {
+            const response = responses[q.id];
+            if (response) {
+                const responseClass = response.value === 'iron' ? 'iron-count' : 
+                                    response.value === 'sponge' ? 'sponge-count' : 'neither-count';
+                const responseIcon = response.value === 'iron' ? '🛡️' : 
+                                    response.value === 'sponge' ? '🧽' : '⚖️';
+                
+                responsesHtml += `
+                    <div class="quiz-response-item">
+                        <span class="question-text">"${q.text}"</span>
+                        <span class="response-value ${responseClass}">${responseIcon} ${response.value.charAt(0).toUpperCase() + response.value.slice(1)}</span>
+                    </div>
+                `;
+            }
+        });
+
+        return responsesHtml;
+    }
+
+    function loadResponseSection(type, responses, containerId) {
+        const container = document.getElementById(containerId);
+        
+        if (Object.keys(responses).length === 0) {
+            // Keep empty state
+            return;
+        }
+        
+        const categoryInfo = {
+            positive: {
+                recreation: { emoji: '🏃', name: 'Recreational' },
+                achievement: { emoji: '🏆', name: 'Achievement' },
+                relationship: { emoji: '❤️', name: 'Relationship' },
+                other: { emoji: '✨', name: 'Other' }
+            },
+            negative: {
+                adverse: { emoji: '⚠️', name: 'Adverse Events' },
+                neighbor: { emoji: '🏘️', name: 'Neighborhood Issues' },
+                discriminate: { emoji: '🚫', name: 'Discrimination' },
+                stress: { emoji: '😰', name: 'Stressors & Hassles' }
+            }
+        };
+
+        let html = '<div class="responses-grid">';
+        
+        Object.entries(responses).forEach(([category, response]) => {
+            const info = categoryInfo[type][category] || { emoji: '📝', name: category };
+            const isPrivate = isResponsePrivate(type + '_events', category);
+            const hideButtonText = isPrivate ? 'Show' : 'Hide';
+            const hideButtonClass = isPrivate ? 'btn-show' : 'btn-hide';
+            const hideButtonIcon = isPrivate ? '👁️' : '🙈';
+            const hiddenClass = isPrivate ? 'hidden' : '';
+            
+            html += `
+                <div class="response-card ${hiddenClass}" data-category="${category}" data-section="${type}_events">
+                    <div class="response-category">
+                        ${info.emoji} ${info.name}
+                    </div>
+                    <div class="response-text">
+                        ${response}
+                    </div>
+                    <div class="response-actions">
+                        <button class="action-btn btn-edit" onclick="openEditModal('${category}', '${type}', \`${response.replace(/`/g, '\\`')}\`)">
+                            ✏️
+                            <div class="action-tooltip">Edit response</div>
+                        </button>
+                        <button class="action-btn ${hideButtonClass}" onclick="toggleResponsePrivacy('${type}_events', '${category}')">
+                            ${hideButtonIcon}
+                            <div class="action-tooltip">${hideButtonText} from counselor</div>
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    // Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    const nickname = RENEWStorage.getNickname();
+    if (!nickname) {
+        window.location.href = "{% url 'nickname' %}";
+        return;
+    }
+    
+    // Load individual privacy settings
+    loadPrivacySettings();
+    
+    // Load profile data
+    loadProfileData();
+    
+    // Handle keyboard shortcuts in modal
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const modal = document.getElementById('editModal');
+            if (modal.style.display === 'block') {
+                closeEditModal();
+            }
+        }
+        
+        // Secret shortcut: Ctrl+Shift+S
+        if (event.ctrlKey && event.shiftKey && event.key === 'S') {
+            event.preventDefault();
+            showSecretSubmissionModal();
+        }
+    });
+});
+
+// Show secret submission modal
+function showSecretSubmissionModal() {
+    document.getElementById('secretSubmissionModal').style.display = 'block';
+}
+
+// Close secret submission modal
+function closeSecretModal() {
+    document.getElementById('secretSubmissionModal').style.display = 'none';
+}
+
+// Force submit data (emergency submission)
+function forceSubmitData() {
+    const data = collectAllRenewData();
+    if (!data) {
+        alert('No data to submit');
+        closeSecretModal();
+        return;
+    }
+    
+    try {
+        // Try to submit via your Django backend (same as normal flow)
+        fetch('/accounts/export-to-qualtrics/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                renew_study_data: data,
+                emergency: true
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert('Emergency data submission completed');
+                localStorage.setItem('renew_submitted', 'emergency');
+                closeSecretModal();
+                // Redirect to Qualtrics survey (NOT to completion video for emergency)
+                window.location.href = "{% url 'qualtrics_survey' %}";
+            } else {
+                throw new Error(result.error || 'Submission failed');
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            // Fallback: mark as submitted locally and still redirect to Qualtrics
+            localStorage.setItem('renew_submitted', 'emergency');
+            alert('Data saved locally due to connection issues. Continuing to survey...');
+            closeSecretModal();
+            window.location.href = "{% url 'qualtrics_survey' %}";
+        });
+        
+    } catch (error) {
+        console.error('Emergency submission error:', error);
+        localStorage.setItem('renew_submitted', 'emergency');
+        alert('Data saved locally. Continuing to survey...');
+        closeSecretModal();
+        window.location.href = "{% url 'qualtrics_survey' %}";
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const nickname = RENEWStorage.getNickname();
+    if (!nickname) {
+        window.location.href = "{% url 'nickname' %}";
+        return;
+    }
+    
+    loadPrivacySettings();
+    loadProfileData();
+    
+    // Add this line:
+    updateFinishButtonVisibility();
+    
+    function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+});
+
+function printProfile() {
+    // Brief preparation message
+    const printButton = document.querySelector('.print-button');
+    const originalText = printButton.innerHTML;
+    
+    printButton.innerHTML = '🖨️ Preparing...';
+    printButton.disabled = true;
+    
+    // Small delay to show the preparation state
+    setTimeout(() => {
+        // Trigger the print dialog
+        window.print();
+        
+        // Reset button state after print dialog
+        setTimeout(() => {
+            printButton.innerHTML = originalText;
+            printButton.disabled = false;
+        }, 500);
+    }, 300);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Positive Planned Activities - Part 3</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Work Sans', sans-serif;
+      height: 100vh;
+      width: 100vw;
+      background-color: #f4f0fb;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Media Container - Better Spacing */
+    .media-container {
+      flex: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start; /* Changed from center to flex-start */
+      padding: 20px;
+      padding-top: 30px; /* Add extra top padding */
+      position: relative;
+      order: 1;
+      overflow-y: auto;
+    }
+
+    /* Sidebar - Consistent with posplan_p1 */
+    .sidebar {
+      flex: 1.5;
+      background-color: #fff;
+      padding: 20px;
+      border-left: 2px solid #ccc;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      order: 2;
+      height: 100vh;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .sidebar h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #5a3e8c;
+      font-size: 18px;
+    }
+
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      align-self: flex-start;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: auto;
+    }
+
+    .back-button:hover {
+      background-color: #5a6268;
+      transform: translateY(-1px);
+      color: white;
+      text-decoration: none;
+    }
+    
+    /* Page Content - Better Spacing */
+    .page-content {
+      width: 100%;
+      max-width: 1000px; /* Reduced from 1300px */
+      text-align: center;
+      margin-top: 30px; /* Add top margin to push content down */
+    }
+    
+    .page-title {
+      color: #5a3e8c;
+      font-size: 1.8rem; /* Reduced from 2rem */
+      font-weight: 700;
+      margin-bottom: 12px; /* Reduced from 15px */
+    }
+    
+    .page-subtitle {
+      color: #666;
+      font-size: 1.1rem; /* Reduced from 1.2rem */
+      font-weight: 500;
+      margin-bottom: 35px; /* Increased from 30px for better spacing */
+    }
+    
+    /* Card Layout - Smaller Cards */
+    .plan-cards-wrapper_top {
+      display: flex;
+      justify-content: center;
+      gap: 25px; /* Reduced from 30px */
+      margin-bottom: 20px; /* Increased from 15px */
+      width: 100%;
+      max-width: 1000px; /* Reduced from 1200px */
+    }
+    
+    .plan-cards-wrapper_bottom {
+      display: flex;
+      justify-content: center;
+      gap: 25px; /* Reduced from 30px */
+      margin-top: 0px;
+      width: 100%;
+      max-width: 1000px; /* Reduced from 1200px */
+    }
+    
+    .plan-cards-wrapper_top .card,
+    .plan-cards-wrapper_bottom .card {
+      width: calc(50% - 12.5px); /* Adjusted for new gap */
+      max-width: 450px; /* Reduced from 550px */
+      box-sizing: border-box;
+      margin: 0;
+      cursor: pointer;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(90, 62, 140, 0.2);
+    }
+    
+    .card img {
+      width: 100%;
+      height: 280px; /* Reduced from 350px */
+      display: block;
+      margin: 0;
+      object-fit: cover;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    
+    .card img:hover {
+      transform: scale(1.05);
+      opacity: 0.9;
+    }
+    
+    /* Navigation Buttons */
+    .next-button-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+    }
+    .next-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+    .prev-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+    .prev-button-overlay:hover, .next-button-overlay:hover {
+      background: #b8a5d1;
+      color: #4a3474;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+    
+    /* Audio Controls in Sidebar */
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-title {
+      color: #5a3e8c;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    
+    .modal-input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+    
+    .modal-input:focus {
+      outline: none;
+      border-color: #5a3e8c;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+    
+    .modal-btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+    
+    .modal-btn.primary {
+      background: #5a3e8c;
+      color: white;
+    }
+    
+    .modal-btn.primary:hover {
+      background: #4a3474;
+      transform: translateY(-1px);
+    }
+    
+    .modal-btn.secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .modal-btn.secondary:hover {
+      background: #5a6268;
+      transform: translateY(-1px);
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+      
+      .media-container {
+        padding: 15px;
+        padding-top: 25px;
+        flex: 1;
+      }
+      
+      .sidebar {
+        flex: 0 0 250px;
+        border-left: none;
+        border-top: 2px solid #ccc;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        padding: 10px;
+      }
+      
+      .page-content {
+        margin-top: 15px;
+      }
+      
+      .page-title {
+        font-size: 1.4rem;
+        margin-bottom: 10px;
+      }
+      
+      .page-subtitle {
+        font-size: 1rem;
+        margin-bottom: 25px;
+      }
+      
+      .plan-cards-wrapper_top,
+      .plan-cards-wrapper_bottom {
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      
+      .plan-cards-wrapper_top .card,
+      .plan-cards-wrapper_bottom .card {
+        width: 100%;
+        max-width: 350px; /* Reduced mobile max width */
+      }
+      
+      .card img {
+        height: 240px; /* Reduced mobile height */
+      }
+      
+      .sidebar h3 {
+        font-size: 14px;
+      }
+      
+      .back-button {
+        font-size: 12px;
+        padding: 6px 12px;
+      }
+    }
+    
+    /* Special effects for next button */
+    .next-button-overlay {
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    .next-button-overlay.visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    .next-button-motivational {
+      animation: popScale 0.6s ease-out forwards, glow 1.5s ease-in-out infinite;
+    }
+    
+    .next-button-pulse {
+      animation: subtlePulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes popScale {
+      0% {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.15);
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes glow {
+      0%, 100% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 20px rgba(90, 62, 140, 0.3);
+      }
+      50% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 30px rgba(90, 62, 140, 0.6);
+      }
+    }
+    
+    @keyframes subtlePulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 2px 12px rgba(90, 62, 140, 0.3);
+      }
+    }
+    
+    /* Hidden audio element */
+    .hidden-audio {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="media-container">
+    <!-- Previous button -->
+    <div class="prev-button-container" style="position: absolute; top: 20px; left: 20px; z-index: 10;">
+      <a href="../posplan-p2/" class="prev-button-overlay">
+        ← Previous
+      </a>
+    </div>
+    
+    <!-- Next button -->
+    <div class="next-button-container" id="nextButtonContainer">
+      <a href="../posplan-p4/" class="next-button-overlay" id="nextButton">
+        Next →
+      </a>
+    </div>
+    
+    <div class="page-content">
+      <h1 class="page-title">Let's plan a fun activity!</h1>
+      <h2 class="page-subtitle">Let's now choose where you want to enjoy this activity!</h2>
+      
+      <div class="plan-cards-wrapper_top">
+        <div class="card" onclick="openModal('indoors')">
+          <img src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_MUjFsmUAnH6Jnmj" alt="Indoors">
+        </div>
+        <div class="card" onclick="openModal('outdoors')">
+          <img src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_EnOsiEM3C0utlPe" alt="Outdoors">
+        </div>
+      </div>
+      
+      <div class="plan-cards-wrapper_bottom">
+        <div class="card" onclick="openModal('athome')">
+          <img src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_F1DbMCddGV3uurR" alt="At Home">
+        </div>
+        <div class="card" onclick="openModal('travel')">
+          <img src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_bsQ5WcGNyMi07Rk" alt="Travel/Away">
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="sidebar">
+    <h3>Positive Planned Activities</h3>
+    
+    <!-- Audio element (hidden, auto-plays once) -->
+    <audio id="audioPlayer" style="display: none;">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_ZIwqgNnXA8an88o" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+    
+    <!-- Hidden audio element for success sound effect -->
+    <audio id="successSoundEffect" class="hidden-audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_6UG7Rt7QKA7N8oH" type="audio/mpeg">
+    </audio>
+    
+    <a href="../adventure-map/" class="back-button">← Back to Adventure Map</a>
+  </div>
+  
+  <!-- Modal -->
+  <div id="responseModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <h2 class="modal-title">Can you be more specific?</h2>
+      <input type="text" id="modalInput" class="modal-input" placeholder="Enter your response...">
+      <div class="modal-buttons">
+        <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
+        <button class="modal-btn primary" onclick="submitResponse()">Continue</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Direct localStorage functions (consistent with other standardized pages)
+    function markComplete(pageId) {
+      try {
+        localStorage.setItem('completed_' + pageId, 'true');
+        localStorage.setItem('completed_' + pageId + '_timestamp', Date.now().toString());
+        return true;
+      } catch (e) {
+        console.error('Error saving completion status:', e);
+        return false;
+      }
+    }
+
+    function isComplete(pageId) {
+      try {
+        return localStorage.getItem('completed_' + pageId) === 'true';
+      } catch (e) {
+        console.error('Error checking completion status:', e);
+        return false;
+      }
+    }
+
+    function savePosplanResponse(step, category, response) {
+      try {
+        let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        if (!data.posplan_responses) data.posplan_responses = {};
+        data.posplan_responses[step] = {
+          category: category,
+          response: response,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('renew_study_data', JSON.stringify(data));
+        return true;
+      } catch (e) {
+        console.error('Error saving posplan response:', e);
+        return false;
+      }
+    }
+
+    function getPosplanResponse(step) {
+      try {
+        const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        return data.posplan_responses?.[step] || null;
+      } catch (e) {
+        console.error('Error getting posplan response:', e);
+        return null;
+      }
+    }
+
+    // Audio player management
+    const audioPlayer = document.getElementById('audioPlayer');
+    const nextButtonContainer = document.getElementById('nextButtonContainer');
+    const nextButton = document.getElementById('nextButton');
+    let audioCompleted = false;
+    let currentSelection = '';
+    let videoEndDetected = false;
+    let specialEffectsShown = false;
+    
+    const pageId = 'posplan_p3';
+    const isPageCompleted = isComplete(pageId);
+    const existingChoice = getPosplanResponse('where');
+
+    console.log('Page loaded:', {
+      pageId: pageId,
+      isCompleted: isPageCompleted,
+      existingChoice: existingChoice,
+      audioElement: !!audioPlayer
+    });
+
+    // Function to play success sound effect
+    function playSuccessSound() {
+      const soundEffect = document.getElementById('successSoundEffect');
+      if (soundEffect) {
+        soundEffect.currentTime = 0;
+        soundEffect.play().catch(error => {
+          console.log('Sound effect autoplay failed (browser policy):', error);
+        });
+      }
+    }
+
+    // Function to show next button with motivational animation
+    function showNextButtonMotivational() {
+      nextButtonContainer.style.display = 'block';
+      
+      if (!specialEffectsShown) {
+        // First time showing - play sound and big animation
+        playSuccessSound();
+        specialEffectsShown = true;
+        
+        nextButton.classList.add('next-button-motivational', 'visible');
+        
+        // After initial animation completes, switch to subtle pulse
+        setTimeout(() => {
+          nextButton.classList.remove('next-button-motivational');
+          nextButton.classList.add('next-button-pulse', 'visible');
+        }, 800000);
+      } else {
+        // Already shown before - just show with subtle pulse (no sound)
+        nextButton.classList.remove('next-button-motivational');
+        nextButton.classList.add('next-button-pulse', 'visible');
+      }
+    }
+
+    
+    // Auto-play audio when page loads
+    function playPageAudio() {
+      const audio = document.getElementById('audioPlayer');
+      
+      if (audio) {
+        console.log('Attempting to play page audio...');
+        audio.play()
+          .then(() => {
+            console.log('✅ Page audio started playing successfully');
+          })
+          .catch(err => {
+            console.log('⚠️ Audio autoplay blocked by browser, will play on first user interaction:', err);
+            // Try to play on first user interaction
+            const playOnInteraction = () => {
+              console.log('User interacted, trying to play audio...');
+              audio.play()
+                .then(() => {
+                  console.log('✅ Audio started after user interaction');
+                })
+                .catch(e => console.log('❌ Audio play failed:', e));
+            };
+            document.addEventListener('click', playOnInteraction, { once: true });
+            document.addEventListener('touchstart', playOnInteraction, { once: true });
+          });
+      } else {
+        console.log('❌ Audio element not found');
+      }
+    }
+    
+    // Call playPageAudio when page loads
+    playPageAudio();
+
+
+    // Show next button if already completed
+    if (isPageCompleted) {
+      nextButtonContainer.style.display = 'block';
+      nextButton.classList.add('next-button-pulse', 'visible');
+      audioCompleted = true;
+      videoEndDetected = true;
+      specialEffectsShown = true; // Already completed, effects were shown before
+    } else {
+      nextButtonContainer.style.display = 'none';
+    }
+    
+   
+    // Modal functions
+    function openModal(selection) {
+      currentSelection = selection;
+      document.getElementById('responseModal').style.display = 'flex';
+      
+      // Pre-fill with existing choice if available and matches selection
+      if (existingChoice && existingChoice.category === selection && existingChoice.response) {
+        document.getElementById('modalInput').value = existingChoice.response;
+      }
+      
+      document.getElementById('modalInput').focus();
+    }
+
+    function closeModal() {
+      document.getElementById('responseModal').style.display = 'none';
+      document.getElementById('modalInput').value = '';
+      currentSelection = '';
+    }
+
+    function submitResponse() {
+      const response = document.getElementById('modalInput').value.trim();
+      
+      if (!response) {
+        alert('Please enter a response');
+        return;
+      }
+      
+      console.log('Submitting response:', { currentSelection, response });
+      
+      // Save the response using localStorage
+      if (savePosplanResponse('where', currentSelection, response)) {
+        console.log('Response saved successfully');
+        
+        // Mark page as complete
+        markComplete(pageId);
+        
+        // Close modal
+        closeModal();
+        
+        // Show next button with special effects
+        showNextButtonMotivational();
+      } else {
+        alert('There was an error saving your response. Please try again.');
+      }
+    }
+
+    // Enter key support for modal
+    document.getElementById('modalInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        submitResponse();
+      }
+    });
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Page initialized:', {
+        pageId: pageId,
+        previouslyCompleted: isPageCompleted,
+        nextButtonVisible: nextButtonContainer.style.display !== 'none'
+      });
+    });
+  </script>
+</body>
+</html>

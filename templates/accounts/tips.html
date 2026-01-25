@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}Tips{% endblock %}
+
+{% block extra_css %}
+<style>
+    body, html {
+        margin: 0;
+        padding: 20px;
+        font-family: 'Work Sans', sans-serif;
+        min-height: 100vh;
+        background-color: #f4f0fb;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .tips-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .tips-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #5a3e8c;
+        margin-bottom: 15px;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .tips-subtitle {
+        font-size: 1.2rem;
+        color: #666;
+        margin-bottom: 30px;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    .back-button {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: #5a3e8c;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-block;
+        animation: fadeInUp 0.8s ease-out 0.3s both;
+        z-index: 10;
+    }
+
+    .back-button:hover {
+        background: #4a3474;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(90, 62, 140, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .tips-content {
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    .tips-card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        border-left: 5px solid #28a745;
+        transition: all 0.3s ease;
+    }
+
+    .tips-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.15);
+    }
+
+    .tips-header {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #28a745;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .tips-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .tip-item {
+        background: #f8f9fa;
+        margin-bottom: 15px;
+        padding: 15px 20px;
+        border-radius: 10px;
+        border-left: 3px solid #28a745;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #555;
+        position: relative;
+    }
+
+    .tip-item:before {
+        content: "✓";
+        color: #28a745;
+        font-weight: bold;
+        font-size: 1.2rem;
+        margin-right: 10px;
+    }
+
+    .tip-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .additional-info {
+        background: #e3f2fd;
+        border: 1px solid #bbdefb;
+        border-radius: 10px;
+        padding: 20px;
+        margin-top: 25px;
+        color: #1976d2;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .additional-info .info-icon {
+        font-size: 1.2rem;
+        margin-right: 8px;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive design */
+    @media (max-width: 600px) {
+        .tips-title {
+            font-size: 2rem;
+        }
+        
+        .tips-subtitle {
+            font-size: 1.1rem;
+        }
+        
+        .tips-card {
+            padding: 25px 20px;
+        }
+        
+        .tips-header {
+            font-size: 1.2rem;
+        }
+        
+        .tip-item {
+            font-size: 1rem;
+            padding: 12px 15px;
+        }
+        
+        .back-button {
+            position: relative;
+            margin-bottom: 20px;
+            left: 0;
+            top: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tips-container">
+    <a href="{% url 'hub' %}" class="back-button">← Back to Hub</a>
+    
+    <div class="header">
+        <h1 class="tips-title">Tips 💡</h1>
+        <p class="tips-subtitle">
+            Important reminders for your wellbeing during RENEW
+        </p>
+    </div>
+
+    <div class="tips-content">
+        <div class="tips-card">
+            <div class="tips-header">
+                If you feel uncomfortable or overwhelmed:
+            </div>
+            
+            <ul class="tips-list">
+                <li class="tip-item">Let the counselor know (raise hand, signal, or say it)</li>
+                <li class="tip-item">Pause and breathe</li>
+                <li class="tip-item">Take a short break in the room if needed</li>
+                <li class="tip-item">Check in with the counselor before rejoining</li>
+            </ul>
+            
+            <div class="additional-info">
+                <span class="info-icon">💙</span>
+                Remember: Your comfort and well-being are the top priority. There's no pressure to share anything you're not ready to discuss.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

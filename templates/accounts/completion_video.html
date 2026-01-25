@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You - RENEW Complete</title>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Work Sans', sans-serif;
+            background-color: #f4f0fb;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* Override base.html container constraints */
+        .container {
+            max-width: none !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+        .video-container {
+            max-width: none;
+            width: 100vw;
+            padding: 40px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .video-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #5a3e8c;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .video-wrapper {
+            position: relative;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            width: 70vw;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .video-embed {
+            padding: 56.25% 0 0 0;
+            position: relative;
+        }
+        .video-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        
+        .completion-message {
+            font-size: 1.2rem;
+            color: #5a3e8c;
+            margin-bottom: 20px;
+            font-weight: 500;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .action-section {
+            margin-top: 40px;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        .continue-button {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3);
+            margin: 20px 10px;
+        }
+
+        .continue-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+
+        .continue-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .skip-button {
+            background: transparent;
+            color: #6c757d;
+            border: 2px solid #6c757d;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 10px;
+        }
+
+        .skip-button:hover {
+            background: #6c757d;
+            color: white;
+        }
+
+        .video-progress {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @media (max-width: 768px) {
+            .video-title {
+                font-size: 2rem;
+            }
+            
+            .video-container {
+                padding: 20px 10px;
+            }
+            
+            .continue-button, .skip-button {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+                margin: 10px 0;
+            }
+            .video-wrapper {
+                width: 90vw;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <h1 class="video-title">Thank You for Completing RENEW</h1>
+        
+        <div class="completion-message">
+            We hope this program has been helpful for you. Here's a final message from our team. <br><br>
+            <strong>Don't forget to submit the final survey before you leave.</strong>
+        </div>
+        <div class="video-wrapper">
+            <div class="video-embed">
+                <div id="youtubePlayer"></div>
+            </div>
+        </div>
+
+        <div class="action-section">
+            <button id="continueBtn" class="continue-button" onclick="proceedToSurvey()" disabled>
+                Continue to Final Survey
+            </button>
+            <br>
+            <div class="video-progress" id="videoProgress">
+                Video will enable the continue button when finished...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let videoWatched = false;
+        let videoCheckInterval;
+
+        function proceedToSurvey() {
+            // Mark that video was watched
+            localStorage.setItem('renew_video_completed', 'true');
+
+            const continueBtn = document.getElementById('continueBtn');
+            const originalText = continueBtn.innerHTML;
+
+            continueBtn.innerHTML = '⏳ Preparing data...';
+            continueBtn.disabled = true;
+
+            try {
+                const renewData = collectAllRenewData();
+                if (!renewData) {
+                    throw new Error('Failed to collect data');
+                }
+
+                // Save everything in one key for iframe page
+                const preparedData = {
+                    ...renewData,  // all RENEW data
+                    timestamp: new Date().toISOString(),
+                    video_completed: true
+                };
+
+                localStorage.setItem('renew_ready_for_submission', JSON.stringify(preparedData));
+                localStorage.setItem('renew_completion_status', 'ready_for_survey');
+
+                // Redirect to Qualtrics survey page
+                window.location.href = "{% url 'qualtrics_survey' %}";
+
+            } catch (error) {
+                console.error('Data preparation error:', error);
+                continueBtn.innerHTML = originalText;
+                continueBtn.disabled = false;
+                alert('There was an error preparing your data. Please try again.');
+            }
+        }
+
+        // YouTube API integration
+        let player;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('youtubePlayer', {
+                height: '100%',
+                width: '100%',
+                videoId: 'c4FUK9yDY-Q',
+                playerVars: {
+                    'controls': 1,
+                    'autoplay': 1,
+                    'rel': 0,
+                    'cc_load_policy': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            // Autoplay is handled by playerVars
+            event.target.playVideo();
+        }
+
+        function onPlayerStateChange(event) {
+            // Video ended
+            if (event.data == YT.PlayerState.ENDED) {
+                enableContinueButton();
+            }
+        }
+
+        function enableContinueButton() {
+            if (!videoWatched) {
+                videoWatched = true;
+                const continueBtn = document.getElementById('continueBtn');
+                const videoProgress = document.getElementById('videoProgress');
+                
+                continueBtn.disabled = false;
+                continueBtn.textContent = 'Continue to Final Survey';
+                videoProgress.textContent = 'Video complete! Ready to continue.';
+                videoProgress.style.color = '#28a745';
+                
+                // Add some visual feedback
+                continueBtn.style.animation = 'pulse 2s infinite';
+            }
+        }
+
+        // Load YouTube API
+        if (!window.YT) {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        }
+
+        // Fallback: Enable button after 3 minutes regardless
+        setTimeout(() => {
+            if (!videoWatched) {
+                enableContinueButton();
+                document.getElementById('videoProgress').textContent = 'Continue button enabled after 3 minutes.';
+            }
+        }, 180000); // 3 minutes
+
+        // Add pulse animation for the continue button
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3); }
+                50% { box-shadow: 0 8px 25px rgba(40, 167, 69, 0.6); }
+                100% { box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Check if user came from RENEW completion
+        document.addEventListener('DOMContentLoaded', function() {
+            const completionStatus = localStorage.getItem('renew_completion_status');
+            if (completionStatus !== 'ready_for_video') {
+                // User didn't come from proper completion flow
+                console.warn('User accessed completion video without proper flow');
+            }
+        });
+        
+        // Data collection function
+        function collectAllRenewData() {
+            try {
+                const renewStudyData = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+                const ironSpongeResults = JSON.parse(localStorage.getItem('ironSpongeResults') || '{}');
+
+                // Return everything, including nested objects, without missing fields
+                return {
+                    nickname: renewStudyData.nickname || '',
+                    started_at: renewStudyData.started_at || '',
+                    timestamp: new Date().toISOString(),
+                    responses: renewStudyData.responses || {},
+                    completed_sections: renewStudyData.completed_sections || [],
+                    journal_entries: renewStudyData.journal_entries || {},
+                    journal_responses: renewStudyData.journal_responses || {},
+                    posplan_responses: renewStudyData.posplan_responses || {},
+                    posplan_survey: renewStudyData.posplan_survey || {},
+                    progress: renewStudyData.progress || {},
+                    survey_responses: renewStudyData.survey_responses || {},
+                    notes: renewStudyData.notes || {},
+                    additional_teaching_survey: renewStudyData.additional_teaching_survey || {},
+                    quiz_results: renewStudyData.quiz_results || {},
+                    privacy_settings: renewStudyData.privacy_settings || {},
+                    individual_privacy_settings: renewStudyData.individual_privacy_settings || {},
+                    iron_sponge_results: ironSpongeResults
+                };
+            } catch (error) {
+                console.error('Error collecting RENEW data:', error);
+                return null;
+            }
+        }
+
+        // Submit data to Qualtrics
+        function submitToQualtrics(data, isEmergency = false) {
+            try {
+                if (typeof Qualtrics === 'undefined') {
+                    throw new Error('Qualtrics not found. Make sure RENEW is embedded in a Qualtrics survey.');
+                }
+
+                // Loop through all keys in the data object
+                for (const key in data) {
+                    if (data.hasOwnProperty(key)) {
+                        let value = data[key];
+                        
+                        // Convert objects/arrays to JSON strings
+                        if (typeof value === 'object') {
+                            value = JSON.stringify(value);
+                        }
+
+                        Qualtrics.SurveyEngine.setEmbeddedData(`renew_${key}`, value);
+                    }
+                }
+
+                // Add submission type and completion flags
+                Qualtrics.SurveyEngine.setEmbeddedData('renew_submission_type', isEmergency ? 'emergency' : 'normal');
+                Qualtrics.SurveyEngine.setEmbeddedData('renew_completed', 'true');
+                Qualtrics.SurveyEngine.setEmbeddedData('video_completed', 'true');
+
+                return true;
+            } catch (error) {
+                console.error('Qualtrics submission error:', error);
+                throw error;
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Thoughts and Feelings - Part 2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Work Sans', sans-serif;
+      height: 100vh;
+      width: 100vw;
+      background-color: #f4f0fb;
+      display: flex;
+      overflow: hidden;
+    }
+    .video-container {
+      flex: 3.15;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      order: 1;
+    }
+    .sidebar {
+      flex: 1.5;
+      background-color: #fff;
+      padding: 20px;
+      border-left: 2px solid #ccc;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      order: 2;
+      height: 100vh;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+    .sidebar h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #5a3e8c;
+      font-size: 18px;
+    }
+
+    .question-card {
+      display: none;
+      background: #fff;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border: 2px solid #5a3e8c;
+      margin-bottom: 20px;
+    }
+
+    .question-card.show {
+      display: block;
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    .question-title {
+      color: #5a3e8c;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .quiz-option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin-bottom: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #495057;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .quiz-option:hover {
+      background: #e3f2fd;
+      border-color: #5a3e8c;
+      color: #5a3e8c;
+      text-decoration: none;
+    }
+
+    .quiz-option.selected {
+      background: #5a3e8c;
+      border-color: #5a3e8c;
+      color: white;
+    }
+
+    .quiz-option.correct {
+      background: #d4edda;
+      border-color: #28a745;
+      color: #155724;
+    }
+
+    .quiz-option.incorrect {
+      background: #f8d7da;
+      border-color: #dc3545;
+      color: #721c24;
+    }
+
+    .quiz-feedback {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 8px;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+    }
+
+    .quiz-feedback.show {
+      display: block;
+    }
+
+    .quiz-feedback.correct {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      display: block !important;
+    }
+
+    .quiz-feedback.incorrect {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      align-self: flex-start;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: auto;
+    }
+    .back-button:hover {
+      background-color: #5a6268;
+      transform: translateY(-1px);
+      color: white;
+      text-decoration: none;
+    }
+    .next-button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      align-self: flex-start;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+      margin-bottom: 15px;
+      animation: fadeInUp 0.5s ease-out;
+    }
+    .next-button:hover {
+      background-color: #218838;
+      transform: translateY(-1px);
+      color: white;
+      text-decoration: none;
+    }
+    .next-button-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+    }
+    .prev-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+    
+    .prev-button-overlay:hover {
+      background: #b8a5d1;
+      color: #4a3474;
+      text-decoration: none;
+    }
+    
+    .next-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+      font-family: 'Work Sans', sans-serif;
+      position: relative;
+    }
+    .next-button-overlay:hover {
+      background: #b8a5d1;
+      color: #4a3474;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    /* Motivational entrance animation - Purple to White */
+    .next-button-motivational {
+      animation: motivationalEntrance 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    @keyframes motivationalEntrance {
+      0% {
+        opacity: 0;
+        transform: translateX(100px) scale(0.8);
+        box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+        background: #c8b5db;
+      }
+      20% {
+        opacity: 0.7;
+        transform: translateX(-10px) scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      40% {
+        opacity: 1;
+        transform: translateX(5px) scale(1.1);
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      60% {
+        transform: translateX(-2px) scale(1.02);
+        box-shadow: 0 4px 20px rgba(255, 255, 255, 0.7);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      80% {
+        transform: translateX(1px) scale(1.01);
+        box-shadow: 0 4px 15px rgba(248, 249, 250, 0.5);
+        background: linear-gradient(135deg, #f8f9fa, #c8b5db);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background: #c8b5db;
+      }
+    }
+
+    /* Motivational pulse effect for ongoing engagement */
+    .next-button-pulse {
+      position: relative;
+      animation: motivationalPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes motivationalPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+      }
+    }
+
+    /* Motivational glow border effect */
+    .next-button-pulse::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #ffffff, #f8f9fa, #e9ecef, #ffffff);
+      border-radius: 10px;
+      z-index: -1;
+      opacity: 0;
+      animation: motivationalGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes motivationalGlow {
+      0%, 100% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    /* Static visible state - no ongoing animation */
+    .next-button-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Hidden audio element - no visible UI */
+    .hidden-audio {
+      display: none;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .video-wrapper {
+      width: 100%;
+      max-width: 100%;
+      height: 75vh;
+      position: relative;
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border: 0;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        flex-direction: column;
+      }
+      .video-container {
+        flex: 1;
+        padding: 10px;
+      }
+      .sidebar {
+        flex: 0 0 250px;
+        border-left: none;
+        border-top: 2px solid #ccc;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+      }
+      .video-wrapper {
+        height: 50vh;
+      }
+      .quiz-option {
+        font-size: 14px;
+        padding: 12px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Audio elements for question display -->
+  <audio id="questionDisplayAudio1" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_arNBhjUOV7meZKJ" type="audio/mpeg">
+  </audio>
+  
+  <audio id="questionDisplayAudio2" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_vltR9jPCJmbeviE" type="audio/mpeg">
+  </audio>
+  
+  <audio id="questionDisplayAudio3" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_febxx1cwlfiiydZ" type="audio/mpeg">
+  </audio>
+  
+  <audio id="questionDisplayAudio4" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_9Lil0iHAxANBAJU" type="audio/mpeg">
+  </audio>
+
+  <!-- Audio elements for correct answers (one for each question) -->
+  <audio id="correctAnswerAudio1" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_ZV0njNb7SnRRfD3" type="audio/mpeg">
+  </audio>
+  
+  <audio id="correctAnswerAudio2" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_iNCoBOJZvT039N1" type="audio/mpeg">
+  </audio>
+  
+  <audio id="correctAnswerAudio3" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_obGYgylRS0Lyngr" type="audio/mpeg">
+  </audio>
+  
+  <audio id="correctAnswerAudio4" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_XiMfZDVrbc8Fd8A" type="audio/mpeg">
+  </audio>
+
+  <!-- Audio elements for wrong answers (one for each question) -->
+  <audio id="wrongAnswerAudio1" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_5t9gq5781zms6zB" type="audio/mpeg">
+  </audio>
+  
+  <audio id="wrongAnswerAudio2" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_KBHNw5ztYv1smKP" type="audio/mpeg">
+  </audio>
+  
+  <audio id="wrongAnswerAudio3" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_yQ2o40yGJm9gswK" type="audio/mpeg">
+  </audio>
+  
+  <audio id="wrongAnswerAudio4" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_F1RUU51BomTlQQE" type="audio/mpeg">
+  </audio>
+
+  <!-- Hidden audio element for success sound effect -->
+  <audio id="successSoundEffect" class="hidden-audio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_6UG7Rt7QKA7N8oH" type="audio/mpeg">
+  </audio>
+
+  <div class="video-container">
+    <!-- Previous button positioned above video, left-aligned -->
+    <div class="prev-button-container" id="prevButtonContainer" style="position: absolute; top: 20px; left: 20px; z-index: 10;">
+      <a href="{% url 'emo_p1' %}" class="prev-button-overlay">
+        ← Previous
+      </a>
+    </div>
+    
+    <!-- Next button positioned above video, right-aligned (hidden initially) -->
+    <div class="next-button-container" id="nextButtonContainer" style="display: none;">
+      <a href="{% url 'emo_p3' %}" class="next-button-overlay" id="nextButton">
+        Next →
+      </a>
+    </div>
+    
+    <!-- Video wrapper for YouTube API -->
+    <div class="video-wrapper">
+      <div id="youtubePlayer"></div>
+    </div>
+  </div>
+  
+  <div class="sidebar">
+    <h3>Quiz Time! 🎯</h3>
+    
+    <!-- Question 1 -->
+    <div class="question-card" id="questionCard1">
+      <div class="question-title">
+        Dave is sad because he has had angry thoughts about the world from a very young age. 
+      </div>
+      
+      <button class="quiz-option" onclick="selectOption1(this, false)">
+        True
+      </button>
+      
+      <button class="quiz-option" onclick="selectOption1(this, true)">
+        False
+      </button>
+      
+      <div class="quiz-feedback" id="quizFeedback1"></div>
+      <button class="next-button" id="nextQuizBtn1" style="display: none;" onclick="showNextQuestion(2)">
+        Next Question →
+      </button>
+    </div>
+
+    <!-- Question 2 -->
+    <div class="question-card" id="questionCard2">
+      <div class="question-title">
+        Avoiding friends, like Dave is, is a common for youth who had a bad thing happen to them like losing a loved one.
+      </div>
+      
+      <button class="quiz-option" onclick="selectOption2(this, true)">
+        True
+      </button>
+      
+      <button class="quiz-option" onclick="selectOption2(this, false)">
+        False
+      </button>
+      
+      <div class="quiz-feedback" id="quizFeedback2"></div>
+      <button class="next-button" id="nextQuizBtn2" style="display: none;" onclick="showNextQuestion(3)">
+        Next Question →
+      </button>
+    </div>
+
+    <!-- Question 3 -->
+    <div class="question-card" id="questionCard3">
+      <div class="question-title">
+        It's strange that Dave is fighting with his mom, as kids are usually just avoidant after a major life event.
+      </div>
+      
+      <button class="quiz-option" onclick="selectOption3(this, false)">
+        True
+      </button>
+      
+      <button class="quiz-option" onclick="selectOption3(this, true)">
+        False
+      </button>
+      
+      <div class="quiz-feedback" id="quizFeedback3"></div>
+      <button class="next-button" id="nextQuizBtn3" style="display: none;" onclick="showNextQuestion(4)">
+        Next Question →
+      </button>
+    </div>
+
+    <!-- Question 4 -->
+    <div class="question-card" id="questionCard4">
+      <div class="question-title">
+        Dave may keep thinking about his grandfather, and feeling sad in the room, because he is being "triggered".
+      </div>
+      
+      <button class="quiz-option" onclick="selectOption4(this, true)">
+        True
+      </button>
+      
+      <button class="quiz-option" onclick="selectOption4(this, false)">
+        False
+      </button>
+      
+      <div class="quiz-feedback" id="quizFeedback4"></div>
+    </div>
+
+    <a href="{% url 'adventure_map' %}" class="back-button">← Back to Adventure Map</a>
+  </div>
+
+  <script>
+    // Audio variables
+    let correctAnswerAudios = {};
+    let wrongAnswerAudios = {};
+    let questionDisplayAudios = {};
+    let audioEnabled = false;
+
+    // Direct localStorage functions (consistent with other standardized pages)
+    function markComplete(pageId) {
+      try {
+        localStorage.setItem('completed_' + pageId, 'true');
+        localStorage.setItem('completed_' + pageId + '_timestamp', Date.now().toString());
+        return true;
+      } catch (e) {
+        console.error('Error saving completion status:', e);
+        return false;
+      }
+    }
+
+    function isComplete(pageId) {
+      try {
+        return localStorage.getItem('completed_' + pageId) === 'true';
+      } catch (e) {
+        console.error('Error checking completion status:', e);
+        return false;
+      }
+    }
+
+    function saveQuizResults(pageId, results) {
+      try {
+        // Get current data
+        let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        
+        // Ensure required structures exist
+        if (!data.quiz_results) data.quiz_results = {};
+        
+        // Save quiz results
+        data.quiz_results[pageId] = results;
+        data.quiz_results[pageId + '_timestamp'] = Date.now();
+        
+        // Save back to localStorage
+        localStorage.setItem('renew_study_data', JSON.stringify(data));
+        return true;
+      } catch (e) {
+        console.error('Error saving quiz results:', e);
+        return false;
+      }
+    }
+
+    // Function to play success sound effect
+    function playSuccessSound() {
+      const soundEffect = document.getElementById('successSoundEffect');
+      if (soundEffect) {
+        // Reset audio to beginning in case it was played before
+        soundEffect.currentTime = 0;
+        soundEffect.play().catch(error => {
+          console.log('Sound effect autoplay failed (browser policy):', error);
+          // Sound effect is just enhancement, continue normally if blocked
+        });
+      }
+    }
+
+    // Function to show next button with motivational animation
+    function showNextButtonMotivational() {
+      const nextButtonContainer = document.getElementById('nextButtonContainer');
+      const nextButton = document.getElementById('nextButton');
+      
+      if (nextButtonContainer && nextButton) {
+        // Show the container
+        nextButtonContainer.style.display = 'block';
+        
+        // Check if both animation AND sound have already been shown for this video
+        const specialEffectsShown = localStorage.getItem('emo_p2_special_effects_shown');
+        
+        if (!specialEffectsShown) {
+          // First time showing - play both the motivational animation AND sound effect
+          playSuccessSound();
+          
+          // Make sure no other classes are on the button first
+          nextButton.classList.remove('next-button-pulse', 'visible');
+          nextButton.classList.add('next-button-motivational');
+          
+          // Mark both animation and sound as shown immediately
+          localStorage.setItem('emo_p2_special_effects_shown', 'true');
+          
+          // After initial animation completes, switch to subtle pulse
+          setTimeout(() => {
+            nextButton.classList.remove('next-button-motivational');
+            nextButton.classList.add('next-button-pulse', 'visible');
+          }, 1200);
+        } else {
+          // Special effects already shown before - show with subtle pulse immediately
+          // NO sound effect and NO motivational animation
+          nextButton.classList.remove('next-button-motivational');
+          nextButton.classList.add('next-button-pulse', 'visible');
+        }
+      }
+    }
+
+    // Function to stop all currently playing audio
+    function stopAllAudio() {
+      // Stop all question display audios
+      Object.values(questionDisplayAudios).forEach(audio => {
+        if (audio && !audio.paused) {
+          audio.pause();
+          audio.currentTime = 0;
+        }
+      });
+      
+      // Stop all correct answer audios
+      Object.values(correctAnswerAudios).forEach(audio => {
+        if (audio && !audio.paused) {
+          audio.pause();
+          audio.currentTime = 0;
+        }
+      });
+      
+      // Stop all wrong answer audios
+      Object.values(wrongAnswerAudios).forEach(audio => {
+        if (audio && !audio.paused) {
+          audio.pause();
+          audio.currentTime = 0;
+        }
+      });
+    }
+
+    // Audio playback functions
+    async function playCorrectAnswerAudio(questionNumber) {
+      const audio = correctAnswerAudios[questionNumber];
+      if (!audio || !audioEnabled) return;
+
+      try {
+        // Stop all other audio first
+        stopAllAudio();
+        
+        audio.currentTime = 0;
+        console.log(`Playing correct answer audio for question ${questionNumber}...`);
+        
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+          console.log(`Correct answer audio for question ${questionNumber} playing successfully!`);
+        }
+      } catch (error) {
+        console.error(`Correct answer audio for question ${questionNumber} playback failed:`, error);
+      }
+    }
+
+    async function playWrongAnswerAudio(questionNumber) {
+      const audio = wrongAnswerAudios[questionNumber];
+      if (!audio || !audioEnabled) return;
+
+      try {
+        // Stop all other audio first
+        stopAllAudio();
+        
+        audio.currentTime = 0;
+        console.log(`Playing wrong answer audio for question ${questionNumber}...`);
+        
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+          console.log(`Wrong answer audio for question ${questionNumber} playing successfully!`);
+        }
+      } catch (error) {
+        console.error(`Wrong answer audio for question ${questionNumber} playback failed:`, error);
+      }
+    }
+
+    async function playQuestionDisplayAudio(questionNumber) {
+      const audio = questionDisplayAudios[questionNumber];
+      if (!audio || !audioEnabled) return;
+
+      try {
+        // Stop all other audio first
+        stopAllAudio();
+        
+        audio.currentTime = 0;
+        console.log(`Playing question ${questionNumber} display audio...`);
+        
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+          console.log(`Question ${questionNumber} display audio playing successfully!`);
+        }
+      } catch (error) {
+        console.error(`Question ${questionNumber} display audio playback failed:`, error);
+      }
+    }
+
+    // Quiz functionality
+    let quizCompleted = false;
+    let currentQuestion = 1;
+    let quizAnswers = {};
+    let videoEndDetected = false;
+
+    function selectOption1(optionElement, isCorrect) {
+      // Remove previous selections for question 1
+      document.querySelectorAll('#questionCard1 .quiz-option').forEach(opt => {
+        opt.classList.remove('selected', 'correct', 'incorrect');
+      });
+      
+      // Mark selected option
+      optionElement.classList.add('selected');
+      
+      const feedback = document.getElementById('quizFeedback1');
+      
+      if (isCorrect) {
+        optionElement.classList.add('correct');
+        feedback.textContent = "That's right! The reason Dave is feeling sad is because of recent events in his life, not because he was born that way.";
+        feedback.className = 'quiz-feedback correct show';
+        
+        // Play correct answer audio
+        playCorrectAnswerAudio(1);
+        
+        // Save answer
+        quizAnswers.q1 = { correct: true, answer: 'False' };
+        
+        setTimeout(() => {
+          document.getElementById('nextQuizBtn1').style.display = 'block';
+        }, 1000);
+        
+      } else {
+        optionElement.classList.add('incorrect');
+        feedback.textContent = "Not quite, go ahead and click on False.";
+        feedback.className = 'quiz-feedback incorrect show';
+        
+        // Play wrong answer audio
+        playWrongAnswerAudio(1);
+        
+        setTimeout(() => {
+          feedback.classList.remove('show');
+          optionElement.classList.remove('selected', 'incorrect');
+        }, 4500);
+      }
+    }
+
+    function selectOption2(optionElement, isCorrect) {
+      document.querySelectorAll('#questionCard2 .quiz-option').forEach(opt => {
+        opt.classList.remove('selected', 'correct', 'incorrect');
+      });
+      
+      optionElement.classList.add('selected');
+      
+      const feedback = document.getElementById('quizFeedback2');
+      
+      if (isCorrect) {
+        optionElement.classList.add('correct');
+        feedback.textContent = "You got it! The most common response after a big, scary, or sad event is to avoid.";
+        feedback.className = 'quiz-feedback correct show';
+        
+        // Play correct answer audio
+        playCorrectAnswerAudio(2);
+        
+        quizAnswers.q2 = { correct: true, answer: 'True' };
+        
+        setTimeout(() => {
+          document.getElementById('nextQuizBtn2').style.display = 'block';
+        }, 1000);
+        
+      } else {
+        optionElement.classList.add('incorrect');
+        feedback.textContent = "Not this time, but now I bet you know the right answer!";
+        feedback.className = 'quiz-feedback incorrect show';
+        
+        // Play wrong answer audio
+        playWrongAnswerAudio(2);
+        
+        setTimeout(() => {
+          feedback.classList.remove('show');
+          optionElement.classList.remove('selected', 'incorrect');
+        }, 5500);
+      }
+    }
+
+    function selectOption3(optionElement, isCorrect) {
+      document.querySelectorAll('#questionCard3 .quiz-option').forEach(opt => {
+        opt.classList.remove('selected', 'correct', 'incorrect');
+      });
+      
+      optionElement.classList.add('selected');
+      
+      const feedback = document.getElementById('quizFeedback3');
+      
+      if (isCorrect) {
+        optionElement.classList.add('correct');
+        feedback.textContent = "Even though many people feel avoidant after a major life event, others feel aggressive. And as we see with Dave, many people feel avoidant in some situations and aggressive in others.";
+        feedback.className = 'quiz-feedback correct show';
+        
+        // Play correct answer audio
+        playCorrectAnswerAudio(3);
+        
+        quizAnswers.q3 = { correct: true, answer: 'False' };
+        
+        setTimeout(() => {
+          document.getElementById('nextQuizBtn3').style.display = 'block';
+        }, 1000);
+        
+      } else {
+        optionElement.classList.add('incorrect');
+        feedback.textContent = "Incorrect, so it must be….";
+        feedback.className = 'quiz-feedback incorrect show';
+        
+        // Play wrong answer audio
+        playWrongAnswerAudio(3);
+        
+        setTimeout(() => {
+          feedback.classList.remove('show');
+          optionElement.classList.remove('selected', 'incorrect');
+        }, 3500);
+      }
+    }
+
+    function selectOption4(optionElement, isCorrect) {
+      document.querySelectorAll('#questionCard4 .quiz-option').forEach(opt => {
+        opt.classList.remove('selected', 'correct', 'incorrect');
+      });
+      
+      optionElement.classList.add('selected');
+      
+      const feedback = document.getElementById('quizFeedback4');
+      
+      if (isCorrect) {
+        optionElement.classList.add('correct');
+        feedback.textContent = "There are a lot of things in his room, the playing cards, the TV that could make him think of his grandfather. Even his friends and mom trying to connect with him might be triggering because just hanging out and talking is something he liked doing with his grandfather.";
+        feedback.className = 'quiz-feedback correct show';
+        
+        // Play correct answer audio
+        playCorrectAnswerAudio(4);
+        
+        quizAnswers.q4 = { correct: true, answer: 'True' };
+        
+        // Wait for audio to end before showing next button
+        const audio4 = correctAnswerAudios[4];
+        if (audio4) {
+          audio4.addEventListener('ended', function() {
+            console.log('Question 4 audio ended, showing next button');
+            quizCompleted = true;
+            markQuizComplete();
+            showNextButtonMotivational();
+          }, { once: true });
+        } else {
+          // Fallback if audio doesn't exist
+          setTimeout(() => {
+            quizCompleted = true;
+            markQuizComplete();
+            showNextButtonMotivational();
+          }, 2000);
+        }
+        
+      } else {
+        optionElement.classList.add('incorrect');
+        feedback.textContent = "You didn't get this one right, but this was by far the hardest question. Try the other response!";
+        feedback.className = 'quiz-feedback incorrect show';
+        
+        // Play wrong answer audio
+        playWrongAnswerAudio(4);
+        
+        setTimeout(() => {
+          feedback.classList.remove('show');
+          optionElement.classList.remove('selected', 'incorrect');
+        }, 7000);
+      }
+    }
+
+    // Function to manually show next question
+    function showNextQuestion(questionNumber) {
+      document.getElementById('questionCard' + (questionNumber - 1)).style.display = 'none';
+      document.getElementById('questionCard' + questionNumber).classList.add('show');
+      currentQuestion = questionNumber;
+      
+      // Play audio for the new question
+      playQuestionDisplayAudio(questionNumber);
+    }
+
+    // YouTube API integration
+    let player;
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('youtubePlayer', {
+        height: '100%',
+        width: '100%',
+        videoId: 'W9i6ahzAbYQ',
+        playerVars: {
+          'controls': 1,
+          'autoplay': 1,
+          'rel': 0,
+          'cc_load_policy': 1
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      // Autoplay is handled by playerVars
+      event.target.playVideo();
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data == YT.PlayerState.ENDED) {
+        videoEndDetected = true;
+        audioEnabled = true; // Enable audio since video played (user already interacted)
+        document.getElementById('questionCard1').classList.add('show');
+        // Play audio for first question
+        playQuestionDisplayAudio(1);
+      }
+    }
+
+    // Load YouTube API script
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
+    // Fallback to show quiz after 3 minutes
+    setTimeout(() => {
+      if (!videoEndDetected && currentQuestion === 1) {
+        audioEnabled = true; // Enable audio in fallback case too
+        document.getElementById('questionCard1').classList.add('show');
+        // Play audio for first question
+        playQuestionDisplayAudio(1);
+      }
+    }, 180000);
+
+    // Mark quiz as complete
+    function markQuizComplete() {
+      markComplete('emo_p2');
+      saveQuizResults('emo_p2', quizAnswers);
+      console.log('emo_p2 quiz completed and marked as complete');
+    }
+
+    // Initialize page on load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize audio elements
+      for (let i = 1; i <= 4; i++) {
+        correctAnswerAudios[i] = document.getElementById(`correctAnswerAudio${i}`);
+        wrongAnswerAudios[i] = document.getElementById(`wrongAnswerAudio${i}`);
+        questionDisplayAudios[i] = document.getElementById(`questionDisplayAudio${i}`);
+      }
+      
+      // Add error handling for audio files
+      Object.values(correctAnswerAudios).forEach((audio, index) => {
+        if (audio) {
+          audio.addEventListener('error', (e) => {
+            console.warn(`Correct answer audio ${index + 1} file could not be loaded:`, e);
+          });
+        }
+      });
+      
+      Object.values(wrongAnswerAudios).forEach((audio, index) => {
+        if (audio) {
+          audio.addEventListener('error', (e) => {
+            console.warn(`Wrong answer audio ${index + 1} file could not be loaded:`, e);
+          });
+        }
+      });
+
+      // Add error handling for question display audios
+      Object.values(questionDisplayAudios).forEach((audio, index) => {
+        if (audio) {
+          audio.addEventListener('error', (e) => {
+            console.warn(`Question ${index + 1} display audio file could not be loaded:`, e);
+          });
+        }
+      });
+
+      // Enable audio on first user interaction
+      const enableAudio = () => {
+        audioEnabled = true;
+        console.log('Audio enabled by user interaction');
+        document.removeEventListener('click', enableAudio);
+        document.removeEventListener('touchstart', enableAudio);
+      };
+      
+      document.addEventListener('click', enableAudio, { once: true });
+      document.addEventListener('touchstart', enableAudio, { once: true });
+
+      // Check if already completed and show quiz immediately
+      if (isComplete('emo_p2')) {
+        audioEnabled = true; // Enable audio for completed page
+        document.getElementById('questionCard1').classList.add('show');
+        showNextButtonMotivational();
+        // Play audio for first question if already completed
+        setTimeout(() => playQuestionDisplayAudio(1), 500);
+      }
+    });
+  </script>
+</body>
+</html>

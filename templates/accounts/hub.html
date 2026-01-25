@@ -1,0 +1,624 @@
+{% extends 'base.html' %}
+
+{% block title %}Main Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    body, html {
+        margin: 0;
+        padding: 20px;
+        font-family: 'Work Sans', sans-serif;
+        min-height: 100vh;
+        background-color: #f4f0fb;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .hub-container {
+        max-width: 1000px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .hub-title {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #5a3e8c;
+        margin-bottom: 20px;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .welcome-back {
+        font-size: 1.3rem;
+        color: #666;
+        margin-bottom: 50px;
+        font-weight: 400;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    .button-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+        margin-top: 40px;
+        max-width: 1000px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hub-button {
+        background: #fff;
+        border: 3px solid #5a3e8c;
+        border-radius: 20px;
+        padding: 35px 20px;
+        text-decoration: none;
+        color: #5a3e8c;
+        transition: all 0.3s ease;
+        font-family: 'Work Sans', sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 160px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hub-button:hover {
+        background: #5a3e8c;
+        color: white;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(90, 62, 140, 0.3);
+        text-decoration: none;
+    }
+
+    .hub-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .hub-button:hover::before {
+        left: 100%;
+    }
+
+    .button-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    .button-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        animation: fadeInUp 0.8s ease-out 0.5s both;
+    }
+
+    .button-description {
+        font-size: 0.95rem;
+        opacity: 0.8;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
+
+    /* Welcome Modal Styles */
+    .welcome-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    .welcome-modal.show {
+        display: flex;
+    }
+    .welcome-modal-content {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        position: relative;
+        animation: modalSlideIn 0.5s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .modal-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        color: #5a3e8c;
+    }
+
+    .modal-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #5a3e8c;
+        margin-bottom: 15px;
+    }
+
+    .modal-text {
+        font-size: 1rem;
+        line-height: 1.6;
+        color: #333;
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .modal-text ul {
+        margin: 15px 0;
+        padding-left: 20px;
+    }
+
+    .modal-text li {
+        margin-bottom: 8px;
+    }
+
+    .modal-highlight {
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        border-radius: 12px;
+        padding: 15px;
+        margin: 15px 0;
+        font-weight: 600;
+        color: #856404;
+        font-size: 0.95rem;
+    }
+
+    .modal-button {
+        background: #5a3e8c;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: 'Work Sans', sans-serif;
+    }
+
+    .modal-button:hover:not(:disabled) {
+        background: #4a3474;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(90, 62, 140, 0.4);
+    }
+
+    .modal-button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    /* Resource Section Styles */
+    .resources-section {
+        margin-top: 60px;
+        padding: 40px;
+        background: #fff;
+        border-radius: 20px;
+        border: 2px solid #e8d9f3;
+        box-shadow: 0 8px 25px rgba(90, 62, 140, 0.1);
+        animation: fadeInUp 0.8s ease-out 1s both;
+        text-align: left;
+    }
+
+    .resources-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #5a3e8c;
+        margin-bottom: 20px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .progress-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .progress-card {
+        background: #f8f5ff;
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 4px solid #5a3e8c;
+        text-align: center;
+    }
+
+    .progress-card.completed {
+        background: #e8f5e8;
+        border-left-color: #28a745;
+    }
+
+    .progress-card.in-progress {
+        background: #fff3cd;
+        border-left-color: #ffc107;
+    }
+
+    .progress-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #5a3e8c;
+        margin-bottom: 5px;
+    }
+
+    .progress-card.completed .progress-number {
+        color: #28a745;
+    }
+
+    .progress-card.in-progress .progress-number {
+        color: #e67e22;
+    }
+
+    .progress-label {
+        font-size: 0.9rem;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .content-summary {
+        margin-top: 30px;
+    }
+
+    .summary-section {
+        margin-bottom: 25px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        border-left: 4px solid #5a3e8c;
+    }
+
+    .summary-section.completed {
+        border-left-color: #28a745;
+    }
+
+    .summary-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #5a3e8c;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .summary-title.completed {
+        color: #28a745;
+    }
+
+    .summary-content {
+        color: #555;
+        line-height: 1.6;
+    }
+
+    .key-insights {
+        background: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 10px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .insight-item {
+        margin-bottom: 8px;
+        color: #666;
+        font-size: 0.95rem;
+    }
+
+    .insight-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .insight-item::before {
+        content: "💡 ";
+        margin-right: 5px;
+    }
+
+    .no-content {
+        text-align: center;
+        color: #999;
+        font-style: italic;
+        padding: 40px 20px;
+    }
+
+    .unlock-message {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    /* Animation delays for staggered effect */
+    .profile-button { animation: fadeInUp 0.8s ease-out 0.4s both; }
+    .adventure-button { animation: fadeInUp 0.8s ease-out 0.6s both; }
+    .discoveries-button { animation: fadeInUp 0.8s ease-out 0.8s both; }
+    .notes-button { animation: fadeInUp 0.8s ease-out 1.0s both; }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive design */
+    @media (max-width: 600px) {
+        body, html {
+            padding: 15px;
+        }
+        
+        .button-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .hub-title {
+            font-size: 2.2rem;
+        }
+        
+        .welcome-back {
+            font-size: 1.1rem;
+        }
+        
+        .hub-button {
+            min-height: 120px;
+            padding: 25px 15px;
+        }
+        
+        .button-icon {
+            font-size: 2.5rem;
+        }
+        
+        .button-title {
+            font-size: 1.1rem;
+        }
+        
+        .button-description {
+            font-size: 0.9rem;
+        }
+
+        .resources-section {
+            margin-top: 40px;
+            padding: 25px;
+        }
+
+        .resources-title {
+            font-size: 1.5rem;
+        }
+
+        .progress-overview {
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .welcome-modal-content {
+            padding: 25px 20px;
+            margin: 10px;
+            max-width: 400px;
+        }
+
+        .modal-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+        }
+
+        .modal-text {
+            font-size: 0.95rem;
+        }
+
+        .modal-highlight {
+            padding: 12px;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hub-container">
+    <h1 class="hub-title">Welcome to the Main Hub!</h1>
+    
+    <p class="welcome-back" id="welcomeMessage">
+        Here's where your journey begins. What would you like to explore first?
+    </p>
+
+    <div class="button-grid">
+        <a href="{% url 'adventure_map' %}" class="hub-button adventure-button">
+            <div class="button-icon">🗺️</div>
+            <div class="button-title">Adventure Map</div>
+            <div class="button-description">Explore your learning journey</div>
+        </a>
+        
+        <a href="{% url 'profile' %}" class="hub-button profile-button">
+            <div class="button-icon">👤</div>
+            <div class="button-title">Profile</div>
+            <div class="button-description">View and manage your responses</div>
+        </a>
+        
+        <a href="{% url 'discoveries' %}" class="hub-button discoveries-button">
+            <div class="button-icon">🔍</div>
+            <div class="button-title">My Discoveries</div>
+            <div class="button-description">View takeways from completed sections</div>
+        </a>
+
+        <a href="{% url 'tips' %}" class="hub-button notes-button">
+            <div class="button-icon">💡</div>
+            <div class="button-title">Tips</div>
+            <div class="button-description">Important reminders for your well-being</div>
+        </a>
+    </div>
+</div>
+
+<!-- Welcome Modal for First Time Visitors -->
+<div class="welcome-modal" id="welcomeModal">
+    <div class="welcome-modal-content">
+        <div class="modal-icon">🗺️</div>
+        <h2 class="modal-title">Welcome to Your Journey!</h2>
+        
+        <div class="modal-text">
+            <p>This is your main hub - think of it as your home base! Here's what you need to know:</p>
+            
+            <ul style="text-align: left; margin: 20px 0;">
+                <li><strong>Start with the Adventure Map</strong> - This is where your journey begins!</li>
+                <li><strong>Your Profile and Discoveries</strong> will unlock as you complete activities</li>
+                <li><strong>Need help or feeling overwhelmed?</strong> Click on Tips anytime for support</li>
+            </ul>
+        </div>
+        
+        <div class="modal-highlight">
+            <strong>Tech Tip:</strong> If videos don't load or seem stuck, just refresh the page or go back and try again. It happens sometimes!
+        </div>
+        
+        <div class="modal-text">
+            <p style="text-align: center; font-weight: 600; color: #5a3e8c;">Ready to start your adventure? Let's go explore!</p>
+        </div>
+        
+        <button class="modal-button" id="startButton" onclick="closeWelcomeModal()" disabled>
+            Let's Get Started! 🚀
+        </button>
+    </div>
+</div>
+
+<!-- Welcome audio -->
+<audio id="welcomeAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_pcKgtmTNbZZp4qJ" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
+<!-- Click audio -->
+<audio id="clickAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_8vpprIXctWWMnA8" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nickname = RENEWStorage.getNickname();
+    const welcomeMessage = document.getElementById('welcomeMessage');
+    
+    if (nickname) {
+        welcomeMessage.textContent = `Hey ${nickname}! Here's where your journey begins. What would you like to explore first?`;
+        // Update page title
+        document.title = `Main Hub - ${nickname}`;
+        
+        // Check if this is the first visit to hub
+        checkFirstVisit();
+    } else {
+        // No nickname found, redirect to nickname page
+        window.location.href = "{% url 'nickname' %}";
+    }
+});
+
+function checkFirstVisit() {
+    // Check if user has visited the hub before
+    const hasVisitedHub = localStorage.getItem('renew_hub_visited');
+    
+    if (!hasVisitedHub) {
+        // First time visit - show welcome modal
+        setTimeout(() => {
+            showWelcomeModal();
+        }, 1000); // Show after 1 second to let page load
+        
+        // Mark as visited
+        localStorage.setItem('renew_hub_visited', 'true');
+    }
+}
+
+function showWelcomeModal() {
+    const modal = document.getElementById('welcomeModal');
+    const welcomeAudio = document.getElementById('welcomeAudio');
+    const startButton = document.getElementById('startButton');
+    
+    modal.classList.add('show');
+    
+    // Play welcome audio
+    if (welcomeAudio) {
+        welcomeAudio.play().catch(error => {
+            console.log('Audio autoplay prevented:', error);
+            // If autoplay is prevented, enable button immediately
+            startButton.disabled = false;
+        });
+        
+        // When welcome audio ends, enable button (no congratulations audio in welcome modal)
+        welcomeAudio.addEventListener('ended', function() {
+            console.log('Welcome audio ended, enabling button');
+            startButton.disabled = false;
+        }, { once: true });
+    } else {
+        // If audio element doesn't exist, enable button
+        startButton.disabled = false;
+    }
+}
+
+
+function closeWelcomeModal() {
+    const modal = document.getElementById('welcomeModal');
+    const clickAudio = document.getElementById('clickAudio');
+    
+    // Play click audio
+    if (clickAudio) {
+        clickAudio.play().catch(error => {
+            console.log('Audio playback prevented:', error);
+        });
+    }
+    
+    // Close modal after a short delay to let audio start
+    setTimeout(function() {
+        modal.classList.remove('show');
+    }, 200);
+}
+
+// Close modal when clicking outside of it
+window.onclick = function(event) {
+    const modal = document.getElementById('welcomeModal');
+    const startButton = document.getElementById('startButton');
+    if (event.target === modal && !startButton.disabled) {
+        closeWelcomeModal();
+    }
+}
+</script>
+{% endblock %}

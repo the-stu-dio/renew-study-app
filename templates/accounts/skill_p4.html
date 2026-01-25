@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Skills - Choose Your Focus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Work Sans', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f4f0fb 0%, #e8e2f4 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      max-width: 800px;
+    }
+
+    .header h1 {
+      color: #5a3e8c;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-shadow: 0 2px 4px rgba(90, 62, 140, 0.1);
+    }
+
+    .header p {
+      color: #666;
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 0;
+    }
+
+    .skills-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      max-width: 1200px;
+      width: 100%;
+      margin-bottom: 40px;
+    }
+
+    .skill-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(90, 62, 140, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+      min-height: 220px;
+    }
+
+    .skill-card.non-clickable {
+      cursor: default;
+      opacity: 0.7;
+    }
+
+    .skill-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #5a3e8c, #8b5fbf);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .skill-card:hover:not(.non-clickable) {
+      transform: translateY(-8px);
+      box-shadow: 0 16px 48px rgba(90, 62, 140, 0.15);
+      border-color: #5a3e8c;
+    }
+
+    .skill-card:hover:not(.non-clickable)::before {
+      transform: scaleX(1);
+    }
+
+    .skill-card.completed {
+      background: linear-gradient(135deg, #f0fff4 0%, #dcfce7 100%);
+      border-color: #22c55e;
+    }
+
+    .skill-card.completed::before {
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      transform: scaleX(1);
+    }
+
+    .skill-icon {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      display: block;
+      text-align: center;
+    }
+
+    .skill-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #5a3e8c;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .skill-card.completed .skill-title {
+      color: #16a34a;
+    }
+
+    .skill-description {
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .skill-benefits {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .skill-card.completed .skill-benefits {
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .skill-benefits h4 {
+      color: #5a3e8c;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .skill-card.completed .skill-benefits h4 {
+      color: #16a34a;
+    }
+
+    .skill-benefits ul {
+      margin: 0;
+      padding-left: 20px;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .skill-benefits li {
+      margin-bottom: 5px;
+    }
+
+    .skill-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .skill-status.not-started {
+      color: #666;
+    }
+
+    .skill-status.completed {
+      color: #16a34a;
+    }
+
+    .completion-badge {
+      background: #16a34a;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .unavailable-badge {
+      background: #6c757d;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .in-progress-badge {
+      background: #f59e0b;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .navigation {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .nav-button {
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .back-button:hover {
+      background-color: #5a6268;
+      transform: translateY(-1px);
+      text-decoration: none;
+      color: white;
+    }
+
+    .next-button {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .next-button:hover {
+      background-color: #218838;
+      transform: translateY(-1px);
+      text-decoration: none;
+      color: white;
+    }
+
+    .progress-summary {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(90, 62, 140, 0.08);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .progress-summary h3 {
+      color: #5a3e8c;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+    }
+
+    .progress-bar {
+      background: #e9ecef;
+      border-radius: 10px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, #5a3e8c, #8b5fbf);
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* Progress indicators for individual skills */
+    .skill-progress {
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .skill-progress-bar {
+      background: #e9ecef;
+      border-radius: 8px;
+      height: 6px;
+      overflow: hidden;
+      margin: 8px 0;
+      width: 100%;
+    }
+
+    .skill-progress-fill {
+      height: 100%;
+      border-radius: 8px;
+      transition: width 0.3s ease;
+    }
+
+    .skill-progress-fill.pmr {
+      background: linear-gradient(90deg, #10b981, #059669);
+    }
+
+    .skill-progress-fill.journaling {
+      background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+    }
+
+    .skill-progress-fill.positive-planning {
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+    }
+
+    .skill-progress-text {
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 5px;
+    }
+
+    .skill-progress-text.completed {
+      color: #16a34a;
+    }
+
+    .skill-progress-text.in-progress {
+      color: #f59e0b;
+    }
+
+    .skill-progress-text.not-started {
+      color: #666;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2rem;
+      }
+      
+      .skills-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .skill-card {
+        padding: 15px;
+        min-height: 200px;
+      }
+      
+      .navigation {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    /* Survey Modal Styles */
+    .survey-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .survey-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .survey-modal {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      transform: translateY(-20px);
+      transition: transform 0.3s ease;
+    }
+
+    .survey-overlay.show .survey-modal {
+      transform: translateY(0);
+    }
+
+    .survey-title {
+      color: #5a3e8c;
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .survey-subtitle {
+      color: #666;
+      font-size: 1rem;
+      margin-bottom: 25px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .survey-options {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .survey-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #f9f9f9;
+    }
+
+    .survey-option:hover {
+      border-color: #5a3e8c;
+      background: rgba(90, 62, 140, 0.05);
+    }
+
+    .survey-option.selected {
+      border-color: #5a3e8c;
+      background: rgba(90, 62, 140, 0.1);
+    }
+
+    .survey-checkbox {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .survey-option.selected .survey-checkbox {
+      background: #5a3e8c;
+      border-color: #5a3e8c;
+    }
+
+    .survey-option-text {
+      flex: 1;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      color: #333;
+    }
+
+    .survey-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .survey-btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      font-size: 0.95rem;
+    }
+
+    .survey-btn.primary {
+      background: #5a3e8c;
+      color: white;
+    }
+
+    .survey-btn.primary:hover {
+      background: #4a3474;
+      transform: translateY(-1px);
+    }
+
+    .survey-btn.primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .survey-btn.secondary {
+      background: #6c757d;
+      color: white;
+    }
+
+    .survey-btn.secondary:hover {
+      background: #5a6268;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 768px) {
+      .survey-modal {
+        padding: 25px 20px;
+        width: 95%;
+      }
+      
+      .survey-title {
+        font-size: 1.2rem;
+      }
+      
+      .survey-option {
+        padding: 12px;
+      }
+      
+      .survey-buttons {
+        flex-direction: column;
+      }
+      
+      .survey-btn {
+        width: 100%;
+      }
+    }
+    
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🛠️ Choose Your Skill Focus</h1>
+    <p>Select one of the available skills below to begin learning and practicing. Each skill provides unique tools to help you build resilience and emotional well-being.</p>
+  </div>
+
+  <div class="progress-summary" id="progressSummary">
+    <h3>Skills Progress</h3>
+    <div class="progress-bar">
+      <div class="progress-fill" id="overallProgressFill"></div>
+    </div>
+    <div class="progress-text" id="overallProgressText">
+      Loading progress...
+    </div>
+  </div>
+
+  <div class="skills-container" id="skillsContainer">
+    <!-- Skills will be populated by JavaScript -->
+  </div>
+
+  <div class="navigation">
+    <a href="{% url 'skill_p3' %}" class="nav-button back-button">
+      ← Back 
+    </a>
+    
+    <a href="#" id="completeSkillsBtn" class="nav-button next-button" style="display: none;" onclick="completeSkillsSection()">
+      Complete Skills Section →
+    </a>
+  </div>
+
+  <!-- Survey Modal -->
+  <div class="survey-overlay" id="surveyOverlay">
+    <div class="survey-modal">
+      <h2 class="survey-title">📝 Journaling Feedback</h2>
+<p class="survey-subtitle">Which answer best describes you? <br><em>(Click as many as apply)</em></p>
+      
+      <div class="survey-options">
+        <div class="survey-option" data-value="share_family">
+          <div class="survey-checkbox">✓</div>
+          <div class="survey-option-text">I like writing about these things, and I want to share it with a family member or friend.</div>
+        </div>
+        
+        <div class="survey-option" data-value="share_counselor">
+          <div class="survey-checkbox">✓</div>
+          <div class="survey-option-text">I like writing about these things, and I want to share it with a counselor.</div>
+        </div>
+        
+        <div class="survey-option" data-value="like_private">
+          <div class="survey-checkbox">✓</div>
+          <div class="survey-option-text">I like writing about these things, but I don't want to share with anyone.</div>
+        </div>
+        
+        <div class="survey-option" data-value="prefer_talking">
+          <div class="survey-checkbox">✓</div>
+          <div class="survey-option-text">I don't like writing about these things. I would rather talk to someone.</div>
+        </div>
+        
+        <div class="survey-option" data-value="dislike_both">
+          <div class="survey-checkbox">✓</div>
+          <div class="survey-option-text">I don't like writing or talking about these things. It makes me feel worse.</div>
+        </div>
+      </div>
+      
+      <div class="survey-buttons">
+        <button type="button" class="survey-btn primary" id="submitSurvey" disabled>Submit Feedback</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio element for survey -->
+  <audio id="surveyAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_vw6VHhRMxEqvVN8" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <!-- Intro audio - plays once on page load -->
+  <audio id="introAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_C6wbckyCux0z4A6" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <script>
+    // Direct localStorage functions (consistent with other standardized pages)
+    function markComplete(pageId) {
+      try {
+        localStorage.setItem('completed_' + pageId, 'true');
+        localStorage.setItem('completed_' + pageId + '_timestamp', Date.now().toString());
+        return true;
+      } catch (e) {
+        console.error('Error saving completion status:', e);
+        return false;
+      }
+    }
+
+    function isComplete(pageId) {
+      try {
+        return localStorage.getItem('completed_' + pageId) === 'true';
+      } catch (e) {
+        console.error('Error checking completion status:', e);
+        return false;
+      }
+    }
+
+    function saveSurveyResponse(surveyId, response) {
+      try {
+        let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        if (!data.survey_responses) data.survey_responses = {};
+        data.survey_responses[surveyId] = response;
+        data.survey_responses[surveyId + '_timestamp'] = Date.now();
+        localStorage.setItem('renew_study_data', JSON.stringify(data));
+        return true;
+      } catch (e) {
+        console.error('Error saving survey response:', e);
+        return false;
+      }
+    }
+
+    function getSurveyResponse(surveyId) {
+      try {
+        const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        return data.survey_responses?.[surveyId];
+      } catch (e) {
+        console.error('Error getting survey response:', e);
+        return undefined;
+      }
+    }
+
+    function markSectionComplete(sectionId) {
+      try {
+        let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        if (!data.completed_sections) data.completed_sections = [];
+        if (!data.completed_sections.includes(sectionId)) {
+          data.completed_sections.push(sectionId);
+        }
+        data.completed_sections[sectionId + '_timestamp'] = Date.now();
+        localStorage.setItem('renew_study_data', JSON.stringify(data));
+        return true;
+      } catch (e) {
+        console.error('Error marking section complete:', e);
+        return false;
+      }
+    }
+
+    // Check skill completion status
+    function checkSkillProgress() {
+      // PMR (Progressive Muscle Relaxation) - single page
+      const pmrCompleted = isComplete('pmr_p1');
+      const pmrPercentage = pmrCompleted ? 100 : 0;
+
+      // Journaling - multiple options
+      const journalOption1Completed = isComplete('journal_option1');
+      const journalOption2Completed = isComplete('journal_option2');
+      const journalingCompleted = journalOption1Completed || journalOption2Completed;
+      const journalingPercentage = journalingCompleted ? 100 : 0;
+
+      // Positive Planned Activities - multiple pages (p1-p6)
+      const posplanPages = [ 'posplan_p1','posplan_p2', 'posplan_p3',           'posplan_p4','posplan_p5','posplan_summary_p1', 'posplan_summary_p2',  'posplan_summary_p3', 'posplan_summary_p4'];
+      const completedPosplanPages = posplanPages.filter(page => isComplete(page)).length;
+      const posplanCompleted = completedPosplanPages === posplanPages.length;
+      const posplanPercentage = Math.round((completedPosplanPages / posplanPages.length) * 100);
+
+      return {
+        pmr: { completed: pmrCompleted, percentage: pmrPercentage },
+        journaling: { completed: journalingCompleted, percentage: journalingPercentage },
+        posplan: { completed: posplanCompleted, percentage: posplanPercentage, completedCount: completedPosplanPages, totalCount: posplanPages.length }
+      };
+    }
+
+    // Generate skill cards HTML
+    function generateSkillCards() {
+      const progress = checkSkillProgress();
+      const skillsContainer = document.getElementById('skillsContainer');
+
+      skillsContainer.innerHTML = `
+        <!-- Progressive Muscle Relaxation -->
+        <a href="{% url 'pmr_p1' %}" class="skill-card ${progress.pmr.completed ? 'completed' : ''}">
+          <div class="skill-icon">🧘‍♀️</div>
+          <h2 class="skill-title">Progressive Muscle Relaxation</h2>
+          
+          <div class="skill-progress">
+            <div class="skill-progress-text ${progress.pmr.completed ? 'completed' : 'not-started'}">
+              ${progress.pmr.completed ? '✓ 1/1 activities completed (100%)' : '⭕ 0/1 activities completed (0%)'}
+            </div>
+            <div class="skill-progress-bar">
+              <div class="skill-progress-fill pmr" style="width: ${progress.pmr.percentage}%;"></div>
+            </div>
+          </div>
+          
+          <div class="skill-status ${progress.pmr.completed ? 'completed' : 'not-started'}">
+            ${progress.pmr.completed ? '<span class="completion-badge">✓ Completed</span>' : ''}
+          </div>
+        </a>
+
+        <!-- Journaling -->
+        <a href="{% url 'journal_p1' %}" class="skill-card ${progress.journaling.completed ? 'completed' : ''}">
+          <div class="skill-icon">📖</div>
+          <h2 class="skill-title">Journaling</h2>
+          
+          <div class="skill-progress">
+            <div class="skill-progress-text ${progress.journaling.completed ? 'completed' : 'not-started'}">
+              ${progress.journaling.completed ? '✓ Journaling activities completed (100%)' : '⭕ 0 journaling activities completed (0%)'}
+            </div>
+            <div class="skill-progress-bar">
+              <div class="skill-progress-fill journaling" style="width: ${progress.journaling.percentage}%;"></div>
+            </div>
+          </div>
+          
+          <div class="skill-status ${progress.journaling.completed ? 'completed' : 'not-started'}">
+            ${progress.journaling.completed ? '<span class="completion-badge">✓ Completed</span>' : ''}
+          </div>
+        </a>
+
+        <!-- Positive Planned Activities -->
+        <a href="{% url 'posplan_p1' %}" class="skill-card ${progress.posplan.completed ? 'completed' : ''}">
+          <div class="skill-icon">🌟</div>
+          <h2 class="skill-title">Positive Planned Activities</h2>
+          
+          <div class="skill-progress">
+            <div class="skill-progress-text ${progress.posplan.completed ? 'completed' : (progress.posplan.completedCount > 0 ? 'in-progress' : 'not-started')}">
+              ${progress.posplan.completed ? 
+                `✓ ${progress.posplan.totalCount}/${progress.posplan.totalCount} activities completed (100%)` : 
+                (progress.posplan.completedCount > 0 ? 
+                  `🎯 ${progress.posplan.completedCount}/${progress.posplan.totalCount} activities completed (${progress.posplan.percentage}%)` : 
+                  `⭕ 0/${progress.posplan.totalCount} activities completed (0%)`)}
+            </div>
+            <div class="skill-progress-bar">
+              <div class="skill-progress-fill positive-planning" style="width: ${progress.posplan.percentage}%;"></div>
+            </div>
+          </div>
+          
+          <div class="skill-status ${progress.posplan.completed ? 'completed' : (progress.posplan.completedCount > 0 ? 'in-progress' : 'not-started')}">
+            ${progress.posplan.completed ? 
+              '<span class="completion-badge">✓ Completed</span>' : 
+              (progress.posplan.completedCount > 0 ? '<span class="in-progress-badge">📈 In Progress</span>' : '')}
+          </div>
+        </a>
+      `;
+
+      return progress;
+    }
+
+    // Update overall progress
+    function updateOverallProgress(progress) {
+      const completedSkills = [progress.pmr.completed, progress.journaling.completed, progress.posplan.completed].filter(Boolean).length;
+      const totalSkills = 3;
+      const overallPercentage = Math.round((completedSkills / totalSkills) * 100);
+
+      document.getElementById('overallProgressFill').style.width = overallPercentage + '%';
+      document.getElementById('overallProgressText').textContent = `${completedSkills} of ${totalSkills} skills completed`;
+
+      // Show complete button if all skills are done
+      if (completedSkills === totalSkills) {
+        document.getElementById('completeSkillsBtn').style.display = 'inline-flex';
+      }
+    }
+
+    // Complete Skills Section function
+    function completeSkillsSection() {
+      const progress = checkSkillProgress();
+      const allSkillsCompleted = progress.pmr.completed && progress.journaling.completed && progress.posplan.completed;
+      
+      if (!allSkillsCompleted) {
+        alert('Please complete all skills before finishing this section.');
+        return;
+      }
+      
+      // Mark skills section as complete
+      if (markSectionComplete('skills')) {
+        // Redirect to adventure map with success message
+        window.location.href = "{% url 'adventure_map' %}";
+      } else {
+        alert('Error saving progress. Please try again.');
+      }
+    }
+
+    // Audio functionality
+    let surveyAudioPlaying = false;
+
+    function showSurvey() {
+      const surveyOverlay = document.getElementById('surveyOverlay');
+      surveyOverlay.classList.add('show');
+      
+      // Automatically play survey audio when modal opens
+      playSurveyAudio();
+    }
+
+    function playSurveyAudio() {
+      const audio = document.getElementById('surveyAudio');
+      if (audio) {
+        audio.play()
+          .then(() => {
+            surveyAudioPlaying = true;
+            console.log('Survey audio started automatically');
+          })
+          .catch(err => {
+            console.log('Auto-play of survey audio failed:', err);
+            // Audio auto-play failed, but survey still works
+          });
+      }
+    }
+
+    // Survey functionality
+    const surveyOverlay = document.getElementById('surveyOverlay');
+    const surveyOptions = document.querySelectorAll('.survey-option');
+    const submitButton = document.getElementById('submitSurvey');
+    let selectedOptions = new Set();
+
+    // Survey option click handlers
+    surveyOptions.forEach(function(option) {
+      option.addEventListener('click', function() {
+        const value = this.dataset.value;
+        
+        if (this.classList.contains('selected')) {
+          this.classList.remove('selected');
+          selectedOptions.delete(value);
+        } else {
+          this.classList.add('selected');
+          selectedOptions.add(value);
+        }
+        
+        submitButton.disabled = selectedOptions.size === 0;
+      });
+    });
+
+    // Survey form submission
+    submitButton.addEventListener('click', function() {
+      if (selectedOptions.size === 0) return;
+      
+      submitButton.disabled = true;
+      submitButton.textContent = 'Submitting...';
+      
+      const surveyData = {
+        responses: Array.from(selectedOptions),
+        timestamp: Date.now()
+      };
+      
+      if (saveSurveyResponse('journaling_survey', surveyData)) {
+        // Stop audio if playing
+        const audio = document.getElementById('surveyAudio');
+        if (audio && surveyAudioPlaying) {
+          audio.pause();
+          audio.currentTime = 0;
+          surveyAudioPlaying = false;
+        }
+        
+        closeSurvey();
+        // Success alert removed - survey closes silently
+      } else {
+        alert('Error submitting survey. Please try again.');
+        submitButton.disabled = false;
+        submitButton.textContent = 'Submit Feedback';
+      }
+    });
+    
+    // Close survey function
+function closeSurvey() {
+  // Stop survey audio if playing
+  const surveyAudio = document.getElementById('surveyAudio');
+  
+  if (surveyAudio && surveyAudioPlaying) {
+    surveyAudio.pause();
+    surveyAudio.currentTime = 0;
+    surveyAudioPlaying = false;
+  }
+  
+  surveyOverlay.classList.remove('show');
+}
+
+// Close when clicking outside modal
+surveyOverlay.addEventListener('click', function(e) {
+  if (e.target === surveyOverlay) {
+    closeSurvey();
+  }
+});
+
+// Listen for audio ending naturally
+document.addEventListener('DOMContentLoaded', function() {
+  const surveyAudio = document.getElementById('surveyAudio');
+  
+  if (surveyAudio) {
+    surveyAudio.addEventListener('ended', function() {
+      surveyAudioPlaying = false;
+      console.log('Survey audio ended');
+    });
+
+    surveyAudio.addEventListener('error', function(e) {
+      console.warn('Survey audio file could not be loaded:', e);
+    });
+  }
+});
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+  // Mark this page as complete
+  markComplete('skill_p4');
+
+  // Play intro audio once (only if not played before)
+  const introAudioPlayed = localStorage.getItem('skill_p4_intro_audio_played');
+  if (!introAudioPlayed) {
+    const introAudio = document.getElementById('introAudio');
+    if (introAudio) {
+      setTimeout(() => {
+        introAudio.play().then(() => {
+          console.log('Intro audio playing');
+          // Mark as played so it doesn't play again
+          localStorage.setItem('skill_p4_intro_audio_played', 'true');
+        }).catch(error => {
+          console.log('Intro audio autoplay prevented:', error);
+          // If autoplay fails, try on first user interaction
+          const playOnInteraction = () => {
+            introAudio.play().then(() => {
+              localStorage.setItem('skill_p4_intro_audio_played', 'true');
+            }).catch(e => console.log('Intro audio play failed:', e));
+            document.removeEventListener('click', playOnInteraction);
+            document.removeEventListener('touchstart', playOnInteraction);
+          };
+          document.addEventListener('click', playOnInteraction, { once: true });
+          document.addEventListener('touchstart', playOnInteraction, { once: true });
+        });
+      }, 500); // Small delay to ensure page is loaded
+    }
+  }
+
+  // Generate skill cards and update progress
+  const progress = generateSkillCards();
+  updateOverallProgress(progress);
+
+  // Auto-show survey logic
+  const journalingCompleted = progress.journaling.completed;
+  const surveyCompleted = getSurveyResponse('journaling_survey') !== undefined;
+
+  if (journalingCompleted && !surveyCompleted) {
+    setTimeout(() => {
+      showSurvey();
+    }, 800);
+  }
+});
+  </script>
+</body>
+</html>

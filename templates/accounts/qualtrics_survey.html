@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Final Survey</title>
+<style>
+body { margin:0; padding:0; font-family: Arial, sans-serif; }
+.survey-header { background: #2c3e50; color:white; padding:20px; text-align:center; }
+.survey-container { width:100%; height: calc(100vh - 120px); } /* Adjusted for button */
+.survey-iframe { width:100%; height:100%; border:none; }
+.data-transfer { background: #f8f9fa; padding:20px; text-align:center; border-bottom:1px solid #ddd; }
+.transfer-btn, .complete-btn { 
+    background:#27ae60; 
+    color:white; 
+    border:none; 
+    padding:15px 30px; 
+    border-radius:8px; 
+    cursor:pointer; 
+    margin:10px; 
+    font-size:1.1rem; 
+    font-weight:600; 
+}
+.transfer-btn:hover, .complete-btn:hover { background:#219a52; }
+.transfer-btn:disabled, .complete-btn:disabled { background:#95a5a6; cursor:not-allowed; }
+.loading-message { font-size:1.2rem; color:#2c3e50; margin-bottom:20px; }
+</style>
+</head>
+<body>
+
+<div class="survey-header">
+    <!-- Optional header -->
+</div>
+
+<div class="data-transfer" id="dataTransferSection">
+    <div class="loading-message" id="loadingMessage">
+        Preparing your final survey...
+    </div>
+</div>
+
+<div class="survey-container" id="surveyContainer" style="display:none;">
+    <iframe id="qualtricsIframe" class="survey-iframe" src="" title="Final Survey"></iframe>
+</div>
+
+<button id="completeBtn" class="complete-btn" onclick="completeStudy()" disabled>
+    Complete Study
+</button>
+
+<script>
+const completeBtn = document.getElementById('completeBtn');
+const iframe = document.getElementById('qualtricsIframe');
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        startQualtricsSurvey();
+    }, 500);
+});
+
+function startQualtricsSurvey() {
+    const renewData = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+    const ironSpongeData = JSON.parse(localStorage.getItem('ironSpongeResults') || '{}');
+
+    const comprehensiveData = {
+        participant_id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        nickname: renewData.nickname || '',
+        started_at: renewData.started_at || '',
+        completed_sections: (renewData.completed_sections || []).join(','),
+        sections_completed_count: (renewData.completed_sections || []).length,
+        pos_recreation: renewData.responses?.positive_events?.recreation || '',
+        pos_achievement: renewData.responses?.positive_events?.achievement || '',
+        pos_relationship: renewData.responses?.positive_events?.relationship || '',
+        pos_other: renewData.responses?.positive_events?.other || '',
+        neg_adverse: renewData.responses?.negative_events?.adverse || '',
+        neg_neighbor: renewData.responses?.negative_events?.neighbor || '',
+        neg_discriminate: renewData.responses?.negative_events?.discriminate || '',
+        neg_stress: renewData.responses?.negative_events?.stress || '',
+        journal_things_to_change: renewData.journal_entries?.things_to_change?.content || '',
+        journal_answer1: parseJournalAnswer(renewData.journal_entries, 'answer1'),
+        journal_answer2: parseJournalAnswer(renewData.journal_entries, 'answer2'),
+        journal_answer3: parseJournalAnswer(renewData.journal_entries, 'answer3'),
+        journal_answer4: parseJournalAnswer(renewData.journal_entries, 'answer4'),
+        posplan_who_category: renewData.posplan_responses?.who?.category || '',
+        posplan_who_response: renewData.posplan_responses?.who?.response || '',
+        posplan_where_category: renewData.posplan_responses?.where?.category || '',
+        posplan_where_response: renewData.posplan_responses?.where?.response || '',
+        posplan_what_activity: renewData.posplan_responses?.what?.activity || '',
+        posplan_when_timing: renewData.posplan_responses?.when?.timing || '',
+        pos_neg_emo_feedback_statement1: renewData.survey_responses?.feedback_survey?.statement1 || false,
+        pos_neg_emo_feedback_statement2: renewData.survey_responses?.feedback_survey?.statement2 || false,
+        pos_neg_emo_feedback_statement3: renewData.survey_responses?.feedback_survey?.statement3 || false,
+        pos_neg_emo_feedback_statement4: renewData.survey_responses?.feedback_survey?.statement4 || false,
+        journaling_preferences: (renewData.survey_responses?.journaling_survey?.responses || []).join(','),
+        pmr_selected_options: (renewData.survey_responses?.pmr_survey?.selected_options || []).join(','),
+        pmr_activity_id: renewData.survey_responses?.pmr_survey?.activity_id || '',
+        posplan_sharing_preference: renewData.posplan_survey?.sharing_preference || '',
+        posplan_feeling: renewData.posplan_survey?.feeling || '',
+        posplan_sub_option: renewData.posplan_survey?.sub_option || '',
+        pmr_selected_feelings: (renewData.survey_responses?.pmr_sidebar_survey?.selected_feelings || []).join(','),
+        journaling_survey_responses: JSON.stringify(renewData.survey_responses?.journaling_survey || {}),
+        additional_teaching_survey: JSON.stringify(renewData.additional_teaching_survey || {}),
+        individual_privacy_settings: JSON.stringify(renewData.individual_privacy_settings || {}),
+        privacy_positive_events: renewData.privacy_settings?.positive_events || false,
+        privacy_negative_events: renewData.privacy_settings?.negative_events || false,
+        privacy_quiz_results: renewData.privacy_settings?.quiz_results || false,
+        privacy_journal_responses: renewData.privacy_settings?.journal_responses || false,
+        privacy_activity_plan: renewData.privacy_settings?.activity_plan || false,
+        iron_sponge_school_type: ironSpongeData.school?.type || '',
+        iron_sponge_family_type: ironSpongeData.family?.type || '',
+        iron_sponge_friend_type: ironSpongeData.friend?.type || '',
+        iron_sponge_total_iron: countIronSponge(ironSpongeData, 'iron'),
+        iron_sponge_total_sponge: countIronSponge(ironSpongeData, 'sponge'),
+        iron_sponge_total_neither: countIronSponge(ironSpongeData, 'neither')
+    };
+
+    const baseUrl = 'https://illinois.qualtrics.com/jfe/form/SV_2cwPpWRQx7eiKO2';
+    const params = new URLSearchParams();
+    Object.entries(comprehensiveData).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+            params.append(key, value);
+        }
+    });
+    const surveyUrl = `${baseUrl}?${params.toString()}`;
+
+    iframe.src = surveyUrl;
+    document.getElementById('surveyContainer').style.display = 'block';
+    document.getElementById('dataTransferSection').style.display = 'none';
+
+    completeBtn.disabled = true;
+    // Enable button after 30s minimum or add your own Qualtrics detection logic
+    setTimeout(() => { completeBtn.disabled = false; }, 30000);
+}
+
+function parseJournalAnswer(journalEntries, answerKey) {
+    try {
+        const content = journalEntries?.experiences_shaped_me?.content;
+        if (!content) return '';
+        const parsed = JSON.parse(content);
+        return parsed[answerKey] || '';
+    } catch { return ''; }
+}
+
+function countIronSponge(data, type) {
+    if (!data.responses) return 0;
+    return Object.values(data.responses).filter(r => r.value === type).length;
+}
+
+// -------------------------------
+// Clear all browser storage for this domain
+// -------------------------------
+function completeStudy() {
+    try {
+        // Clear localStorage
+        localStorage.clear();
+
+        // Clear sessionStorage
+        sessionStorage.clear();
+
+        // Clear all cookies for current domain
+        document.cookie.split(";").forEach(function(c) { 
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+
+        alert('All browser storage cleared for this domain. Thank you for participating!');
+        console.log('All browser storage cleared for this domain');
+    } catch (error) {
+        console.error('Error clearing browser storage:', error);
+        alert('Error clearing browser storage. Please contact support.');
+    }
+}
+</script>
+
+
+
+</body>
+</html>

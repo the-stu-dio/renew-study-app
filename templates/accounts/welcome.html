@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block extra_css %}
+<style>
+    body, html {
+        background-color: #f4f0fb;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+    .conversation {
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+    }
+    .welcome-message {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #5a3e8c;
+        margin-bottom: 30px;
+        animation: fadeInUp 0.8s ease-out;
+    }
+    .subtitle {
+        font-size: 1.4rem;
+        color: #666;
+        margin-bottom: 50px;
+        font-weight: 400;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    .continue-btn {
+        background: #5a3e8c;
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        font-family: 'Work Sans', sans-serif;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .continue-btn:hover {
+        background: #4a3474;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(90, 62, 140, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    @media (max-width: 480px) {
+        .welcome-message {
+            font-size: 2rem;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+        }
+        .continue-btn {
+            font-size: 1.1rem;
+            padding: 12px 30px;
+        }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="conversation">
+    <h1 class="welcome-message" id="welcomeMessage">
+        Nice to meet you! 👋
+    </h1>
+    
+    <p class="subtitle">
+        Let's start with a quick introduction! 🎉
+    </p>
+    
+    <a href="{% url 'intro_video_1' %}" class="continue-btn">
+        Watch Introduction →
+    </a>
+</div>
+
+<!-- Welcome audio -->
+<audio id="welcomeAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_oG02e5FGdULWSeI" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const nickname = RENEWStorage.getNickname();
+    const welcomeMessage = document.getElementById('welcomeMessage');
+    
+    if (nickname) {
+        welcomeMessage.textContent = `Nice to meet you, ${nickname}! 👋`;
+    } else {
+        // No nickname found, redirect to nickname page
+        window.location.href = "{% url 'nickname' %}";
+    }
+    
+    // Play welcome audio
+    const welcomeAudio = document.getElementById('welcomeAudio');
+    if (welcomeAudio) {
+        welcomeAudio.play().catch(error => {
+            console.log('Audio autoplay prevented:', error);
+            // Autoplay was prevented, but that's okay - continues without breaking
+        });
+    }
+});
+</script>
+{% endblock %}

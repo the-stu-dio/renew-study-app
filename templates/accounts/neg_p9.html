@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Iron & Sponge Quiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Bootstrap CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Work Sans', sans-serif;
+      background-color: #f4f0fb;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Navigation button styles */
+    .navigation-buttons {
+      position: relative;
+      height: 60px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .before-button, .next-button {
+      z-index: 1000;
+    }
+
+    .prev-button-overlay, .next-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+      font-family: 'Work Sans', sans-serif;
+      position: relative;
+    }
+
+    .prev-button-overlay:hover, .next-button-overlay:hover {
+      background: #b8a5d1;
+      color: #4a3474;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    /* Motivational entrance animation - Purple to White */
+    .next-button-motivational {
+      animation: motivationalEntrance 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    @keyframes motivationalEntrance {
+      0% {
+        opacity: 0;
+        transform: translateX(100px) scale(0.8);
+        box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+        background: #c8b5db;
+      }
+      20% {
+        opacity: 0.7;
+        transform: translateX(-10px) scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      40% {
+        opacity: 1;
+        transform: translateX(5px) scale(1.1);
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      60% {
+        transform: translateX(-2px) scale(1.02);
+        box-shadow: 0 4px 20px rgba(255, 255, 255, 0.7);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      80% {
+        transform: translateX(1px) scale(1.01);
+        box-shadow: 0 4px 15px rgba(248, 249, 250, 0.5);
+        background: linear-gradient(135deg, #f8f9fa, #c8b5db);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background: #c8b5db;
+      }
+    }
+
+    /* Motivational pulse effect for ongoing engagement */
+    .next-button-pulse {
+      position: relative;
+      animation: motivationalPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes motivationalPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+      }
+    }
+
+    /* Motivational glow border effect */
+    .next-button-pulse::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #ffffff, #f8f9fa, #e9ecef, #ffffff);
+      border-radius: 10px;
+      z-index: -1;
+      opacity: 0;
+      animation: motivationalGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes motivationalGlow {
+      0%, 100% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    /* Static visible state - no ongoing animation */
+    .next-button-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Hidden audio element - no visible UI */
+    .hidden-audio {
+      display: none;
+    }
+
+    /* Auto-play audio element */
+    #autoPlayAudio {
+      display: none;
+    }
+
+    /* Horizontal options layout */
+    .options-horizontal {
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .options-horizontal .quiz-button {
+      flex: 1;
+      max-width: 200px;
+      min-width: 150px;
+    }
+
+    /* Question text styling */
+    .question-text {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Quiz styling */
+    .quiz-radio {
+      display: none;
+    }
+
+    /* Disabled question styling */
+    .quiz-question.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+      filter: grayscale(100%);
+    }
+
+    .quiz-question.enabled {
+      opacity: 1;
+      pointer-events: auto;
+      filter: none;
+      animation: fadeInQuestion 0.5s ease-in;
+    }
+
+    @keyframes fadeInQuestion {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .quiz-option {
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      display: block;
+      text-decoration: none;
+    }
+
+    .quiz-button {
+      background: #f8f9fa;
+      border: 3px solid #dee2e6;
+      padding: 20px 15px;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      font-weight: 500;
+      color: #495057;
+    }
+
+    .quiz-button:hover {
+      border-color: #007bff;
+      background-color: #e7f3ff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .quiz-radio:checked + .quiz-button {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    /* Specific button styles */
+    .iron-button {
+      border-color: #007bff;
+      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    }
+
+    .iron-button:hover {
+      border-color: #0056b3;
+      background: linear-gradient(135deg, #d1ecf1 0%, #a8dadc 100%);
+    }
+
+    .quiz-radio:checked + .iron-button {
+      border-color: #0056b3;
+      background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+      color: white;
+    }
+
+    .sponge-button {
+      border-color: #ffc107;
+      background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    }
+
+    .sponge-button:hover {
+      border-color: #e0a800;
+      background: linear-gradient(135deg, #ffe8a1 0%, #fdd835 100%);
+    }
+
+    .quiz-radio:checked + .sponge-button {
+      border-color: #e0a800;
+      background: linear-gradient(135deg, #f57f17 0%, #f9a825 100%);
+      color: white;
+    }
+
+    .neither-button {
+      border-color: #6c757d;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .neither-button:hover {
+      border-color: #5a6268;
+      background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+    }
+
+    .quiz-radio:checked + .neither-button {
+      border-color: #5a6268;
+      background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+      color: white;
+    }
+
+    .quiz-button small {
+      margin-top: 5px;
+      font-size: 0.85em;
+      opacity: 0.8;
+    }
+
+    .quiz-radio:checked + .quiz-button small {
+      opacity: 1;
+      font-weight: 600;
+    }
+
+    /* Domain Results Styling */
+    .domain-card {
+      background: #f8f9fa;
+      border: 2px solid #dee2e6;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      height: 100%;
+      transition: transform 0.2s ease;
+    }
+
+    .domain-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .domain-header {
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #dee2e6;
+    }
+
+    .school-domain {
+      color: #28a745;
+    }
+
+    .friend-domain {
+      color: #17a2b8;
+    }
+
+    .family-domain {
+      color: #fd7e14;
+    }
+
+    .domain-header h5 {
+      margin: 10px 0 5px 0;
+      font-weight: 600;
+    }
+
+    .result-badge {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 600;
+      margin: 10px 0;
+      font-size: 0.9em;
+    }
+
+    .iron-badge {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
+    }
+
+    .sponge-badge {
+      background: linear-gradient(135deg, #ffc107, #e0a800);
+      color: white;
+    }
+
+    .balanced-badge {
+      background: linear-gradient(135deg, #6c757d, #495057);
+      color: white;
+    }
+
+    .domain-breakdown {
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px solid #dee2e6;
+    }
+
+    .breakdown-item {
+      display: inline-block;
+      margin: 0 8px;
+      font-size: 0.85em;
+      color: #6c757d;
+    }
+
+    .iron-count {
+      color: #007bff;
+      font-weight: 600;
+    }
+
+    .sponge-count {
+      color: #ffc107;
+      font-weight: 600;
+    }
+
+    .neither-count {
+      color: #6c757d;
+      font-weight: 600;
+    }
+
+    /* Question separators */
+    hr {
+      border: 2px solid #dee2e6;
+      margin: 30px 0;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .navigation-buttons {
+        flex-direction: column;
+        gap: 15px;
+        height: auto;
+        margin-bottom: 20px;
+      }
+      
+      .prev-button-overlay, .next-button-overlay {
+        width: 100%;
+        text-align: center;
+        padding: 15px 20px;
+      }
+      
+      .options-horizontal {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+      }
+      
+      .options-horizontal .quiz-button {
+        max-width: 250px;
+        width: 100%;
+      }
+      
+      .quiz-button {
+        min-height: 120px;
+        padding: 15px 10px;
+      }
+      
+      .quiz-button i {
+        font-size: 1.5em;
+      }
+      
+      .domain-card {
+        margin-bottom: 20px;
+      }
+      
+      .breakdown-item {
+        display: block;
+        margin: 5px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-4">
+    <!-- Navigation buttons -->
+    <div class="navigation-buttons">
+      <div class="before-button">
+        <a href="{% url 'neg_p8' %}" class="prev-button-overlay">
+          ← Previous
+        </a>
+      </div>
+      
+      <div class="next-button" id="nextButtonContainer" style="display: none;">
+        <a href="{% url 'neg_p10' %}" class="next-button-overlay" id="nextButton">
+          Next →
+        </a>
+      </div>
+    </div>
+
+    <!-- Hidden audio element for motivational sound effect -->
+    <audio id="successSoundEffect" class="hidden-audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_6UG7Rt7QKA7N8oH" type="audio/mpeg">
+    </audio>
+
+    <!-- Auto-play audio element -->
+    <audio id="autoPlayAudio" autoplay>
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_EYuo1Tm9WLVxJc2" type="audio/mpeg">
+      Your browser does not support the audio element.
+    </audio>
+
+    <!-- Question unlock audio -->
+    <audio id="questionUnlockAudio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_BnnEwWDGdiBSAP0" type="audio/mpeg">
+    </audio>
+
+    <!-- Specific audio for each question (2-9) -->
+    <audio id="question2Audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_2ARHqrIUdJthKda" type="audio/mpeg">
+    </audio>
+
+    <audio id="question3Audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_2MA8VikUdpvS0Dp" type="audio/mpeg">
+    </audio>
+
+    <audio id="question4Audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_JqacMn1DjW0craP" type="audio/mpeg">
+    </audio>
+
+    <audio id="question5Audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_Qe1zr8HOmZT0W1s" type="audio/mpeg">
+    </audio>
+
+    <audio id="question6Audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_JvjYeWWteC4UQHj" type="audio/mpeg">
+    </audio>
+
+    <audio id="question7Audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_QVCFebFO6Gl6U6n" type="audio/mpeg">
+    </audio>
+
+    <audio id="question8Audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_7k8VX9dbHDnUAJL" type="audio/mpeg">
+    </audio>
+
+    <audio id="question9Audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_eVGDo7BCkUjRcYR" type="audio/mpeg">
+    </audio>
+
+    <!-- Answer selection audio -->
+    <audio id="ironClickAudio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_KoBjZdqymzMGQSI" type="audio/mpeg">
+    </audio>
+
+    <audio id="neitherClickAudio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_YcYm7AtnClm5uxi" type="audio/mpeg">
+    </audio>
+
+    <audio id="spongeClickAudio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_7oQoGyX9KgF9uV9" type="audio/mpeg">
+    </audio>
+
+    <!-- Submission completion audio -->
+    <audio id="submissionCompleteAudio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_EMczmgd2EHJS6qr" type="audio/mpeg">
+    </audio>
+
+    <!-- Results Display -->
+    <div id="resultsDisplay" style="display: none;">
+      <div class="row justify-content-center">
+        <div class="col-md-10">
+          <div class="card">
+            <div class="card-header bg-success text-white">
+              <h3><i class="fas fa-check-circle"></i> Quiz Complete!</h3>
+            </div>
+            <div class="card-body">
+              <!-- Domain-Specific Results -->
+              <div class="domain-results">
+                <h4 class="text-center mb-4">Your Results by Life Domain:</h4>
+                
+                <div class="row">
+                  <!-- School Domain -->
+                  <div class="col-md-4 mb-4">
+                    <div class="domain-card">
+                      <div class="domain-header school-domain">
+                        <i class="fas fa-graduation-cap fa-2x mb-2"></i>
+                        <h5>School Domain</h5>
+                      </div>
+                      <div class="domain-result" id="schoolResult">
+                        <!-- Results will be populated by JavaScript -->
+                      </div>
+                      <div class="domain-breakdown" id="schoolBreakdown">
+                        <!-- Breakdown will be populated by JavaScript -->
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Friend Domain -->
+                  <div class="col-md-4 mb-4">
+                    <div class="domain-card">
+                      <div class="domain-header friend-domain">
+                        <i class="fas fa-users fa-2x mb-2"></i>
+                        <h5>Friend Domain</h5>
+                      </div>
+                      <div class="domain-result" id="friendResult">
+                        <!-- Results will be populated by JavaScript -->
+                      </div>
+                      <div class="domain-breakdown" id="friendBreakdown">
+                        <!-- Breakdown will be populated by JavaScript -->
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Family Domain -->
+                  <div class="col-md-4 mb-4">
+                    <div class="domain-card">
+                      <div class="domain-header family-domain">
+                        <i class="fas fa-home fa-2x mb-2"></i>
+                        <h5>Family Domain</h5>
+                      </div>
+                      <div class="domain-result" id="familyResult">
+                        <!-- Results will be populated by JavaScript -->
+                      </div>
+                      <div class="domain-breakdown" id="familyBreakdown">
+                        <!-- Breakdown will be populated by JavaScript -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quiz Form -->
+    <div id="quizForm" class="row justify-content-center">
+      <div class="col-md-10">
+        <div class="card">
+          <div class="card-header">
+            <h3>Iron & Sponge Quiz</h3>
+            <p class="mb-0">Below, we have a quick quiz to see whether you are more like iron or a sponge. If you think events impact you more than other youth, click "sponge". If you don't think events impact you that much, click "iron". If it impacts you similarly to how it impacts other kids, you can click "neither"!</p>
+          </div>
+          <div class="card-body">
+            <!-- Question 1: I got an A in a class -->
+            <div class="quiz-question mb-4">
+              <h4 class="text-center mb-4 question-text">I got an A in a class.</h4>
+              <div class="options-horizontal">
+                <input type="radio" name="question1" value="iron" id="q1_iron" class="quiz-radio" data-domain="school">
+                <label for="q1_iron" class="quiz-option quiz-button iron-button">
+                  <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                  <div>Iron</div>
+                  <small>Doesn't affect me much</small>
+                </label>
+
+                <input type="radio" name="question1" value="neither" id="q1_neither" class="quiz-radio" data-domain="school">
+                <label for="q1_neither" class="quiz-option quiz-button neither-button">
+                  <i class="fas fa-balance-scale fa-2x mb-2"></i>
+                  <div>Neither</div>
+                  <small>Affects me like others</small>
+                </label>
+
+                <input type="radio" name="question1" value="sponge" id="q1_sponge" class="quiz-radio" data-domain="school">
+                <label for="q1_sponge" class="quiz-option quiz-button sponge-button">
+                  <i class="fas fa-dot-circle fa-2x mb-2"></i>
+                  <div>Sponge</div>
+                  <small>Affects me deeply</small>
+                </label>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Question 2: My friend teased me -->
+            <div class="quiz-question mb-4">
+              <h4 class="text-center mb-4 question-text">My friend teased me.</h4>
+              <div class="options-horizontal">
+                <input type="radio" name="question2" value="iron" id="q2_iron" class="quiz-radio" data-domain="friend">
+                <label for="q2_iron" class="quiz-option quiz-button iron-button">
+                  <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                  <div>Iron</div>
+                  <small>Doesn't affect me much</small>
+                </label>
+
+                <input type="radio" name="question2" value="neither" id="q2_neither" class="quiz-radio" data-domain="friend">
+                <label for="q2_neither" class="quiz-option quiz-button neither-button">
+                  <i class="fas fa-balance-scale fa-2x mb-2"></i>
+                  <div>Neither</div>
+                  <small>Affects me like others</small>
+                </label>
+
+                <input type="radio" name="question2" value="sponge" id="q2_sponge" class="quiz-radio" data-domain="friend">
+                <label for="q2_sponge" class="quiz-option quiz-button sponge-button">
+                  <i class="fas fa-dot-circle fa-2x mb-2"></i>
+                  <div>Sponge</div>
+                  <small>Affects me deeply</small>
+                </label>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Question 3: My parents told me they were proud of my good grades -->
+            <div class="quiz-question mb-4">
+              <h4 class="text-center mb-4 question-text">My parents told me they were proud of my good grades.</h4>
+              <div class="options-horizontal">
+                <input type="radio" name="question3" value="iron" id="q3_iron" class="quiz-radio" data-domain="family">
+                <label for="q3_iron" class="quiz-option quiz-button iron-button">
+                  <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                  <div>Iron</div>
+                  <small>Doesn't affect me much</small>
+                </label>
+
+                <input type="radio" name="question3" value="neither" id="q3_neither" class="quiz-radio" data-domain="family">
+                <label for="q3_neither" class="quiz-option quiz-button neither-button">
+                  <i class="fas fa-balance-scale fa-2x mb-2"></i>
+                  <div>Neither</div>
+                  <small>Affects me like others</small>
+                </label>
+
+                <input type="radio" name="question3" value="sponge" id="q3_sponge" class="quiz-radio" data-domain="family">
+                <label for="q3_sponge" class="quiz-option quiz-button sponge-button">
+                  <i class="fas fa-dot-circle fa-2x mb-2"></i>
+                  <div>Sponge</div>
+                  <small>Affects me deeply</small>
+                </label>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Question 4: My friends excluded me from their group activity -->
+            <div class="quiz-question mb-4">
+              <h4 class="text-center mb-4 question-text">My friends excluded me from their group activity.</h4>
+              <div class="options-horizontal">
+                <input type="radio" name="question4" value="iron" id="q4_iron" class="quiz-radio" data-domain="friend">
+                <label for="q4_iron" class="quiz-option quiz-button iron-button">
+                  <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                  <div>Iron</div>
+                  <small>Doesn't affect me much</small>
+                </label>
+
+                <input type="radio" name="question4" value="neither" id="q4_neither" class="quiz-radio" data-domain="friend">
+                <label for="q4_neither" class="quiz-option quiz-button neither-button">
+                  <i class="fas fa-balance-scale fa-2x mb-2"></i>
+                  <div>Neither</div>
+                  <small>Affects me like others</small>
+                </label>
+
+                <input type="radio" name="question4" value="sponge" id="q4_sponge" class="quiz-radio" data-domain="friend">
+                <label for="q4_sponge" class="quiz-option quiz-button sponge-button">
+                  <i class="fas fa-dot-circle fa-2x mb-2"></i>
+                  <div>Sponge</div>
+                  <small>Affects me deeply</small>
+                </label>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Question 5: I failed a test I studied hard for -->
+            <div class="quiz-question mb-4">
+              <h4 class="text-center mb-4 question-text">I failed a test I studied hard for.</h4>
+              <div class="options-horizontal">
+                <input type="radio" name="question5" value="iron" id="q5_iron" class="quiz-radio" data-domain="school">
+                <label for="q5_iron" class="quiz-option quiz-button iron-button">
+                  <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                  <div>Iron</div>
+                  <small>Doesn't affect me much</small>
+                </label>
+
+                <input type="radio" name="question5" value="neither" id="q5_neither" class="quiz-radio" data-domain="school">
+                <label for="q5_neither" class="quiz-option quiz-button neither-button">
+                  <i class="fas fa-balance-scale fa-2x mb-2"></i>
+                  <div>Neither</div>
+                  <small>Affects me like others</small>
+                </label>
+
+                <input type="radio" name="question5" value="sponge" id="q5_sponge" class="quiz-radio" data-domain="school">
+                <label for="q5_sponge" class="quiz-option quiz-button sponge-button">
+                  <i class="fas fa-dot-circle fa-2x mb-2"></i>
+                  <div>Sponge</div>
+                  <small>Affects me deeply</small>
+                </label>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Question 6: My parents got angry at me for making a mistake -->
+            <div class="quiz-question mb-4">
+              <h4 class="text-center mb-4 question-text">My parents got angry at me for making a mistake.</h4>
+              <div class="options-horizontal">
+                <input type="radio" name="question6" value="iron" id="q6_iron" class="quiz-radio" data-domain="family">
+                <label for="q6_iron" class="quiz-option quiz-button iron-button">
+                  <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                  <div>Iron</div>
+                  <small>Doesn't affect me much</small>
+                </label>
+
+                <input type="radio" name="question6" value="neither" id="q6_neither" class="quiz-radio" data-domain="family">
+                <label for="q6_neither" class="quiz-option quiz-button neither-button">
+                  <i class="fas fa-balance-scale fa-2x mb-2"></i>
+                  <div>Neither</div>
+                  <small>Affects me like others</small>
+                </label>
+
+                <input type="radio" name="question6" value="sponge" id="q6_sponge" class="quiz-radio" data-domain="family">
+                <label for="q6_sponge" class="quiz-option quiz-button sponge-button">
+                  <i class="fas fa-dot-circle fa-2x mb-2"></i>
+                  <div>Sponge</div>
+                  <small>Affects me deeply</small>
+                </label>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Question 7: My friends said I did the best presentation in our group project -->
+            <div class="quiz-question mb-4">
+              <h4 class="text-center mb-4 question-text">My friends said I did the best presentation in our group project.</h4>
+              <div class="options-horizontal">
+                <input type="radio" name="question7" value="iron" id="q7_iron" class="quiz-radio" data-domain="friend">
+                <label for="q7_iron" class="quiz-option quiz-button iron-button">
+                  <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                  <div>Iron</div>
+                  <small>Doesn't affect me much</small>
+                </label>
+
+                <input type="radio" name="question7" value="neither" id="q7_neither" class="quiz-radio" data-domain="friend">
+                <label for="q7_neither" class="quiz-option quiz-button neither-button">
+                  <i class="fas fa-balance-scale fa-2x mb-2"></i>
+                  <div>Neither</div>
+                  <small>Affects me like others</small>
+                </label>
+
+                <input type="radio" name="question7" value="sponge" id="q7_sponge" class="quiz-radio" data-domain="friend">
+                <label for="q7_sponge" class="quiz-option quiz-button sponge-button">
+                  <i class="fas fa-dot-circle fa-2x mb-2"></i>
+                  <div>Sponge</div>
+                  <small>Affects me deeply</small>
+                </label>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Question 8: My parent ignored my feelings -->
+            <div class="quiz-question mb-4">
+              <h4 class="text-center mb-4 question-text">My parent ignored my feelings.</h4>
+              <div class="options-horizontal">
+                <input type="radio" name="question8" value="iron" id="q8_iron" class="quiz-radio" data-domain="family">
+                <label for="q8_iron" class="quiz-option quiz-button iron-button">
+                  <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                  <div>Iron</div>
+                  <small>Doesn't affect me much</small>
+                </label>
+
+                <input type="radio" name="question8" value="neither" id="q8_neither" class="quiz-radio" data-domain="family">
+                <label for="q8_neither" class="quiz-option quiz-button neither-button">
+                  <i class="fas fa-balance-scale fa-2x mb-2"></i>
+                  <div>Neither</div>
+                  <small>Affects me like others</small>
+                </label>
+
+                <input type="radio" name="question8" value="sponge" id="q8_sponge" class="quiz-radio" data-domain="family">
+                <label for="q8_sponge" class="quiz-option quiz-button sponge-button">
+                  <i class="fas fa-dot-circle fa-2x mb-2"></i>
+                  <div>Sponge</div>
+                  <small>Affects me deeply</small>
+                </label>
+              </div>
+            </div>
+
+            <hr>
+
+            <!-- Question 9: I received an award at school -->
+            <div class="quiz-question mb-4">
+              <h4 class="text-center mb-4 question-text">I received an award at school.</h4>
+              <div class="options-horizontal">
+                <input type="radio" name="question9" value="iron" id="q9_iron" class="quiz-radio" data-domain="school">
+                <label for="q9_iron" class="quiz-option quiz-button iron-button">
+                  <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                  <div>Iron</div>
+                  <small>Doesn't affect me much</small>
+                </label>
+
+                <input type="radio" name="question9" value="neither" id="q9_neither" class="quiz-radio" data-domain="school">
+                <label for="q9_neither" class="quiz-option quiz-button neither-button">
+                  <i class="fas fa-balance-scale fa-2x mb-2"></i>
+                  <div>Neither</div>
+                  <small>Affects me like others</small>
+                </label>
+
+                <input type="radio" name="question9" value="sponge" id="q9_sponge" class="quiz-radio" data-domain="school">
+                <label for="q9_sponge" class="quiz-option quiz-button sponge-button">
+                  <i class="fas fa-dot-circle fa-2x mb-2"></i>
+                  <div>Sponge</div>
+                  <small>Affects me deeply</small>
+                </label>
+              </div>
+            </div>
+
+            <div class="text-center mt-4">
+              <button type="button" class="btn btn-primary btn-lg" id="submitQuiz" disabled onclick="submitQuiz()">
+                <i class="fas fa-check"></i> Submit Quiz
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global audio management to prevent overlaps
+    let currentlyPlayingAudio = null;
+    
+    // Function to stop current audio and play new audio
+    function playAudio(audioElement) {
+      // Stop any currently playing audio
+      if (currentlyPlayingAudio && !currentlyPlayingAudio.paused) {
+        currentlyPlayingAudio.pause();
+        currentlyPlayingAudio.currentTime = 0;
+      }
+      
+      // Play the new audio
+      if (audioElement) {
+        audioElement.currentTime = 0;
+        audioElement.play().catch(e => console.log('Audio play failed:', e));
+        currentlyPlayingAudio = audioElement;
+      }
+    }
+    
+    // Direct localStorage functions (consistent with other pages)
+    function markComplete(pageId) {
+      try {
+        localStorage.setItem('completed_' + pageId, 'true');
+        localStorage.setItem('completed_' + pageId + '_timestamp', Date.now().toString());
+        return true;
+      } catch (e) {
+        console.error('Error saving completion status:', e);
+        return false;
+      }
+    }
+
+    function isComplete(pageId) {
+      try {
+        return localStorage.getItem('completed_' + pageId) === 'true';
+      } catch (e) {
+        console.error('Error checking completion status:', e);
+        return false;
+      }
+    }
+
+    // Function to play success sound effect
+    function playSuccessSound() {
+      const soundEffect = document.getElementById('successSoundEffect');
+      if (soundEffect) {
+        // Reset audio to beginning in case it was played before
+        soundEffect.currentTime = 0;
+        soundEffect.play().catch(error => {
+          console.log('Sound effect autoplay failed (browser policy):', error);
+          // Sound effect is just enhancement, continue normally if blocked
+        });
+      }
+    }
+
+    // Function to show next button with motivational animation
+    function showNextButtonMotivational() {
+      const nextButtonContainer = document.getElementById('nextButtonContainer');
+      const nextButton = document.getElementById('nextButton');
+      
+      if (nextButtonContainer && nextButton) {
+        // Show the container
+        nextButtonContainer.style.display = 'block';
+        
+        // Check if both animation AND sound have already been shown for this page
+        const specialEffectsShown = localStorage.getItem('neg_p9_special_effects_shown');
+        
+        if (!specialEffectsShown) {
+          // First time showing - play both the motivational animation AND sound effect
+          playSuccessSound();
+          
+          // Make sure no other classes are on the button first
+          nextButton.classList.remove('next-button-pulse', 'visible');
+          nextButton.classList.add('next-button-motivational');
+          
+          // Mark both animation and sound as shown immediately
+          localStorage.setItem('neg_p9_special_effects_shown', 'true');
+          
+          // After initial animation completes, switch to subtle pulse
+          setTimeout(() => {
+            nextButton.classList.remove('next-button-motivational');
+            nextButton.classList.add('next-button-pulse', 'visible');
+          }, 1200);
+        } else {
+          // Special effects already shown before - show with subtle pulse immediately
+          // NO sound effect and NO motivational animation
+          nextButton.classList.remove('next-button-motivational');
+          nextButton.classList.add('next-button-pulse', 'visible');
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const submitBtn = document.getElementById('submitQuiz');
+      
+      // Initialize all questions as disabled except the first one (which waits for audio)
+      const allQuestions = document.querySelectorAll('.quiz-question');
+      allQuestions.forEach((question, index) => {
+        question.classList.add('disabled');
+      });
+      
+      // Auto-play background audio with fallback
+      const autoPlayAudio = document.getElementById('autoPlayAudio');
+      let audioEnded = false;
+      
+      if (autoPlayAudio) {
+        // Set this as the currently playing audio
+        currentlyPlayingAudio = autoPlayAudio;
+        
+        // When audio ends, enable the first question
+        autoPlayAudio.addEventListener('ended', function() {
+          audioEnded = true;
+          enableQuestion(1);
+        });
+        
+        // Try to play immediately
+        autoPlayAudio.play().catch(function(error) {
+          console.log('Auto-play was prevented. Will try on first user interaction.');
+          
+          // Fallback: play on first user interaction
+          const playOnInteraction = function() {
+            autoPlayAudio.play().catch(e => console.log('Audio play failed:', e));
+            // Remove listeners after first successful attempt
+            document.removeEventListener('click', playOnInteraction);
+            document.removeEventListener('touchstart', playOnInteraction);
+            document.removeEventListener('keydown', playOnInteraction);
+          };
+          
+          document.addEventListener('click', playOnInteraction);
+          document.addEventListener('touchstart', playOnInteraction);
+          document.addEventListener('keydown', playOnInteraction);
+        });
+      }
+      
+      // Track which questions have already been unlocked (to avoid repeating unlock audio)
+      const unlockedQuestions = new Set();
+      
+      // Function to enable a specific question
+      function enableQuestion(questionNumber) {
+        const questionElement = allQuestions[questionNumber - 1];
+        if (questionElement) {
+          questionElement.classList.remove('disabled');
+          questionElement.classList.add('enabled');
+          
+          // Play question-specific audio only if this question hasn't been unlocked before
+          if (!unlockedQuestions.has(questionNumber)) {
+            let audioToPlay;
+            
+            // Use specific audio for questions 2-9, generic unlock for question 1
+            if (questionNumber === 1) {
+              audioToPlay = document.getElementById('questionUnlockAudio');
+            } else if (questionNumber >= 2 && questionNumber <= 9) {
+              audioToPlay = document.getElementById(`question${questionNumber}Audio`);
+            }
+            
+            if (audioToPlay) {
+              playAudio(audioToPlay);
+            }
+            unlockedQuestions.add(questionNumber);
+          }
+          
+          // Scroll to the newly enabled question
+          questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+      
+      // Add event listeners to all radio buttons to unlock next question
+      const radioButtons = document.querySelectorAll('input[type="radio"]');
+      radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+          // Play audio based on the selected answer
+          const answerValue = this.value;
+          let audioToPlay;
+          
+          if (answerValue === 'iron') {
+            audioToPlay = document.getElementById('ironClickAudio');
+          } else if (answerValue === 'neither') {
+            audioToPlay = document.getElementById('neitherClickAudio');
+          } else if (answerValue === 'sponge') {
+            audioToPlay = document.getElementById('spongeClickAudio');
+          }
+          
+          if (audioToPlay) {
+            playAudio(audioToPlay);
+          }
+          
+          // Get the question number from the name attribute (e.g., "question1" -> 1)
+          const questionNum = parseInt(this.name.replace('question', ''));
+          
+          // Enable the next question after 3 seconds
+          if (questionNum < 9) {
+            setTimeout(() => {
+              enableQuestion(questionNum + 1);
+            }, 3500);
+          }
+          
+          // Check form completion for submit button
+          checkFormCompletion();
+        });
+      });
+      
+      // Check if quiz was already completed
+      const savedResults = localStorage.getItem('ironSpongeResults');
+      if (savedResults && isComplete('neg_p9')) {
+        // Enable all questions if already completed
+        allQuestions.forEach(question => {
+          question.classList.remove('disabled');
+          question.classList.add('enabled');
+        });
+        displayResults(JSON.parse(savedResults));
+        
+        // CRITICAL: Show the next button when returning to completed quiz
+        showNextButtonMotivational();
+        
+        return;
+      }
+      
+      // Enable submit button when all questions are answered
+      function checkFormCompletion() {
+        let allAnswered = true;
+        for (let i = 1; i <= 9; i++) {
+          const questionAnswered = document.querySelector(`input[name="question${i}"]:checked`);
+          if (!questionAnswered) {
+            allAnswered = false;
+            break;
+          }
+        }
+        
+        if (allAnswered) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('btn-secondary');
+          submitBtn.classList.add('btn-success');
+        } else {
+          submitBtn.disabled = true;
+          submitBtn.classList.remove('btn-success');
+          submitBtn.classList.add('btn-secondary');
+        }
+      }
+      
+      // Initial check
+      checkFormCompletion();
+    });
+
+    function submitQuiz() {
+      const responses = {};
+      const domainCounts = {
+        school: { iron: 0, sponge: 0, neither: 0 },
+        friend: { iron: 0, sponge: 0, neither: 0 },
+        family: { iron: 0, sponge: 0, neither: 0 }
+      };
+
+      // Collect all responses
+      for (let i = 1; i <= 9; i++) {
+        const selectedOption = document.querySelector(`input[name="question${i}"]:checked`);
+        if (selectedOption) {
+          const domain = selectedOption.getAttribute('data-domain');
+          const value = selectedOption.value;
+          responses[`question${i}`] = { value, domain };
+          domainCounts[domain][value]++;
+        }
+      }
+
+      // Calculate domain results
+      const results = {
+        school: calculateDomainResult(domainCounts.school),
+        friend: calculateDomainResult(domainCounts.friend),
+        family: calculateDomainResult(domainCounts.family),
+        responses: responses,
+        timestamp: Date.now()
+      };
+
+      // Save to localStorage
+      localStorage.setItem('ironSpongeResults', JSON.stringify(results));
+      
+      // Mark as complete
+      markComplete('neg_p9');
+      
+      // Display results
+      displayResults(results);
+    }
+
+    function calculateDomainResult(counts) {
+      const total = counts.iron + counts.sponge + counts.neither;
+      if (total === 0) return { type: 'balanced', counts };
+
+      const ironPercent = (counts.iron / total) * 100;
+      const spongePercent = (counts.sponge / total) * 100;
+      const neitherPercent = (counts.neither / total) * 100;
+
+      let type;
+      if (spongePercent > ironPercent && spongePercent > neitherPercent) {
+        type = 'sponge';
+      } else if (ironPercent > spongePercent && ironPercent > neitherPercent) {
+        type = 'iron';
+      } else {
+        type = 'balanced';
+      }
+
+      return {
+        type,
+        counts,
+        percentages: {
+          iron: Math.round(ironPercent),
+          sponge: Math.round(spongePercent),
+          neither: Math.round(neitherPercent)
+        }
+      };
+    }
+
+    function displayResults(results) {
+      document.getElementById('quizForm').style.display = 'none';
+      document.getElementById('resultsDisplay').style.display = 'block';
+      
+      // Play submission completion audio
+      const submissionAudio = document.getElementById('submissionCompleteAudio');
+      if (submissionAudio) {
+        playAudio(submissionAudio);
+        
+        // Show next button only after audio ends
+        submissionAudio.addEventListener('ended', function() {
+          showNextButtonMotivational();
+        }, { once: true }); // Use once option so listener is removed after first trigger
+      } else {
+        // Fallback if audio element not found
+        showNextButtonMotivational();
+      }
+
+      // Display results for each domain
+      displayDomainResult('school', results.school);
+      displayDomainResult('friend', results.friend);
+      displayDomainResult('family', results.family);
+    }
+
+    function displayDomainResult(domain, result) {
+      const resultContainer = document.getElementById(`${domain}Result`);
+      const breakdownContainer = document.getElementById(`${domain}Breakdown`);
+
+      let badgeClass, badgeText, description;
+      
+      switch(result.type) {
+        case 'iron':
+          badgeClass = 'iron-badge';
+          badgeText = '🛡️ Iron-Like';
+          description = 'Events in this domain tend to bounce off you more easily.';
+          break;
+        case 'sponge':
+          badgeClass = 'sponge-badge';
+          badgeText = '🧽 Sponge-Like';
+          description = 'You tend to absorb and feel events in this domain more deeply.';
+          break;
+        default:
+          badgeClass = 'balanced-badge';
+          badgeText = '⚖️ Balanced';
+          description = 'You respond to events in this domain similarly to most people.';
+      }
+
+      resultContainer.innerHTML = `
+        <div class="result-badge ${badgeClass}">${badgeText}</div>
+        <p class="mt-2 mb-0">${description}</p>
+      `;
+
+      // Get domain-specific responses
+      const domainResponses = getDomainResponses(domain);
+      
+      breakdownContainer.innerHTML = `
+        <div class="breakdown-item">
+          <span class="iron-count">${result.counts.iron}</span> Iron
+        </div>
+        <div class="breakdown-item">
+          <span class="sponge-count">${result.counts.sponge}</span> Sponge  
+        </div>
+        <div class="breakdown-item">
+          <span class="neither-count">${result.counts.neither}</span> Neither
+        </div>
+        <div class="responses-section mt-3 pt-3" style="border-top: 1px solid #dee2e6;">
+          <h6 style="font-size: 0.9em; font-weight: 600; color: #495057; margin-bottom: 10px;">Your Responses:</h6>
+          ${domainResponses}
+        </div>
+      `;
+    }
+
+    function getDomainResponses(domain) {
+      const savedResults = JSON.parse(localStorage.getItem('ironSpongeResults') || '{}');
+      const responses = savedResults.responses || {};
+      
+      const questions = {
+        school: [
+          { id: 'question1', text: 'I got an A in a class' },
+          { id: 'question5', text: 'I failed a test I studied hard for' },
+          { id: 'question9', text: 'I received an award at school' }
+        ],
+        friend: [
+          { id: 'question2', text: 'My friend teased me' },
+          { id: 'question4', text: 'My friends excluded me from their group activity' },
+          { id: 'question7', text: 'My friends said I did the best presentation in our group project' }
+        ],
+        family: [
+          { id: 'question3', text: 'My parents told me they were proud of my good grades' },
+          { id: 'question6', text: 'My parents got angry at me for making a mistake' },
+          { id: 'question8', text: 'My parent ignored my feelings' }
+        ]
+      };
+
+      const domainQuestions = questions[domain] || [];
+      let responsesHtml = '';
+
+      domainQuestions.forEach(q => {
+        const response = responses[q.id];
+        if (response) {
+          const responseClass = response.value === 'iron' ? 'iron-count' : 
+                              response.value === 'sponge' ? 'sponge-count' : 'neither-count';
+          const responseIcon = response.value === 'iron' ? '🛡️' : 
+                              response.value === 'sponge' ? '⚪' : '⚖️';
+          
+          responsesHtml += `
+            <div style="margin-bottom: 8px; font-size: 0.8em; line-height: 1.3;">
+              <span style="color: #6c757d;">"${q.text}"</span><br>
+              <span class="${responseClass}" style="font-weight: 600;">${responseIcon} ${response.value.charAt(0).toUpperCase() + response.value.slice(1)}</span>
+            </div>
+          `;
+        }
+      });
+
+      return responsesHtml;
+    }
+  </script>
+</body>
+</html>

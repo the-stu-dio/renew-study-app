@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Student Study Portal{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Work Sans', sans-serif;
+            background-color: #f4f0fb;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: #5a3e8c;
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .navbar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            background-color: #5a3e8c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            font-family: 'Work Sans', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #4a3474;
+            transform: translateY(-1px);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        /* Form Styles */
+        .form-input {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Work Sans', sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+            width: 100%;
+        }
+
+        .form-input:focus {
+            border-color: #5a3e8c;
+            box-shadow: 0 0 0 2px rgba(90, 62, 140, 0.1);
+        }
+
+        /* Messages */
+        .messages {
+            margin: 20px 0;
+        }
+
+        .message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background-color: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+
+        .message.error {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .message.info {
+            background-color: #f0f9ff;
+            color: #0284c7;
+            border: 1px solid #bae6fd;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #5a3e8c, #7c3aed);
+            transition: width 0.3s ease;
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            border: 2px solid #ddd;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #5a3e8c;
+            color: white;
+            padding: 20px;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .navbar .container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <main class="container">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- RENEWStorage: Client-side data management -->
+    <script>
+    const RENEWStorage = {
+        // Initialize storage structure
+        init() {
+            if (!localStorage.getItem('renew_study_data')) {
+                const initialData = {
+                    nickname: '',
+                    started_at: new Date().toISOString(),
+                    notes: {},
+                    responses: {
+                        positive_events: {},
+                        negative_events: {}
+                    },
+                    quiz_results: {},
+                    progress: {},
+                    completed_sections: [],
+                    journal_responses: {},
+                    posplan_responses: {},
+                    survey_responses: {}
+                };
+                localStorage.setItem('renew_study_data', JSON.stringify(initialData));
+            }
+        },
+
+        // Get all data
+        getData() {
+            this.init();
+            try {
+                return JSON.parse(localStorage.getItem('renew_study_data'));
+            } catch (e) {
+                console.error('Error parsing localStorage data:', e);
+                this.clearAll();
+                return this.getData();
+            }
+        },
+
+        // Save all data
+        saveData(data) {
+            try {
+                localStorage.setItem('renew_study_data', JSON.stringify(data));
+                return true;
+            } catch (e) {
+                console.error('Error saving to localStorage:', e);
+                return false;
+            }
+        },
+
+        // Nickname functions
+        getNickname() {
+            return this.getData().nickname;
+        },
+
+        setNickname(nickname) {
+            const data = this.getData();
+            data.nickname = nickname;
+            return this.saveData(data);
+        },
+
+        // Notes functions
+        saveNotes(activityId, notes) {
+            const data = this.getData();
+            data.notes[activityId] = notes;
+            return this.saveData(data);
+        },
+
+        getNotes(activityId) {
+            return this.getData().notes[activityId] || '';
+        },
+
+        // Progress functions
+        markComplete(activityId) {
+            const data = this.getData();
+            data.progress[activityId] = true;
+            return this.saveData(data);
+        },
+
+        isComplete(activityId) {
+            return this.getData().progress[activityId] || false;
+        },
+
+        // Section completion
+        markSectionComplete(sectionName) {
+            const data = this.getData();
+            data.progress[sectionName + '_complete'] = true;
+            if (!data.completed_sections.includes(sectionName)) {
+                data.completed_sections.push(sectionName);
+            }
+            return this.saveData(data);
+        },
+
+        isSectionComplete(sectionName) {
+            return this.getData().progress[sectionName + '_complete'] || false;
+        },
+
+        // Response functions (for interactive cards)
+        saveResponse(category, subcategory, response) {
+            const data = this.getData();
+            if (!data.responses[category]) {
+                data.responses[category] = {};
+            }
+            data.responses[category][subcategory] = response;
+            return this.saveData(data);
+        },
+
+        getResponses(category) {
+            return this.getData().responses[category] || {};
+        },
+
+        // Quiz results
+        saveQuizResults(activityId, results) {
+            const data = this.getData();
+            data.quiz_results[activityId] = results;
+            return this.saveData(data);
+        },
+
+        getQuizResults(activityId) {
+            return this.getData().quiz_results[activityId];
+        },
+
+        // Journal responses
+        saveJournalResponse(key, response) {
+            const data = this.getData();
+            data.journal_responses[key] = response;
+            return this.saveData(data);
+        },
+
+        getJournalResponse(key) {
+            return this.getData().journal_responses[key];
+        },
+
+        // Positive planning responses
+        savePosplanResponse(key, response) {
+            const data = this.getData();
+            data.posplan_responses[key] = response;
+            return this.saveData(data);
+        },
+
+        getPosplanResponse(key) {
+            return this.getData().posplan_responses[key];
+        },
+
+        // Survey responses
+        saveSurveyResponse(surveyId, response) {
+            const data = this.getData();
+            data.survey_responses[surveyId] = {
+                ...response,
+                timestamp: new Date().toISOString()
+            };
+            return this.saveData(data);
+        },
+
+        getSurveyResponse(surveyId) {
+            return this.getData().survey_responses[surveyId];
+        },
+
+        // Navigation helper
+        checkNicknameAndRedirect() {
+            const nickname = this.getNickname();
+            const currentPath = window.location.pathname;
+            
+            // Pages that don't require a nickname
+            const publicPages = ['/accounts/', '/accounts/nickname/', '/accounts/landing/'];
+            
+            if (!nickname && !publicPages.includes(currentPath)) {
+                window.location.href = '/accounts/nickname/';
+                return false;
+            }
+            return true;
+        },
+
+        // Export for Qualtrics
+        exportForQualtrics() {
+            const data = this.getData();
+            
+            // Create anonymized export data
+            return {
+                participant_id: this.generateAnonymousId(),
+                completion_date: new Date().toISOString(),
+                study_duration: data.started_at,
+                completed_sections: data.completed_sections,
+                total_notes_count: Object.keys(data.notes).length,
+                notes_activities: Object.keys(data.notes),
+                
+                // Quiz and response data
+                quiz_results: data.quiz_results,
+                positive_event_responses: data.responses.positive_events,
+                negative_event_responses: data.responses.negative_events,
+                journal_responses: data.journal_responses,
+                posplan_responses: data.posplan_responses,
+                survey_responses: data.survey_responses,
+                
+                // Progress summary
+                progress_summary: {
+                    positive_events_completed: data.progress.positive_events_complete || false,
+                    negative_events_completed: data.progress.negative_events_complete || false,
+                    thoughts_feelings_completed: data.progress.thoughts_feelings_complete || false,
+                    skills_completed: data.progress.skills_complete || false,
+                },
+                
+                // Individual activity completion counts
+                activities_completed: Object.keys(data.progress).filter(key => 
+                    data.progress[key] && !key.includes('_complete')
+                ).length
+            };
+        },
+
+        generateAnonymousId() {
+            // Create anonymous ID from browser fingerprint + timestamp
+            const browserData = navigator.userAgent + navigator.language + screen.width;
+            return btoa(browserData).substring(0, 12) + Date.now().toString(36);
+        },
+
+        // Utility functions
+        clearAll() {
+            localStorage.removeItem('renew_study_data');
+            this.init();
+        },
+
+        getStorageSize() {
+            const data = localStorage.getItem('renew_study_data');
+            return data ? new Blob([data]).size : 0;
+        }
+    };
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        RENEWStorage.init();
+        RENEWStorage.checkNicknameAndRedirect();
+    });
+
+    // Global functions for templates to use
+    window.RENEWStorage = RENEWStorage;
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Positive Planned Activities - Part 5</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Work Sans', sans-serif;
+      height: 100vh;
+      width: 100vw;
+      background-color: #f4f0fb;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Media Container - Similar to posplan_p1 */
+    .video-container {
+      flex: 3.0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      order: 1;
+    }
+
+    /* Sidebar - Consistent with posplan_p1 */
+    .sidebar {
+      flex: 1.5;
+      background-color: #fff;
+      padding: 20px;
+      border-left: 2px solid #ccc;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      order: 2;
+      height: 100vh;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .sidebar h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #5a3e8c;
+      font-size: 18px;
+    }
+
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      align-self: flex-start;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: auto;
+    }
+
+    .back-button:hover {
+      background-color: #5a6268;
+      transform: translateY(-1px);
+      color: white;
+      text-decoration: none;
+    }
+    
+    /* Media Content - Similar to posplan_p1 */
+    .media-content {
+      width: 100%;
+      max-width: 100%;
+      height: 75vh;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .video-wrapper {
+      width: 100%;
+      max-width: 100%;
+      height: 75vh;
+      position: relative;
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border: 0;
+    }
+    
+    /* Navigation Buttons */
+    .next-button-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+    }
+    .next-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    
+    .next-button-overlay.visible {
+      opacity: 1;
+      transform: scale(1);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    /* Special effects for next button */
+    .next-button-motivational {
+      animation: popScale 0.6s ease-out forwards, glow 1.5s ease-in-out infinite;
+    }
+    
+    .next-button-pulse {
+      animation: subtlePulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes popScale {
+      0% {
+        transform: scale(0.8);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.15);
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes glow {
+      0%, 100% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 20px rgba(90, 62, 140, 0.3);
+      }
+      50% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 30px rgba(90, 62, 140, 0.6);
+      }
+    }
+    
+    @keyframes subtlePulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 2px 12px rgba(90, 62, 140, 0.3);
+      }
+    }
+    
+    .prev-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+    .prev-button-overlay:hover, .next-button-overlay:hover {
+      background: #b8a5d1;
+      color: #4a3474;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+    
+    /* Modal Styles - Higher z-index to appear over image */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-title {
+      color: #5a3e8c;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    
+    .modal-description {
+      color: #666;
+      font-size: 1rem;
+      margin-bottom: 20px;
+      line-height: 1.5;
+      text-align: left;
+    }
+    
+    .modal-input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+    
+    .modal-input:focus {
+      outline: none;
+      border-color: #5a3e8c;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+    
+    .modal-btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+    
+    .modal-btn.primary {
+      background: #5a3e8c;
+      color: white;
+    }
+    
+    .modal-btn.primary:hover {
+      background: #4a3474;
+      transform: translateY(-1px);
+    }
+    
+    .modal-btn.secondary {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .modal-btn.secondary:hover {
+      background: #5a6268;
+      transform: translateY(-1px);
+    }
+    
+    /* Hidden audio element */
+    .hidden-audio {
+      display: none;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Mobile Responsive */
+    @media (max-width: 480px) {
+      body {
+        flex-direction: column;
+      }
+      .video-container {
+        flex: 1;
+        padding: 10px;
+      }
+      .sidebar {
+        flex: 0 0 250px;
+        border-left: none;
+        border-top: 2px solid #ccc;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+      }
+      .media-content {
+        height: 50vh;
+      }
+      .video-wrapper {
+        height: 50vh;
+      }
+      .modal-content {
+        max-width: 400px;
+        padding: 25px;
+      }
+      .modal-title {
+        font-size: 1.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="video-container">
+    <!-- Previous button -->
+    <div class="prev-button-container" style="position: absolute; top: 20px; left: 20px; z-index: 10;">
+      <a href="../posplan-p4/" class="prev-button-overlay">
+        ← Previous
+      </a>
+    </div>
+    
+    <!-- Next button -->
+    <div class="next-button-container" id="nextButtonContainer">
+      <a href="../posplan-summary-p1/" class="next-button-overlay" id="nextButton">
+        Next →
+      </a>
+    </div>
+
+    <div class="media-content">
+      <!-- Video wrapper for YouTube API -->
+      <div class="video-wrapper">
+        <div id="youtubePlayer"></div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="sidebar">
+    <h3>Positive Planned Activities - Part 5</h3>
+    
+    <!-- Hidden audio element for success sound effect -->
+    <audio id="successSoundEffect" class="hidden-audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_6UG7Rt7QKA7N8oH" type="audio/mpeg">
+    </audio>
+    
+    <a href="../adventure-map/" class="back-button">← Back to Adventure Map</a>
+  </div>
+  
+  <!-- Modal for Timing Input -->
+  <div id="timingModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <h2 class="modal-title">When would you like to do it?</h2>
+      <p class="modal-description">
+        We think timing is important! What day and what time? Is it better first thing or after school or before bed? What about weekend or weekday? For instance, an answer may be 'after school' or 'on a Saturday morning'.
+      </p>
+      <input type="text" id="timingInput" class="modal-input" placeholder="Enter when you'd like to do it...">
+      <div class="modal-buttons">
+        <button class="modal-btn primary" onclick="submitTiming()">Continue</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Direct localStorage functions (consistent with other standardized pages)
+    function markComplete(pageId) {
+      try {
+        localStorage.setItem('completed_' + pageId, 'true');
+        localStorage.setItem('completed_' + pageId + '_timestamp', Date.now().toString());
+        return true;
+      } catch (e) {
+        console.error('Error saving completion status:', e);
+        return false;
+      }
+    }
+
+    function isComplete(pageId) {
+      try {
+        return localStorage.getItem('completed_' + pageId) === 'true';
+      } catch (e) {
+        console.error('Error checking completion status:', e);
+        return false;
+      }
+    }
+
+    function savePosplanResponse(step, timing) {
+      try {
+        let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        if (!data.posplan_responses) data.posplan_responses = {};
+        data.posplan_responses[step] = {
+          timing: timing,
+          timestamp: Date.now()
+        };
+        localStorage.setItem('renew_study_data', JSON.stringify(data));
+        return true;
+      } catch (e) {
+        console.error('Error saving posplan response:', e);
+        return false;
+      }
+    }
+
+    function getPosplanResponse(step) {
+      try {
+        const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        return data.posplan_responses?.[step] || null;
+      } catch (e) {
+        console.error('Error getting posplan response:', e);
+        return null;
+      }
+    }
+
+    // YouTube player management
+    const nextButtonContainer = document.getElementById('nextButtonContainer');
+    const nextButton = document.getElementById('nextButton');
+    const timingModal = document.getElementById('timingModal');
+    let videoCompleted = false;
+    let modalShown = false;
+    let fallbackTimer = null;
+    let videoEndDetected = false;
+    let player;
+    let specialEffectsShown = false;
+    
+    const pageId = 'posplan_p5';
+    const isPageCompleted = isComplete(pageId);
+    const existingTiming = getPosplanResponse('when');
+
+    console.log('Page loaded:', {
+      pageId: pageId,
+      isCompleted: isPageCompleted,
+      existingTiming: existingTiming
+    });
+
+    // Function to play success sound effect
+    function playSuccessSound() {
+      const soundEffect = document.getElementById('successSoundEffect');
+      if (soundEffect) {
+        soundEffect.currentTime = 0;
+        soundEffect.play().catch(error => {
+          console.log('Sound effect autoplay failed (browser policy):', error);
+        });
+      }
+    }
+
+    // Function to show next button with motivational animation
+    function showNextButtonMotivational() {
+      nextButtonContainer.style.display = 'block';
+      
+      if (!specialEffectsShown) {
+        // First time showing - play sound and big animation
+        playSuccessSound();
+        specialEffectsShown = true;
+        
+        nextButton.classList.add('next-button-motivational', 'visible');
+        
+        // After initial animation completes, switch to subtle pulse
+        setTimeout(() => {
+          nextButton.classList.remove('next-button-motivational');
+          nextButton.classList.add('next-button-pulse', 'visible');
+        }, 1200);
+      } else {
+        // Already shown before - just show with subtle pulse (no sound)
+        nextButton.classList.remove('next-button-motivational');
+        nextButton.classList.add('next-button-pulse', 'visible');
+      }
+    }
+
+    // YouTube API integration
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('youtubePlayer', {
+        height: '100%',
+        width: '100%',
+        videoId: 'wemiwznGAXo',
+        playerVars: {
+          'controls': 1,
+          'autoplay': 1,
+          'rel': 0,
+          'cc_load_policy': 1
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      // Autoplay is handled by playerVars
+      event.target.playVideo();
+    }
+
+    // Track video state changes
+    function onPlayerStateChange(event) {
+      // YT.PlayerState.ENDED = 0
+      if (event.data === YT.PlayerState.ENDED) {
+        console.log('Video finished playing - showing modal');
+        onVideoEnded();
+      }
+    }
+
+    // Load YouTube API
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
+    // Show next button if already completed
+    if (isPageCompleted) {
+      nextButtonContainer.style.display = 'block';
+      nextButton.classList.add('next-button-pulse', 'visible');
+      videoCompleted = true;
+      videoEndDetected = true;
+      specialEffectsShown = true; // Already completed, effects were shown before
+      
+      // Pre-fill existing timing if available
+      if (existingTiming && existingTiming.timing) {
+        document.getElementById('timingInput').value = existingTiming.timing;
+      }
+    } else {
+      nextButtonContainer.style.display = 'none';
+      // Set fallback timer - show modal after 5 minutes if video hasn't ended
+      fallbackTimer = setTimeout(() => {
+        if (!modalShown && !isPageCompleted) {
+          console.log('Fallback timer: showing modal after 5 minutes');
+          showTimingModal();
+        }
+      }, 300000); // 5 minutes fallback
+    }
+
+    function onVideoEnded() {
+      console.log('Video finished playing - showing modal');
+      
+      if (!videoCompleted) {
+        videoCompleted = true;
+        videoEndDetected = true;
+        // Clear fallback timer since video completed
+        if (fallbackTimer) {
+          clearTimeout(fallbackTimer);
+        }
+        // Show modal when video ends
+        showTimingModal();
+      }
+    }
+
+    // Modal functions
+    function showTimingModal() {
+      if (!modalShown) {
+        modalShown = true;
+        timingModal.style.display = 'flex';
+        
+        // Pre-fill with existing timing if available
+        if (existingTiming && existingTiming.timing) {
+          document.getElementById('timingInput').value = existingTiming.timing;
+        }
+        
+        document.getElementById('timingInput').focus();
+        console.log('Timing modal shown');
+      }
+    }
+
+    function submitTiming() {
+      const timing = document.getElementById('timingInput').value.trim();
+      
+      if (!timing) {
+        alert('Please enter when you would like to do the activity');
+        return;
+      }
+      
+      console.log('Submitting timing:', timing);
+      
+      // Save the timing choice using localStorage
+      if (savePosplanResponse('when', timing)) {
+        console.log('Timing choice saved successfully');
+        
+        // Mark page as complete
+        markComplete(pageId);
+        
+        // Close modal
+        timingModal.style.display = 'none';
+        
+        // Show next button with special effects
+        showNextButtonMotivational();
+      } else {
+        alert('There was an error saving your timing choice. Please try again.');
+      }
+    }
+
+    // Enter key support for modal
+    document.getElementById('timingInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        submitTiming();
+      }
+    });
+    
+    // Clean up timer if page is unloaded
+    window.addEventListener('beforeunload', function() {
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
+      }
+    });
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Page initialized:', {
+        pageId: pageId,
+        previouslyCompleted: isPageCompleted,
+        nextButtonVisible: nextButtonContainer.style.display !== 'none',
+        modalWillShow: !isPageCompleted
+      });
+    });
+  </script>
+</body>
+</html>

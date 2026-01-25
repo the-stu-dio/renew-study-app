@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Negative Events - Part 4</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Work Sans', sans-serif;
+      height: 100vh;
+      width: 100vw;
+      background-color: #f4f0fb;
+      display: flex;
+      overflow: hidden;
+    }
+    .video-container {
+      flex: 3.15;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      order: 1;
+    }
+    .sidebar {
+      flex: 1.5;
+      background-color: #fff;
+      padding: 20px;
+      border-left: 2px solid #ccc;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      order: 2;
+      height: 100vh;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+    .sidebar h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #5a3e8c;
+      font-size: 18px;
+    }
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      align-self: flex-start;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: auto;
+    }
+    .back-button:hover {
+      background-color: #5a6268;
+      transform: translateY(-1px);
+      color: white;
+      text-decoration: none;
+    }
+    .prev-button {
+      background-color: #17a2b8;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      align-self: flex-start;
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 15px;
+    }
+    .prev-button:hover {
+      background-color: #138496;
+      transform: translateY(-1px);
+      color: white;
+      text-decoration: none;
+    }
+    .next-button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      align-self: flex-start;
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 15px;
+      animation: fadeInUp 0.5s ease-out;
+    }
+    .next-button:hover {
+      background-color: #218838;
+      transform: translateY(-1px);
+      color: white;
+      text-decoration: none;
+    }
+    .video-wrapper {
+      width: 100%;
+      max-width: 100%;
+      height: 75vh;
+      position: relative;
+    }
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border: 0;
+    }
+    .next-button-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+    }
+    .next-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+      font-family: 'Work Sans', sans-serif;
+      position: relative;
+    }
+    .prev-button-container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+    }
+    .prev-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+    .prev-button-overlay:hover {
+      background: #b8a5d1;
+      color: #4a3474;
+      text-decoration: none;
+    }
+    .next-button-overlay:hover {
+      background: #b8a5d1;
+      color: #4a3474;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    /* Motivational entrance animation - Purple to White */
+    .next-button-motivational {
+      animation: motivationalEntrance 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    @keyframes motivationalEntrance {
+      0% {
+        opacity: 0;
+        transform: translateX(100px) scale(0.8);
+        box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+        background: #c8b5db;
+      }
+      20% {
+        opacity: 0.7;
+        transform: translateX(-10px) scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      40% {
+        opacity: 1;
+        transform: translateX(5px) scale(1.1);
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      60% {
+        transform: translateX(-2px) scale(1.02);
+        box-shadow: 0 4px 20px rgba(255, 255, 255, 0.7);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      80% {
+        transform: translateX(1px) scale(1.01);
+        box-shadow: 0 4px 15px rgba(248, 249, 250, 0.5);
+        background: linear-gradient(135deg, #f8f9fa, #c8b5db);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background: #c8b5db;
+      }
+    }
+
+    /* Motivational pulse effect for ongoing engagement */
+    .next-button-pulse {
+      position: relative;
+      animation: motivationalPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes motivationalPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+      }
+    }
+
+    /* Motivational glow border effect */
+    .next-button-pulse::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #ffffff, #f8f9fa, #e9ecef, #ffffff);
+      border-radius: 10px;
+      z-index: -1;
+      opacity: 0;
+      animation: motivationalGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes motivationalGlow {
+      0%, 100% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    /* Static visible state - no ongoing animation */
+    .next-button-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Hidden audio element - no visible UI */
+    .hidden-audio {
+      display: none;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @media (max-width: 480px) {
+      body {
+        flex-direction: column;
+      }
+      .video-container {
+        flex: 1;
+        padding: 10px;
+      }
+      .sidebar {
+        flex: 0 0 250px;
+        border-left: none;
+        border-top: 2px solid #ccc;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+      }
+      .video-wrapper {
+        height: 50vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="video-container">
+   <!-- Previous button positioned above video, left-aligned -->
+    <div class="prev-button-container" id="prevButtonContainer">
+      <a href="{% url 'neg_p3' %}" class="prev-button-overlay">
+        ← Previous
+      </a>
+    </div>
+    
+    <!-- Next button positioned above video, right-aligned -->
+    <div class="next-button-container" id="nextButtonContainer" style="display: none;">
+      <a href="{% url 'neg_p5' %}" class="next-button-overlay" id="nextButton">
+        Next →
+      </a>
+    </div>
+    
+    <!-- Video wrapper for YouTube API -->
+    <div class="video-wrapper">
+      <div id="youtubePlayer"></div>
+    </div>
+
+    <!-- Hidden audio element for sound effect -->
+    <audio id="successSoundEffect" class="hidden-audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_6UG7Rt7QKA7N8oH" type="audio/mpeg">
+    </audio>
+  </div>
+  <div class="sidebar">
+    <h3>Negative Events - Part 4</h3>
+    
+    <p style="color: #5a3e8c; font-size: 14px; margin-bottom: 20px;">
+      
+    </p>
+    
+    <a href="{% url 'adventure_map' %}" class="back-button">← Back to Adventure Map</a>
+  </div>
+  
+  <script>
+    // Simple storage functions using localStorage directly
+    function markComplete(pageId) {
+      try {
+        localStorage.setItem('completed_' + pageId, 'true');
+        localStorage.setItem('completed_' + pageId + '_timestamp', Date.now().toString());
+        return true;
+      } catch (e) {
+        console.error('Error saving completion status:', e);
+        return false;
+      }
+    }
+
+    function isComplete(pageId) {
+      try {
+        return localStorage.getItem('completed_' + pageId) === 'true';
+      } catch (e) {
+        console.error('Error checking completion status:', e);
+        return false;
+      }
+    }
+
+    // Function to play success sound effect
+    function playSuccessSound() {
+      const soundEffect = document.getElementById('successSoundEffect');
+      if (soundEffect) {
+        // Reset audio to beginning in case it was played before
+        soundEffect.currentTime = 0;
+        soundEffect.play().catch(error => {
+          console.log('Sound effect autoplay failed (browser policy):', error);
+          // Sound effect is just enhancement, continue normally if blocked
+        });
+      }
+    }
+
+    // Function to show next button with motivational animation
+    function showNextButtonMotivational() {
+      const nextButtonContainer = document.getElementById('nextButtonContainer');
+      const nextButton = document.getElementById('nextButton');
+      
+      if (nextButtonContainer && nextButton) {
+        // Show the container
+        nextButtonContainer.style.display = 'block';
+        
+        // Check if both animation AND sound have already been shown for this video
+        const specialEffectsShown = localStorage.getItem('neg_p4_special_effects_shown');
+        
+        if (!specialEffectsShown) {
+          // First time showing - play both the motivational animation AND sound effect
+          playSuccessSound();
+          
+          // Make sure no other classes are on the button first
+          nextButton.classList.remove('next-button-pulse', 'visible');
+          nextButton.classList.add('next-button-motivational');
+          
+          // Mark both animation and sound as shown immediately
+          localStorage.setItem('neg_p4_special_effects_shown', 'true');
+          
+          // After initial animation completes, switch to subtle pulse
+          setTimeout(() => {
+            nextButton.classList.remove('next-button-motivational');
+            nextButton.classList.add('next-button-pulse', 'visible');
+          }, 1200);
+        } else {
+          // Special effects already shown before - show with subtle pulse immediately
+          // NO sound effect and NO motivational animation
+          nextButton.classList.remove('next-button-motivational');
+          nextButton.classList.add('next-button-pulse', 'visible');
+        }
+      }
+    }
+
+    // Show navigation buttons (updated to use motivational animation)
+    function showNavigationButtons() {
+      showNextButtonMotivational();
+    }
+
+    // Mark video as complete
+    function markVideoComplete() {
+      markComplete('neg_p4');
+    }
+
+    // YouTube API integration
+    let player;
+    let videoEndDetected = false;
+
+    function onYouTubeIframeAPIReady() {
+      try {
+        player = new YT.Player('youtubePlayer', {
+          height: '100%',
+          width: '100%',
+          videoId: 'AGJvnEroDRc',
+          playerVars: {
+            'controls': 1,
+            'autoplay': 1,
+            'rel': 0,
+            'cc_load_policy': 1
+          },
+          events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+          }
+        });
+      } catch (error) {
+        console.error('Error initializing YouTube player:', error);
+      }
+    }
+
+    function onPlayerReady(event) {
+      // Autoplay is handled by playerVars
+      event.target.playVideo();
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data == YT.PlayerState.ENDED) {
+        videoEndDetected = true;
+        showNavigationButtons();
+        markVideoComplete();
+      }
+    }
+
+    // Load YouTube API
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
+    // Check if already completed on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      if (isComplete('neg_p4')) {
+        showNavigationButtons();
+      }
+
+      // Fallback timer - show button after 3 minutes regardless
+      setTimeout(() => {
+        if (!videoEndDetected && !isComplete('neg_p4')) {
+          showNavigationButtons();
+          markVideoComplete();
+        }
+      }, 180000);
+    });
+  </script>
+</body>
+</html>

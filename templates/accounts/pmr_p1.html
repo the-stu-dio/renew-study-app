@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Progressive Muscle Relaxation - Part 1</title>
+  <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Work Sans', sans-serif;
+      height: 100vh;
+      width: 100vw;
+      background-color: #f4f0fb;
+      display: flex;
+      overflow: hidden;
+    }
+    .video-container {
+      flex: 3.0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      order: 1;
+    }
+    .sidebar {
+      flex: 1.5;
+      background-color: #fff;
+      padding: 20px;
+      border-left: 2px solid #ccc;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      order: 2;
+      height: 100vh;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+    .sidebar h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #5a3e8c;
+      font-size: 18px;
+    }
+
+    /* Sidebar Survey Styles */
+    .sidebar-survey {
+      display: none;
+      background: #fff;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border: 2px solid #5a3e8c;
+      margin-bottom: 20px;
+    }
+
+    .sidebar-survey.show {
+      display: block;
+      animation: fadeInUp 0.5s ease-out;
+    }
+
+    .survey-title {
+      color: #5a3e8c;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .survey-subtitle {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-style: italic;
+    }
+
+    .survey-option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #495057;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .survey-option:hover {
+      background: #e3f2fd;
+      border-color: #5a3e8c;
+      color: #5a3e8c;
+      text-decoration: none;
+    }
+
+    .survey-option.selected {
+      background: #5a3e8c;
+      border-color: #5a3e8c;
+      color: white;
+    }
+
+    .survey-feedback {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 8px;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+    }
+
+    .survey-feedback.show {
+      display: block;
+    }
+
+    .survey-feedback.success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+
+    .continue-button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      width: 100%;
+      margin-top: 15px;
+      display: none;
+    }
+
+    .continue-button:hover:not(:disabled) {
+      background-color: #218838;
+      transform: translateY(-1px);
+    }
+
+    .continue-button:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .continue-button.show {
+      display: block;
+    }
+
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      align-self: flex-start;
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+    .back-button:hover {
+      background-color: #5a6268;
+      transform: translateY(-1px);
+      color: white;
+      text-decoration: none;
+    }
+    
+    .next-button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+      align-self: flex-start;
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 15px;
+      animation: fadeInUp 0.5s ease-out;
+    }
+    .next-button:hover {
+      background-color: #218838;
+      transform: translateY(-1px);
+      color: white;
+      text-decoration: none;
+    }
+    
+    .next-button-container {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+    }
+    .next-button-overlay {
+      background: #c8b5db;
+      color: #5a3e8c;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #b8a5d1;
+      transition: all 0.2s ease;
+      display: inline-block;
+      cursor: pointer;
+      border: none;
+      font-family: 'Work Sans', sans-serif;
+      position: relative;
+    }
+    .next-button-overlay:hover {
+      background: #b8a5d1;
+      color: #4a3474;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    /* Motivational entrance animation - Purple to White */
+    .next-button-motivational {
+      animation: motivationalEntrance 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    @keyframes motivationalEntrance {
+      0% {
+        opacity: 0;
+        transform: translateX(100px) scale(0.8);
+        box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+        background: #c8b5db;
+      }
+      20% {
+        opacity: 0.7;
+        transform: translateX(-10px) scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.7);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      40% {
+        opacity: 1;
+        transform: translateX(5px) scale(1.1);
+        box-shadow: 0 0 25px rgba(255, 255, 255, 0.9);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      60% {
+        transform: translateX(-2px) scale(1.02);
+        box-shadow: 0 4px 20px rgba(255, 255, 255, 0.7);
+        background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      }
+      80% {
+        transform: translateX(1px) scale(1.01);
+        box-shadow: 0 4px 15px rgba(248, 249, 250, 0.5);
+        background: linear-gradient(135deg, #f8f9fa, #c8b5db);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background: #c8b5db;
+      }
+    }
+
+    /* Motivational pulse effect for ongoing engagement */
+    .next-button-pulse {
+      position: relative;
+      animation: motivationalPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes motivationalPulse {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+      }
+    }
+
+    /* Motivational glow border effect */
+    .next-button-pulse::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #ffffff, #f8f9fa, #e9ecef, #ffffff);
+      border-radius: 10px;
+      z-index: -1;
+      opacity: 0;
+      animation: motivationalGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes motivationalGlow {
+      0%, 100% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    /* Static visible state - no ongoing animation */
+    .next-button-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Hidden audio element - no visible UI */
+    .hidden-audio {
+      display: none;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .video-wrapper {
+      width: 100%;
+      max-width: 100%;
+      height: 75vh;
+      position: relative;
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border: 0;
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        flex-direction: column;
+      }
+      .video-container {
+        flex: 1;
+        padding: 10px;
+      }
+      .sidebar {
+        flex: 0 0 250px;
+        border-left: none;
+        border-top: 2px solid #ccc;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+      }
+      .video-wrapper {
+        height: 50vh;
+      }
+      .survey-option {
+        font-size: 13px;
+        padding: 10px 14px;
+      }
+    }
+
+    /* Survey Modal Styles (keeping original for end survey) */
+    .survey-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .survey-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .survey-modal {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 700px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      transform: translateY(-20px);
+      transition: transform 0.3s ease;
+    }
+
+    .survey-overlay.show .survey-modal {
+      transform: translateY(0);
+    }
+
+    .modal-survey-title {
+      color: #5a3e8c;
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .modal-survey-subtitle {
+      color: #666;
+      font-size: 1rem;
+      margin-bottom: 25px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .survey-level {
+      margin-bottom: 15px;
+    }
+
+    .survey-level.level-2 {
+      margin-left: 20px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .survey-level.level-2.visible {
+      display: block;
+    }
+
+    .modal-survey-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #f9f9f9;
+      margin-bottom: 12px;
+    }
+
+    .modal-survey-option:hover {
+      border-color: #5a3e8c;
+      background: rgba(90, 62, 140, 0.05);
+    }
+
+    .modal-survey-option.selected {
+      border-color: #5a3e8c;
+      background: rgba(90, 62, 140, 0.1);
+    }
+
+    .modal-survey-option.level-2 {
+      background: #f0f8ff;
+      border-color: #b8d4f0;
+      margin-left: 0;
+    }
+
+    .modal-survey-option.level-2:hover {
+      border-color: #5a3e8c;
+      background: rgba(90, 62, 140, 0.05);
+    }
+
+    .modal-survey-option.level-2.selected {
+      border-color: #5a3e8c;
+      background: rgba(90, 62, 140, 0.1);
+    }
+
+    .survey-checkbox {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .modal-survey-option.selected .survey-checkbox {
+      background: #5a3e8c;
+      border-color: #5a3e8c;
+    }
+
+    .modal-survey-option.selected .survey-checkbox::after {
+      content: '✓';
+      color: white;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    .survey-option-text {
+      flex: 1;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      color: #333;
+    }
+
+    .survey-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+    .survey-btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      font-size: 0.95rem;
+    }
+
+    .survey-btn.primary {
+      background: #5a3e8c;
+      color: white;
+    }
+
+    .survey-btn.primary:hover {
+      background: #4a3474;
+      transform: translateY(-1px);
+    }
+
+    .survey-btn.primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    @media (max-width: 768px) {
+      .survey-modal {
+        padding: 25px 20px;
+        width: 95%;
+      }
+      
+      .modal-survey-title {
+        font-size: 1.2rem;
+      }
+      
+      .modal-survey-option {
+        padding: 12px;
+      }
+      
+      .survey-buttons {
+        flex-direction: column;
+      }
+      
+      .survey-btn {
+        width: 100%;
+      }
+
+      .survey-level.level-2 {
+        margin-left: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="video-container">
+    <!-- Next button positioned above video, right-aligned (hidden initially) -->
+    <div class="next-button-container" id="nextButtonContainer" style="display: none;">
+      <button class="next-button-overlay" id="nextButton" onclick="showSurvey()">
+        Next →
+      </button>
+    </div>
+    
+    <!-- Video wrapper for YouTube API -->
+    <div class="video-wrapper">
+      <div id="youtubePlayer"></div>
+    </div>
+
+    <!-- Hidden audio element for success sound effect -->
+    <audio id="successSoundEffect" class="hidden-audio" preload="auto">
+      <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_6UG7Rt7QKA7N8oH" type="audio/mpeg">
+    </audio>
+
+  </div>
+  
+  <!-- Survey Modal (end of video survey) -->
+  <div class="survey-overlay" id="surveyOverlay">
+    <div class="survey-modal">
+      <h2 class="modal-survey-title">Progressive Muscle Relaxation Feedback</h2>
+      
+      <p class="modal-survey-subtitle">Please fill out a quick survey to tell us what you think about PMR. How did you like PMR?<br><em>(Click all that fit you)</em></p>
+      
+      <div id="surveyForm">
+        <!-- Level 1: Main Categories -->
+        <div class="survey-level level-1">
+          <div class="modal-survey-option" data-category="liked" onclick="selectMainOption('liked')">
+            <div class="survey-checkbox"></div>
+            <div class="survey-option-text">I liked it</div>
+          </div>
+
+          <!-- Level 2: Sub-options for "I liked it" -->
+          <div class="survey-level level-2" id="liked-options">
+            <div class="modal-survey-option level-2" data-value="liked_own" onclick="selectSubOption('liked_own')">
+              <div class="survey-checkbox"></div>
+              <div class="survey-option-text">I want to try it on my own</div>
+            </div>
+            
+            <div class="modal-survey-option level-2" data-value="liked_counselor" onclick="selectSubOption('liked_counselor')">
+              <div class="survey-checkbox"></div>
+              <div class="survey-option-text">I would like to try doing it more with a counselor</div>
+            </div>
+          </div>
+          
+          <div class="modal-survey-option" data-category="didnt_like" onclick="selectMainOption('didnt_like')">
+            <div class="survey-checkbox"></div>
+            <div class="survey-option-text">I didn't like it</div>
+          </div>
+
+          <!-- Level 2: Sub-options for "I didn't like it" -->
+          <div class="survey-level level-2" id="didnt_like-options">
+            <div class="modal-survey-option level-2" data-value="didnt_like_no_again" onclick="selectSubOption('didnt_like_no_again')">
+              <div class="survey-checkbox"></div>
+              <div class="survey-option-text">I would prefer not to try something like that again</div>
+            </div>
+            
+            <div class="modal-survey-option level-2" data-value="didnt_like_try_counselor" onclick="selectSubOption('didnt_like_try_counselor')">
+              <div class="survey-checkbox"></div>
+              <div class="survey-option-text">I would be open to trying it with a counselor again to see if there was something I was doing wrong</div>
+            </div>
+            
+            <div class="modal-survey-option level-2" data-value="didnt_like_other_relaxation" onclick="selectSubOption('didnt_like_other_relaxation')">
+              <div class="survey-checkbox"></div>
+              <div class="survey-option-text">I would be interested in talking to a counselor about other things I can practice to feel more relaxed</div>
+            </div>
+          </div>
+          
+          <div class="modal-survey-option" data-category="dont_know" onclick="selectMainOption('dont_know')">
+            <div class="survey-checkbox"></div>
+            <div class="survey-option-text">I don't know how I feel about it</div>
+          </div>
+        </div>
+        
+        <div class="survey-buttons">
+          <button type="button" class="survey-btn primary" id="submitSurvey" disabled>Submit Feedback</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Survey Modal Audio - plays sequentially when modal opens -->
+  <audio id="surveyAudio1" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_vjKVrZaDOuogOiG" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <audio id="surveyAudio2" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_uj3EDDexAL6vKjW" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <audio id="surveyAudio3" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_wNx5GHnVn1DoLFu" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <audio id="surveyAudio4" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_oSrdyu1cA0XpLrQ" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
+  <!-- Audio element for sidebar survey (plays when video ends) -->
+  <audio id="sidebarSurveyAudio" preload="auto">
+    <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_dqpuqEP4988AGAz" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+  
+  <div class="sidebar">
+    <h3>Progressive Muscle Relaxation</h3>
+
+    <!-- Sidebar Survey (appears at video end) -->
+    <div class="sidebar-survey" id="sidebarSurvey">
+      <div class="survey-title">How does your body feel now?</div>
+      <div class="survey-subtitle">Click all that fit you</div>
+      
+      <button class="survey-option" onclick="selectSidebarOption(this, 'relaxed')">
+        Relaxed
+      </button>
+      
+      <button class="survey-option" onclick="selectSidebarOption(this, 'stressed')">
+        More stressed than ever
+      </button>
+      
+      <button class="survey-option" onclick="selectSidebarOption(this, 'same')">
+        Kind of the same as before
+      </button>
+      
+      <div class="survey-feedback" id="sidebarFeedback"></div>
+      <button class="continue-button" id="submitSidebarButton" onclick="submitSidebarSurvey()">
+        Submit
+      </button>
+    </div>
+
+    <a href="{% url 'adventure_map' %}" class="back-button">← Back to Adventure Map</a>
+  </div>
+
+  <script>
+    // Direct localStorage functions (consistent with other standardized pages)
+    function markComplete(pageId) {
+      try {
+        localStorage.setItem('completed_' + pageId, 'true');
+        localStorage.setItem('completed_' + pageId + '_timestamp', Date.now().toString());
+        return true;
+      } catch (e) {
+        console.error('Error saving completion status:', e);
+        return false;
+      }
+    }
+
+    function isComplete(pageId) {
+      try {
+        return localStorage.getItem('completed_' + pageId) === 'true';
+      } catch (e) {
+        console.error('Error checking completion status:', e);
+        return false;
+      }
+    }
+
+    // ========== AUDIO MANAGER ==========
+    // Centralized audio manager to prevent overlapping audio
+    let currentlyPlayingAudio = null;
+    
+    // Get all audio elements on the page
+    function getAllAudioElements() {
+      return [
+        document.getElementById('successSoundEffect'),
+        document.getElementById('surveyAudio1'),
+        document.getElementById('surveyAudio2'),
+        document.getElementById('surveyAudio3'),
+        document.getElementById('surveyAudio4'),
+        document.getElementById('sidebarSurveyAudio')
+      ].filter(audio => audio !== null);
+    }
+    
+    // Stop all currently playing audio
+    function stopAllAudio() {
+      const allAudios = getAllAudioElements();
+      allAudios.forEach(audio => {
+        if (audio && !audio.paused) {
+          audio.pause();
+          audio.currentTime = 0;
+        }
+      });
+      currentlyPlayingAudio = null;
+    }
+    
+    // Play audio with overlap prevention
+    function playAudioSafe(audioElement) {
+      if (!audioElement) return Promise.reject('Audio element not found');
+      
+      // Stop any currently playing audio first
+      stopAllAudio();
+      
+      // Set this as the currently playing audio
+      currentlyPlayingAudio = audioElement;
+      
+      // Reset to beginning
+      audioElement.currentTime = 0;
+      
+      // Play the audio
+      return audioElement.play();
+    }
+    // ========== END AUDIO MANAGER ==========
+
+    function saveSurveyResponse(surveyId, response) {
+      try {
+        let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        if (!data.survey_responses) data.survey_responses = {};
+        data.survey_responses[surveyId] = response;
+        data.survey_responses[surveyId + '_timestamp'] = Date.now();
+        localStorage.setItem('renew_study_data', JSON.stringify(data));
+        return true;
+      } catch (e) {
+        console.error('Error saving survey response:', e);
+        return false;
+      }
+    }
+
+    // Function to play success sound effect
+    function playSuccessSound() {
+      const soundEffect = document.getElementById('successSoundEffect');
+      if (soundEffect) {
+        playAudioSafe(soundEffect).catch(error => {
+          console.log('Sound effect autoplay failed (browser policy):', error);
+          // Sound effect is just enhancement, continue normally if blocked
+        });
+      }
+    }
+
+    // Function to show next button with motivational animation
+    function showNextButtonMotivational() {
+      const nextButtonContainer = document.getElementById('nextButtonContainer');
+      const nextButton = document.getElementById('nextButton');
+      
+      if (nextButtonContainer && nextButton) {
+        // Show the container
+        nextButtonContainer.style.display = 'block';
+        
+        // Check if both animation AND sound have already been shown for this video
+        const specialEffectsShown = localStorage.getItem('pmr_p1_special_effects_shown');
+        
+        if (!specialEffectsShown) {
+          // First time showing - play both the motivational animation AND sound effect
+          playSuccessSound();
+          
+          // Make sure no other classes are on the button first
+          nextButton.classList.remove('next-button-pulse', 'visible');
+          nextButton.classList.add('next-button-motivational');
+          
+          // Mark both animation and sound as shown immediately
+          localStorage.setItem('pmr_p1_special_effects_shown', 'true');
+          
+          // After initial animation completes, switch to subtle pulse
+          setTimeout(() => {
+            nextButton.classList.remove('next-button-motivational');
+            nextButton.classList.add('next-button-pulse', 'visible');
+          }, 1200);
+        } else {
+          // Special effects already shown before - show with subtle pulse immediately
+          // NO sound effect and NO motivational animation
+          nextButton.classList.remove('next-button-motivational');
+          nextButton.classList.add('next-button-pulse', 'visible');
+        }
+      }
+    }
+
+    // YouTube IFrame API integration
+    let player;
+    let videoEndDetected = false;
+    let sidebarSurveyShown = false;
+    let sidebarSurveySubmitted = false;
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('youtubePlayer', {
+        height: '100%',
+        width: '100%',
+        videoId: 'dVDKPMNOMTA',
+        playerVars: {
+          'controls': 1,
+          'autoplay': 1,
+          'rel': 0,
+          'cc_load_policy': 1
+        },
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      // Autoplay is handled by playerVars
+      event.target.playVideo();
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data == YT.PlayerState.ENDED) {
+        videoEndDetected = true;
+        
+        // Show sidebar survey when video ends (if not already shown)
+        if (!sidebarSurveyShown) {
+          sidebarSurveyShown = true;
+          document.getElementById('sidebarSurvey').classList.add('show');
+          // Initialize submit button as disabled
+          document.getElementById('submitSidebarButton').disabled = true;
+          
+          // Play sidebar survey audio
+          const sidebarAudio = document.getElementById('sidebarSurveyAudio');
+          if (sidebarAudio) {
+            playAudioSafe(sidebarAudio).then(() => {
+              console.log('Sidebar survey audio playing');
+            }).catch(error => {
+              console.log('Sidebar survey audio autoplay prevented:', error);
+            });
+          }
+        }
+        
+        // Only show Next button if sidebar survey was submitted
+        if (sidebarSurveySubmitted) {
+          showNextButtonMotivational();
+        }
+        markVideoComplete();
+      }
+    }
+
+    // Load the YouTube API script
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
+    // Fallback to show buttons after 3 minutes
+    setTimeout(() => {
+      if (!videoEndDetected && !isComplete('pmr_p1')) {
+        showNextButtonMotivational();
+        markVideoComplete();
+      }
+    }, 180000);
+
+    // Mark video as complete
+    function markVideoComplete() {
+      markComplete('pmr_p1');
+      console.log('pmr_p1 marked as complete');
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+      // If already completed, show navigation immediately
+      if (isComplete('pmr_p1')) {
+        showNextButtonMotivational();
+        // Also show sidebar survey for testing
+        document.getElementById('sidebarSurvey').classList.add('show');
+        document.getElementById('submitSidebarButton').disabled = true;
+        sidebarSurveyShown = true;
+      }
+    });
+
+    // Sidebar Survey functionality
+    let sidebarSelectedOptions = new Set();
+
+    function selectSidebarOption(element, value) {
+      if (element.classList.contains('selected')) {
+        // Deselect
+        element.classList.remove('selected');
+        sidebarSelectedOptions.delete(value);
+      } else {
+        // Select
+        element.classList.add('selected');
+        sidebarSelectedOptions.add(value);
+      }
+      
+      // Show submit button when at least one option is selected
+      const submitButton = document.getElementById('submitSidebarButton');
+      if (sidebarSelectedOptions.size > 0) {
+        submitButton.disabled = false;
+        submitButton.style.display = 'block';
+      } else {
+        submitButton.disabled = true;
+      }
+    }
+
+    // Submit sidebar survey
+    function submitSidebarSurvey() {
+      if (sidebarSelectedOptions.size === 0) return;
+      
+      const submitButton = document.getElementById('submitSidebarButton');
+      const feedback = document.getElementById('sidebarFeedback');
+      
+      // Disable submit button and show loading
+      submitButton.disabled = true;
+      submitButton.textContent = 'Submitting...';
+      
+      // Save the response
+      const sidebarData = {
+        selected_feelings: Array.from(sidebarSelectedOptions),
+        timestamp: Date.now(),
+        video_time: player ? player.getCurrentTime() : null
+      };
+      
+      if (saveSurveyResponse('pmr_sidebar_survey', sidebarData)) {
+        // Show success feedback
+        feedback.textContent = "Thanks for sharing how you're feeling!";
+        feedback.className = 'survey-feedback success show';
+        
+        // Set flag that survey was submitted
+        sidebarSurveySubmitted = true;
+        
+        // Hide submit button and show the main Next button above video with motivational animation
+        submitButton.style.display = 'none';
+        showNextButtonMotivational();
+      } else {
+        // Handle error
+        feedback.textContent = "Error saving response. Please try again.";
+        feedback.className = 'survey-feedback show';
+        feedback.style.background = '#f8d7da';
+        feedback.style.color = '#721c24';
+        
+        // Re-enable submit button
+        submitButton.disabled = false;
+        submitButton.textContent = 'Submit';
+      }
+    }
+
+    // Audio functionality
+    let selectedOptions = new Set();
+
+    function showSurvey() {
+      document.getElementById('surveyOverlay').classList.add('show');
+      
+      // Automatically play both audio files when survey opens
+      playAudioOnSurveyOpen();
+    }
+
+    function playAudioOnSurveyOpen() {
+      // Play first 2 audio files automatically
+      const audio1 = document.getElementById('surveyAudio1');
+      const audio2 = document.getElementById('surveyAudio2');
+      
+      if (!audio1 || !audio2) {
+        console.log('Audio 1 or 2 not found');
+        return;
+      }
+
+      // Play first audio using audio manager
+      playAudioSafe(audio1)
+        .then(() => {
+          console.log('Survey audio 1 started');
+          
+          // When audio 1 ends, play audio 2
+          audio1.addEventListener('ended', function() {
+            console.log('Survey audio 1 ended, starting audio 2');
+            playAudioSafe(audio2)
+              .then(() => {
+                console.log('Survey audio 2 started');
+              })
+              .catch(err => console.log('Audio 2 play failed:', err));
+          }, { once: true });
+          
+          // Audio 3 and 4 will be played conditionally based on selection
+          audio2.addEventListener('ended', function() {
+            console.log('Survey audio 2 ended. Waiting for user selection...');
+          }, { once: true });
+        })
+        .catch(err => {
+          console.log('Auto-play of survey audio 1 failed:', err);
+          // If autoplay fails, try on first user interaction
+          const playOnInteraction = () => {
+            playAudioSafe(audio1).catch(e => console.log('Audio play failed:', e));
+            document.removeEventListener('click', playOnInteraction);
+            document.removeEventListener('touchstart', playOnInteraction);
+          };
+          document.addEventListener('click', playOnInteraction, { once: true });
+          document.addEventListener('touchstart', playOnInteraction, { once: true });
+        });
+    }
+
+    // Track if conditional audio has been played
+    let likedAudioPlayed = false;
+    let didntLikeAudioPlayed = false;
+
+    function playConditionalAudio(category) {
+      // Play audio 3 for "liked" or audio 4 for "didn't like"
+      if (category === 'liked' && !likedAudioPlayed) {
+        const audio3 = document.getElementById('surveyAudio3');
+        if (audio3) {
+          playAudioSafe(audio3)
+            .then(() => {
+              console.log('Survey audio 3 (liked) started');
+              likedAudioPlayed = true;
+            })
+            .catch(err => console.log('Audio 3 play failed:', err));
+        }
+      } else if (category === 'didnt_like' && !didntLikeAudioPlayed) {
+        const audio4 = document.getElementById('surveyAudio4');
+        if (audio4) {
+          playAudioSafe(audio4)
+            .then(() => {
+              console.log('Survey audio 4 (didnt_like) started');
+              didntLikeAudioPlayed = true;
+            })
+            .catch(err => console.log('Audio 4 play failed:', err));
+        }
+      }
+    }
+
+    // Listen for audio errors
+    document.addEventListener('DOMContentLoaded', function() {
+      const audio1 = document.getElementById('surveyAudio1');
+      const audio2 = document.getElementById('surveyAudio2');
+      const audio3 = document.getElementById('surveyAudio3');
+      const audio4 = document.getElementById('surveyAudio4');
+      
+      [audio1, audio2, audio3, audio4].forEach((audio, index) => {
+        if (audio) {
+          audio.addEventListener('error', function(e) {
+            console.warn(`Survey audio ${index + 1} file could not be loaded:`, e);
+          });
+        }
+      });
+    });
+
+    function selectMainOption(category) {
+      const element = document.querySelector(`[data-category="${category}"]`);
+      
+      if (element.classList.contains('selected')) {
+        // Deselect this option
+        element.classList.remove('selected');
+        selectedOptions.delete(`category_${category}`);
+        
+        // Hide and deselect all sub-options for this category
+        const subOptions = document.getElementById(`${category}-options`);
+        if (subOptions) {
+          subOptions.classList.remove('visible');
+          subOptions.querySelectorAll('.modal-survey-option').forEach(subOption => {
+            subOption.classList.remove('selected');
+            const subValue = subOption.getAttribute('data-value');
+            if (subValue) {
+              selectedOptions.delete(`sub_${subValue}`);
+            }
+          });
+        }
+      } else {
+        // Select this option
+        element.classList.add('selected');
+        selectedOptions.add(`category_${category}`);
+        
+        // Show relevant sub-options
+        if (category === 'liked' || category === 'didnt_like') {
+          const subOptions = document.getElementById(`${category}-options`);
+          if (subOptions) {
+            subOptions.classList.add('visible');
+          }
+        }
+        
+        // Play conditional audio based on selection
+        playConditionalAudio(category);
+      }
+      
+      checkSurveyCompletion();
+    }
+
+    function selectSubOption(value) {
+      const element = document.querySelector(`[data-value="${value}"]`);
+      
+      if (element.classList.contains('selected')) {
+        // Deselect this sub-option
+        element.classList.remove('selected');
+        selectedOptions.delete(`sub_${value}`);
+      } else {
+        // Select this sub-option
+        element.classList.add('selected');
+        selectedOptions.add(`sub_${value}`);
+      }
+      
+      checkSurveyCompletion();
+    }
+
+    function checkSurveyCompletion() {
+      const submitButton = document.getElementById('submitSurvey');
+      
+      let isComplete = false;
+      
+      // Check if "I don't know" is selected (no sub-options required)
+      if (selectedOptions.has('category_dont_know')) {
+        isComplete = true;
+      }
+      // Check if "I liked it" is selected AND at least one sub-option is selected
+      else if (selectedOptions.has('category_liked')) {
+        const hasLikedSubOption = selectedOptions.has('sub_liked_own') || 
+                                 selectedOptions.has('sub_liked_counselor');
+        if (hasLikedSubOption) {
+          isComplete = true;
+        }
+      }
+      // Check if "I didn't like it" is selected AND at least one sub-option is selected
+      else if (selectedOptions.has('category_didnt_like')) {
+        const hasDislikedSubOption = selectedOptions.has('sub_didnt_like_no_again') || 
+                                    selectedOptions.has('sub_didnt_like_try_counselor') || 
+                                    selectedOptions.has('sub_didnt_like_other_relaxation');
+        if (hasDislikedSubOption) {
+          isComplete = true;
+        }
+      }
+      
+      submitButton.disabled = !isComplete;
+    }
+
+    // Survey form submission
+    document.getElementById('submitSurvey').addEventListener('click', function() {
+      if (this.disabled) return;
+      
+      this.disabled = true;
+      this.textContent = 'Submitting...';
+      
+      const surveyData = {
+        selected_options: Array.from(selectedOptions),
+        activity_id: 'pmr_p1',
+        timestamp: Date.now()
+      };
+      
+      if (saveSurveyResponse('pmr_survey', surveyData)) {
+        // Stop all audio files if playing
+        stopAllAudio();
+        
+        // Close survey
+        document.getElementById('surveyOverlay').classList.remove('show');
+        
+        // Navigate to skill-p4 immediately after submission
+        setTimeout(() => {
+          window.location.href = "{% url 'skill_p4' %}";
+        }, 500); // Small delay to show "Submitting..." state
+        
+      } else {
+        this.disabled = false;
+        this.textContent = 'Submit Feedback';
+        alert('Error saving survey response. Please try again.');
+      }
+    });
+
+    // Close survey when clicking outside (optional)
+    document.getElementById('surveyOverlay').addEventListener('click', function(e) {
+      if (e.target === this) {
+        // Stop all audio files when closing
+        stopAllAudio();
+        this.classList.remove('show');
+      }
+    });
+  </script>
+</body>
+</html>

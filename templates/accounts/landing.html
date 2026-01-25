@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to RENEW</title>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Work Sans', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .landing-container {
+            text-align: center;
+            max-width: 600px;
+            padding: 40px;
+        }
+
+        /* Mobile Phone Mockup */
+        .phone-mockup {
+            width: 300px;
+            height: 600px;
+            background: #1a1a1a;
+            border-radius: 30px;
+            padding: 20px;
+            margin: 0 auto 40px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f4f0fb 0%, #e8e0f5 100%);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .phone-header {
+            background: #5a3e8c;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .phone-content {
+            padding: 20px;
+            color: #333;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: calc(100% - 60px);
+            position: relative;
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 100%;
+        }
+
+        .dock {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .app-icon {
+            width: 50px;
+            height: 50px;
+            background: #5a3e8c;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            position: relative;
+        }
+
+        .app-icon.renew {
+            width: 50px;
+            height: 50px;
+            background: #5a3e8c;
+        }
+
+        .other-app {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .app1 { background: #007AFF; }
+        .app2 { background: #FF3B30; }
+        .app3 { background: #34C759; }
+        .app4 { background: #FF9500; }
+        .app5 { background: #AF52DE; }
+        .app6 { background: #FF2D92; }
+        .app7 { background: #5AC8FA; }
+        .app8 { background: #FFCC00; }
+        .app9 { background: #FF6B6B; }
+        .app10 { background: #4ECDC4; }
+        .app11 { background: #45B7D1; }
+        .app12 { background: #96CEB4; }
+        .app13 { background: #FFEAA7; }
+        .app14 { background: #DDA0DD; }
+        .app15 { background: #98D8C8; }
+
+        .app-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #5a3e8c;
+            margin-bottom: 10px;
+        }
+
+        .app-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* Notification Styles */
+        .notification {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+            animation: pulse 2s infinite;
+        }
+
+        .notification:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .notification-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .notification-icon {
+            width: 40px;
+            height: 40px;
+            background: #5a3e8c;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            margin-right: 12px;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .notification-body {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-left: 52px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4757;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(90, 62, 140, 0.7);
+            }
+            70% {
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 10px rgba(90, 62, 140, 0);
+            }
+            100% {
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 0 rgba(90, 62, 140, 0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% {
+                transform: translate3d(0,0,0);
+            }
+            40%, 43% {
+                transform: translate3d(0,-8px,0);
+            }
+            70% {
+                transform: translate3d(0,-4px,0);
+            }
+            90% {
+                transform: translate3d(0,-2px,0);
+            }
+        }
+
+        .bounce {
+            animation: bounce 1s ease-in-out;
+        }
+
+        /* Status messages */
+        .status-message {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 16px;
+        }
+
+        .status-message.show {
+            opacity: 1;
+        }
+
+        .status-waiting {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .status-received {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+
+        @media (max-width: 768px) {
+            .phone-mockup {
+                width: 250px;
+                height: 500px;
+                margin-bottom: 30px;
+            }
+            
+            .landing-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-container">
+        <div class="phone-mockup">
+            <div class="phone-screen">
+                <div class="phone-header">
+                    
+                </div>
+                <div class="phone-content">
+                    <!-- Top apps grid -->
+                    <div class="app-grid">
+                        <!-- Row 1 -->
+                        <div class="other-app app1">📧</div>
+                        <div class="other-app app2">📷</div>
+                        <div class="other-app app3">🌤️</div>
+                        <div class="other-app app4">🗺️</div>
+                        
+                        <!-- Row 2 -->
+                        <div class="other-app app5">📊</div>
+                        <div class="other-app app6">🎮</div>
+                        <div class="other-app app7">📚</div>
+                        <div class="other-app app8">⚙️</div>
+                        
+                        <!-- Row 3 -->
+                        <div class="other-app app9">🍕</div>
+                        <div class="other-app app10">💰</div>
+                        <div class="other-app app11">🎨</div>
+                        <div class="other-app app12">🏃</div>
+                    </div>
+                    
+                    <!-- Bottom dock with most used apps -->
+                    <div class="dock">
+                        <div class="other-app app13">📱</div>
+                        <div class="other-app app14">💬</div>
+                        <div class="app-icon renew">
+                            🌱
+                            <div class="notification-badge" id="notificationBadge" style="display: none;">1</div>
+                        </div>
+                        <div class="other-app app15">🎵</div>
+                    </div>
+                </div>
+
+                <!-- Notification -->
+                <div class="notification" id="notification" onclick="goToLogin()">
+                    <div class="notification-header">
+                        <div class="notification-icon">🌱</div>
+                        <div class="notification-title">Welcome to RENEW!</div>
+                    </div>
+                    <div class="notification-body">
+                        Tap to begin learning about different types of experiences, thoughts, feelings, and even YOU!
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-message" id="statusMessage" style="display: none;">
+            Click the notification above to get started
+        </div>
+    </div>
+
+    <!-- First audio (notification sound) -->
+    <audio id="notificationAudio" preload="auto">
+        <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_6mVNi1hNLm1hBxF" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Welcome audio (plays after notification audio) -->
+    <audio id="welcomeAudio" preload="auto">
+        <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_7QI9NkCO9Lkqvxv" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        let audioAttempted = false;
+        let userInteracted = false;
+        let audioQueue = [];
+
+        // Try to enable audio on ANY user interaction
+        function enableAudio() {
+            if (!userInteracted) {
+                userInteracted = true;
+                const notificationAudio = document.getElementById('notificationAudio');
+                const welcomeAudio = document.getElementById('welcomeAudio');
+                
+                // Preload and prepare audio
+                if (notificationAudio) {
+                    notificationAudio.load();
+                }
+                if (welcomeAudio) {
+                    welcomeAudio.load();
+                }
+                
+                // If notification hasn't been triggered yet, do it now
+                if (!audioAttempted) {
+                    triggerNotification();
+                } else if (audioQueue.length > 0) {
+                    // Play any queued audio
+                    playQueuedAudio();
+                }
+            }
+        }
+
+        async function playQueuedAudio() {
+            while (audioQueue.length > 0) {
+                const audio = audioQueue.shift();
+                try {
+                    await audio.play();
+                    console.log('Queued audio playing');
+                    // Wait for this audio to finish before playing next
+                    await new Promise(resolve => {
+                        audio.addEventListener('ended', resolve, { once: true });
+                    });
+                } catch (error) {
+                    console.log('Could not play queued audio:', error);
+                }
+            }
+        }
+
+        // Listen for any user interaction
+        ['click', 'touchstart', 'keydown', 'scroll', 'mousemove'].forEach(event => {
+            document.addEventListener(event, enableAudio, { once: true, passive: true });
+        });
+
+        // Auto-trigger notification on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-trigger notification after 2 seconds 
+            setTimeout(() => {
+                triggerNotification();
+            }, 2000);
+        });
+
+        async function triggerNotification() {
+            if (audioAttempted) return; // Prevent multiple triggers
+            audioAttempted = true;
+
+            const notification = document.getElementById('notification');
+            const badge = document.getElementById('notificationBadge');
+            const appIcon = document.querySelector('.app-icon');
+            const notificationAudio = document.getElementById('notificationAudio');
+            const welcomeAudio = document.getElementById('welcomeAudio');
+
+            // Show notification with animation
+            notification.classList.add('show');
+            badge.style.display = 'flex';
+            appIcon.classList.add('bounce');
+
+            // Remove bounce animation after it completes
+            setTimeout(() => {
+                appIcon.classList.remove('bounce');
+            }, 1000);
+
+            // Try to play audio with multiple fallback strategies
+            await playAudioSequence(notificationAudio, welcomeAudio);
+        }
+
+        async function playAudioSequence(notificationAudio, welcomeAudio) {
+            let notificationPlayed = false;
+
+            // Try to play notification audio
+            if (notificationAudio) {
+                try {
+                    // Set volume and ensure it's ready
+                    notificationAudio.volume = 1.0;
+                    
+                    const playPromise = notificationAudio.play();
+                    
+                    if (playPromise !== undefined) {
+                        await playPromise;
+                        notificationPlayed = true;
+                        console.log('Notification audio playing successfully');
+                        
+                        // Wait for notification audio to end, then play welcome audio
+                        notificationAudio.addEventListener('ended', async function() {
+                            console.log('Notification audio ended, playing welcome audio...');
+                            await playWelcomeAudio(welcomeAudio);
+                        }, { once: true });
+                    }
+                    
+                } catch (error) {
+                    console.log('Notification audio autoplay prevented:', error);
+                    notificationPlayed = false;
+                    
+                    // Queue both audios to play on user interaction
+                    if (!userInteracted) {
+                        audioQueue.push(notificationAudio, welcomeAudio);
+                    }
+                }
+            }
+
+            // If notification audio didn't play, try welcome audio directly
+            if (!notificationPlayed) {
+                await playWelcomeAudio(welcomeAudio);
+            }
+        }
+
+        async function playWelcomeAudio(welcomeAudio) {
+            if (welcomeAudio) {
+                try {
+                    // Set volume and ensure it's ready
+                    welcomeAudio.volume = 1.0;
+                    
+                    const playPromise = welcomeAudio.play();
+                    
+                    if (playPromise !== undefined) {
+                        await playPromise;
+                        console.log('Welcome audio playing successfully');
+                    }
+                } catch (error) {
+                    console.log('Welcome audio playback prevented:', error);
+                    
+                    // Queue this audio to play on next user interaction if not already queued
+                    if (!userInteracted && !audioQueue.includes(welcomeAudio)) {
+                        audioQueue.push(welcomeAudio);
+                    } else if (userInteracted) {
+                        // If user has interacted but audio still won't play, try one more time on next click
+                        document.addEventListener('click', async function() {
+                            try {
+                                await welcomeAudio.play();
+                                console.log('Welcome audio playing after click');
+                            } catch (e) {
+                                console.log('Still cannot play audio:', e);
+                            }
+                        }, { once: true });
+                    }
+                }
+            }
+        }
+
+        function goToLogin() {
+            // Add click effect
+            const notification = document.getElementById('notification');
+            notification.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                // Redirect to login page
+                window.location.href = '{% url "nickname" %}';
+            }, 200);
+        }
+
+        // Additional fallback: try to initialize audio context on page visibility change
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && !userInteracted) {
+                enableAudio();
+            }
+        });
+    </script>
+</body>
+</html>
