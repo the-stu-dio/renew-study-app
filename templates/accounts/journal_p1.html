@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -231,7 +232,7 @@
       position: relative;
     }
 
-    .video-wrapper iframe {
+    .video-wrapper video {
       position: absolute;
       top: 0;
       left: 0;
@@ -239,7 +240,8 @@
       height: 100%;
       border-radius: 16px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      border: 0;
+      object-fit: contain;
+      background: #000;
     }
     
     @media (max-width: 480px) {
@@ -271,9 +273,12 @@
       </a>
     </div>
     
-    <!-- Video wrapper for YouTube API -->
+    <!-- Video wrapper for local video -->
     <div class="video-wrapper">
-      <div id="youtubePlayer"></div>
+      <video id="videoPlayer" controls autoplay>
+        <source src="{% static 'videos/RENEW- Journal.mp4' %}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
     </div>
 
     <!-- Hidden audio element for sound effect -->
@@ -360,59 +365,32 @@
       }
     }
 
-    // YouTube IFrame API integration
-    let player;
+    // HTML5 Video integration
     let videoEndDetected = false;
-
-    function onYouTubeIframeAPIReady() {
-      player = new YT.Player('youtubePlayer', {
-        height: '100%',
-        width: '100%',
-        videoId: 'TPePeXCIVTA',
-        playerVars: {
-          'controls': 1,
-          'autoplay': 1,
-          'rel': 0,
-          'cc_load_policy': 1
-        },
-        events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange
-        }
-      });
-    }
-
-    function onPlayerReady(event) {
-      // Autoplay is handled by playerVars
-      event.target.playVideo();
-    }
-
-    function onPlayerStateChange(event) {
-      if (event.data == YT.PlayerState.ENDED && !videoEndDetected) {
-        videoEndDetected = true;
-        markComplete('journal_p1');
-        showNextButtonMotivational();
-      }
-    }
 
     // Show navigation buttons (updated to use motivational animation)
     function showNextButton() {
       showNextButtonMotivational();
     }
 
-    // Load the YouTube API script
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    }
-
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
+      const videoPlayer = document.getElementById('videoPlayer');
+
       // Check if already completed
       if (isComplete('journal_p1')) {
         showNextButtonMotivational();
+      }
+
+      // Listen for video end
+      if (videoPlayer) {
+        videoPlayer.addEventListener('ended', function() {
+          if (!videoEndDetected) {
+            videoEndDetected = true;
+            markComplete('journal_p1');
+            showNextButtonMotivational();
+          }
+        });
       }
 
       // Fallback to show buttons after 3 minutes and mark complete

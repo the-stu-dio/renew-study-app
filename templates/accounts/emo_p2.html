@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -341,7 +342,7 @@
       position: relative;
     }
 
-    .video-wrapper iframe {
+    .video-wrapper video {
       position: absolute;
       top: 0;
       left: 0;
@@ -349,7 +350,8 @@
       height: 100%;
       border-radius: 16px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      border: 0;
+      object-fit: contain;
+      background: #000;
     }
 
     @media (max-width: 480px) {
@@ -448,14 +450,17 @@
       </a>
     </div>
     
-    <!-- Video wrapper for YouTube API -->
+    <!-- Video wrapper for local video -->
     <div class="video-wrapper">
-      <div id="youtubePlayer"></div>
+      <video id="videoPlayer" controls autoplay>
+        <source src="{% static 'videos/RENEW 25-26.mp4' %}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
     </div>
   </div>
   
   <div class="sidebar">
-    <h3>Quiz Time! 🎯</h3>
+    <h3 id="quizTitle" style="display: none;">Quiz Time! 🎯</h3>
     
     <!-- Question 1 -->
     <div class="question-card" id="questionCard1">
@@ -912,54 +917,14 @@
       playQuestionDisplayAudio(questionNumber);
     }
 
-    // YouTube API integration
-    let player;
-
-    function onYouTubeIframeAPIReady() {
-      player = new YT.Player('youtubePlayer', {
-        height: '100%',
-        width: '100%',
-        videoId: 'W9i6ahzAbYQ',
-        playerVars: {
-          'controls': 1,
-          'autoplay': 1,
-          'rel': 0,
-          'cc_load_policy': 1
-        },
-        events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange
-        }
-      });
-    }
-
-    function onPlayerReady(event) {
-      // Autoplay is handled by playerVars
-      event.target.playVideo();
-    }
-
-    function onPlayerStateChange(event) {
-      if (event.data == YT.PlayerState.ENDED) {
-        videoEndDetected = true;
-        audioEnabled = true; // Enable audio since video played (user already interacted)
-        document.getElementById('questionCard1').classList.add('show');
-        // Play audio for first question
-        playQuestionDisplayAudio(1);
-      }
-    }
-
-    // Load YouTube API script
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    }
+    // HTML5 Video integration
+    let videoPlayer;
 
     // Fallback to show quiz after 3 minutes
     setTimeout(() => {
       if (!videoEndDetected && currentQuestion === 1) {
         audioEnabled = true; // Enable audio in fallback case too
+        document.getElementById('quizTitle').style.display = 'block';
         document.getElementById('questionCard1').classList.add('show');
         // Play audio for first question
         playQuestionDisplayAudio(1);
@@ -980,6 +945,19 @@
         correctAnswerAudios[i] = document.getElementById(`correctAnswerAudio${i}`);
         wrongAnswerAudios[i] = document.getElementById(`wrongAnswerAudio${i}`);
         questionDisplayAudios[i] = document.getElementById(`questionDisplayAudio${i}`);
+      }
+
+      // HTML5 video - show quiz when video ends
+      videoPlayer = document.getElementById('videoPlayer');
+      if (videoPlayer) {
+        videoPlayer.addEventListener('ended', function() {
+          videoEndDetected = true;
+          audioEnabled = true; // Enable audio since video played (user already interacted)
+          document.getElementById('quizTitle').style.display = 'block';
+          document.getElementById('questionCard1').classList.add('show');
+          // Play audio for first question
+          playQuestionDisplayAudio(1);
+        });
       }
       
       // Add error handling for audio files
@@ -1019,13 +997,10 @@
       document.addEventListener('click', enableAudio, { once: true });
       document.addEventListener('touchstart', enableAudio, { once: true });
 
-      // Check if already completed and show quiz immediately
+      // Check if already completed - show next button but don't auto-show quiz
+      // Quiz should only appear after video ends, even on revisit
       if (isComplete('emo_p2')) {
-        audioEnabled = true; // Enable audio for completed page
-        document.getElementById('questionCard1').classList.add('show');
         showNextButtonMotivational();
-        // Play audio for first question if already completed
-        setTimeout(() => playQuestionDisplayAudio(1), 500);
       }
     });
   </script>

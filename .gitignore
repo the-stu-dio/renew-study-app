@@ -14,5 +14,9 @@ db.sqlite3
 # Mac
 .DS_Store
 
+# Videos (too large for git)
+static/videos/
+videos/
+
 # Secrets
 .env

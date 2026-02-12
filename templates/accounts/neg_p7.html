@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -300,7 +301,7 @@
       position: relative;
     }
 
-    .video-wrapper iframe {
+    .video-wrapper video {
       position: absolute;
       top: 0;
       left: 0;
@@ -308,7 +309,8 @@
       height: 100%;
       border-radius: 16px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      border: 0;
+      object-fit: contain;
+      background: #000;
     }
 
     @media (max-width: 480px) {
@@ -351,9 +353,12 @@
       <a href="{% url 'neg_p8' %}" class="next-button-overlay" id="nextButton">Next →</a>
     </div>
 
-    <!-- Video wrapper for YouTube API -->
+    <!-- Video wrapper for local video -->
     <div class="video-wrapper">
-      <div id="myVideo"></div>
+      <video id="videoPlayer" controls autoplay>
+        <source src="{% static 'videos/RENEW 18.mp4' %}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
     </div>
   </div>
 
@@ -579,51 +584,20 @@
       }
     }
 
-    // YouTube IFrame API
-    let player;
-    
-    function onYouTubeIframeAPIReady() {
-      console.log('YouTube API ready, creating player...');
-      player = new YT.Player('myVideo', {
-        height: '100%',
-        width: '100%',
-        videoId: 'hCb0zxhAd4k',
-        playerVars: {
-          'controls': 1,
-          'autoplay': 1,
-          'rel': 0,
-          'cc_load_policy': 1
-        },
-        events: { 
-          'onReady': function(event) {
-            console.log('Player ready, starting autoplay...');
-            event.target.playVideo();
-            startTracking();
-          },
-          'onError': function(event) {
-            console.error('YouTube player error:', event.data);
+    // HTML5 Video integration with quiz trigger
+    document.addEventListener('DOMContentLoaded', function() {
+      const videoPlayer = document.getElementById('videoPlayer');
+
+      if (videoPlayer) {
+        videoPlayer.addEventListener('timeupdate', function() {
+          const currentTime = videoPlayer.currentTime;
+          if (!quizShown && currentTime >= 20) {
+            quizShown = true;
+            document.getElementById('questionCard').classList.add('show');
           }
-        }
-      });
-    }
-
-    function startTracking() {
-      setInterval(() => {
-        const currentTime = player.getCurrentTime();
-        if (!quizShown && currentTime >= 20) {
-          quizShown = true;
-          document.getElementById('questionCard').classList.add('show');
-        }
-      }, 500);
-    }
-
-    // Load YouTube API
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    }
+        });
+      }
+    });
   </script>
 </body>
 </html>

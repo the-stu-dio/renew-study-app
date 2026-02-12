@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -53,16 +54,15 @@
             margin-right: auto;
         }
         .video-embed {
-            padding: 56.25% 0 0 0;
             position: relative;
-        }
-        .video-embed iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
-            border: 0;
+        }
+        .video-embed video {
+            width: 100%;
+            display: block;
+            border-radius: 16px;
+            object-fit: contain;
+            background: #000;
         }
         
         .completion-message {
@@ -170,7 +170,10 @@
         </div>
         <div class="video-wrapper">
             <div class="video-embed">
-                <div id="youtubePlayer"></div>
+                <video id="videoPlayer" controls autoplay>
+                    <source src="{% static 'videos/RENEW- Wrap Up.mp4' %}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
             </div>
         </div>
 
@@ -226,39 +229,7 @@
             }
         }
 
-        // YouTube API integration
-        let player;
-
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('youtubePlayer', {
-                height: '100%',
-                width: '100%',
-                videoId: 'c4FUK9yDY-Q',
-                playerVars: {
-                    'controls': 1,
-                    'autoplay': 1,
-                    'rel': 0,
-                    'cc_load_policy': 1
-                },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-        }
-
-        function onPlayerReady(event) {
-            // Autoplay is handled by playerVars
-            event.target.playVideo();
-        }
-
-        function onPlayerStateChange(event) {
-            // Video ended
-            if (event.data == YT.PlayerState.ENDED) {
-                enableContinueButton();
-            }
-        }
-
+        // HTML5 Video integration
         function enableContinueButton() {
             if (!videoWatched) {
                 videoWatched = true;
@@ -275,13 +246,14 @@
             }
         }
 
-        // Load YouTube API
-        if (!window.YT) {
-            const tag = document.createElement('script');
-            tag.src = 'https://www.youtube.com/iframe_api';
-            const firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoPlayer = document.getElementById('videoPlayer');
+            if (videoPlayer) {
+                videoPlayer.addEventListener('ended', function() {
+                    enableContinueButton();
+                });
+            }
+        });
 
         // Fallback: Enable button after 3 minutes regardless
         setTimeout(() => {

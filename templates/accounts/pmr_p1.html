@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -344,7 +345,7 @@
       position: relative;
     }
 
-    .video-wrapper iframe {
+    .video-wrapper video {
       position: absolute;
       top: 0;
       left: 0;
@@ -352,7 +353,8 @@
       height: 100%;
       border-radius: 16px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      border: 0;
+      object-fit: contain;
+      background: #000;
     }
     
     @media (max-width: 480px) {
@@ -590,9 +592,12 @@
       </button>
     </div>
     
-    <!-- Video wrapper for YouTube API -->
+    <!-- Video wrapper for local video -->
     <div class="video-wrapper">
-      <div id="youtubePlayer"></div>
+      <video id="videoPlayer" controls autoplay>
+        <source src="{% static 'videos/RENEW- PMR.mp4' %}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
     </div>
 
     <!-- Hidden audio element for success sound effect -->
@@ -852,80 +857,10 @@
       }
     }
 
-    // YouTube IFrame API integration
-    let player;
+    // HTML5 Video integration
     let videoEndDetected = false;
     let sidebarSurveyShown = false;
     let sidebarSurveySubmitted = false;
-
-    function onYouTubeIframeAPIReady() {
-      player = new YT.Player('youtubePlayer', {
-        height: '100%',
-        width: '100%',
-        videoId: 'dVDKPMNOMTA',
-        playerVars: {
-          'controls': 1,
-          'autoplay': 1,
-          'rel': 0,
-          'cc_load_policy': 1
-        },
-        events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange
-        }
-      });
-    }
-
-    function onPlayerReady(event) {
-      // Autoplay is handled by playerVars
-      event.target.playVideo();
-    }
-
-    function onPlayerStateChange(event) {
-      if (event.data == YT.PlayerState.ENDED) {
-        videoEndDetected = true;
-        
-        // Show sidebar survey when video ends (if not already shown)
-        if (!sidebarSurveyShown) {
-          sidebarSurveyShown = true;
-          document.getElementById('sidebarSurvey').classList.add('show');
-          // Initialize submit button as disabled
-          document.getElementById('submitSidebarButton').disabled = true;
-          
-          // Play sidebar survey audio
-          const sidebarAudio = document.getElementById('sidebarSurveyAudio');
-          if (sidebarAudio) {
-            playAudioSafe(sidebarAudio).then(() => {
-              console.log('Sidebar survey audio playing');
-            }).catch(error => {
-              console.log('Sidebar survey audio autoplay prevented:', error);
-            });
-          }
-        }
-        
-        // Only show Next button if sidebar survey was submitted
-        if (sidebarSurveySubmitted) {
-          showNextButtonMotivational();
-        }
-        markVideoComplete();
-      }
-    }
-
-    // Load the YouTube API script
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    }
-
-    // Fallback to show buttons after 3 minutes
-    setTimeout(() => {
-      if (!videoEndDetected && !isComplete('pmr_p1')) {
-        showNextButtonMotivational();
-        markVideoComplete();
-      }
-    }, 180000);
 
     // Mark video as complete
     function markVideoComplete() {
@@ -935,6 +870,8 @@
 
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
+      const videoPlayer = document.getElementById('videoPlayer');
+
       // If already completed, show navigation immediately
       if (isComplete('pmr_p1')) {
         showNextButtonMotivational();
@@ -943,6 +880,44 @@
         document.getElementById('submitSidebarButton').disabled = true;
         sidebarSurveyShown = true;
       }
+
+      // Listen for video end
+      if (videoPlayer) {
+        videoPlayer.addEventListener('ended', function() {
+          videoEndDetected = true;
+
+          // Show sidebar survey when video ends (if not already shown)
+          if (!sidebarSurveyShown) {
+            sidebarSurveyShown = true;
+            document.getElementById('sidebarSurvey').classList.add('show');
+            document.getElementById('submitSidebarButton').disabled = true;
+
+            // Play sidebar survey audio
+            const sidebarAudio = document.getElementById('sidebarSurveyAudio');
+            if (sidebarAudio) {
+              playAudioSafe(sidebarAudio).then(() => {
+                console.log('Sidebar survey audio playing');
+              }).catch(error => {
+                console.log('Sidebar survey audio autoplay prevented:', error);
+              });
+            }
+          }
+
+          // Only show Next button if sidebar survey was submitted
+          if (sidebarSurveySubmitted) {
+            showNextButtonMotivational();
+          }
+          markVideoComplete();
+        });
+      }
+
+      // Fallback to show buttons after 3 minutes
+      setTimeout(() => {
+        if (!videoEndDetected && !isComplete('pmr_p1')) {
+          showNextButtonMotivational();
+          markVideoComplete();
+        }
+      }, 180000);
     });
 
     // Sidebar Survey functionality

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -115,7 +116,7 @@
       height: 75vh;
       position: relative;
     }
-    .video-wrapper iframe {
+    .video-wrapper video {
       position: absolute;
       top: 0;
       left: 0;
@@ -123,7 +124,8 @@
       height: 100%;
       border-radius: 16px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      border: 0;
+      object-fit: contain;
+      background: #000;
     }
     .next-button-container {
       position: absolute;
@@ -317,9 +319,12 @@
       </a>
     </div>
     
-    <!-- Video wrapper for YouTube API -->
+    <!-- Video wrapper for local video -->
     <div class="video-wrapper">
-      <div id="youtubePlayer"></div>
+      <video id="videoPlayer" controls autoplay>
+        <source src="{% static 'videos/RENEW 11.mp4' %}" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
     </div>
 
     <!-- Hidden audio element for sound effect -->
@@ -409,56 +414,8 @@
       }
     }
 
-    // YouTube IFrame API integration
-    let player;
+    // YouTube IFrame API integration replaced with HTML5 video
     let videoEndDetected = false;
-
-    function onYouTubeIframeAPIReady() {
-      player = new YT.Player('youtubePlayer', {
-        height: '100%',
-        width: '100%',
-        videoId: 'sMKErBB_cnc',
-        playerVars: {
-          'controls': 1,
-          'autoplay': 1,
-          'rel': 0,
-          'cc_load_policy': 1
-        },
-        events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange
-        }
-      });
-    }
-
-    function onPlayerReady(event) {
-      // Autoplay is handled by playerVars
-      event.target.playVideo();
-    }
-
-    function onPlayerStateChange(event) {
-      if (event.data == YT.PlayerState.ENDED) {
-        videoEndDetected = true;
-        showNavigationButtons();
-        markVideoComplete();
-      }
-    }
-
-    // Load the YouTube API script
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    }
-
-    // Fallback to show buttons after 3 minutes
-    setTimeout(() => {
-      if (!videoEndDetected && !isComplete('neg_p2')) {
-        showNavigationButtons();
-        markVideoComplete();
-      }
-    }, 180000);
 
     // Show navigation buttons (updated to use motivational animation)
     function showNavigationButtons() {
@@ -473,10 +430,29 @@
 
     // Initialize page on load
     document.addEventListener('DOMContentLoaded', function() {
+      const videoPlayer = document.getElementById('videoPlayer');
+
       // Check if already completed and show buttons immediately
       if (isComplete('neg_p2')) {
         showNavigationButtons();
       }
+
+      // Listen for video end
+      if (videoPlayer) {
+        videoPlayer.addEventListener('ended', function() {
+          videoEndDetected = true;
+          showNavigationButtons();
+          markVideoComplete();
+        });
+      }
+
+      // Fallback to show buttons after 3 minutes
+      setTimeout(() => {
+        if (!videoEndDetected && !isComplete('neg_p2')) {
+          showNavigationButtons();
+          markVideoComplete();
+        }
+      }, 180000);
     });
   </script>
 </body>
