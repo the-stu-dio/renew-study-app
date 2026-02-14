@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,18 +50,10 @@
             margin-right: auto;
         }
 
-        .video-embed {
-            padding: 56.25% 0 0 0;
-            position: relative;
-        }
-
-        .video-embed iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
+        .video-wrapper video {
             width: 100%;
-            height: 100%;
-            border: 0;
+            display: block;
+            border-radius: 16px;
         }
 
         .navigation-buttons {
@@ -133,10 +126,10 @@
 
     <div class="video-container">
         <div class="video-wrapper">
-            <div class="video-embed">
-                <!-- YouTube API will replace this div with an iframe -->
-                <div id="youtubePlayer2"></div>
-            </div>
+            <video id="videoPlayer" controls autoplay>
+                <source src="{% static 'videos/RENEW-_Intro_Video_2.mp4' %}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
         </div>
 
         <div class="navigation-buttons" id="navigationButtons">
@@ -147,55 +140,19 @@
     </div>
 
     <script>
-        // YouTube IFrame API
-        let player2;
+        const videoPlayer = document.getElementById('videoPlayer');
         const navigationButtons = document.getElementById('navigationButtons');
-        
-        // This function is called by the YouTube API when it's ready
-        function onYouTubeIframeAPIReady() {
-            player2 = new YT.Player('youtubePlayer2', {
-                height: '100%',
-                width: '100%',
-                videoId: 'ITjkolGJyF8',
-                playerVars: {
-                    'controls': 1,
-                    'autoplay': 1,
-                    'rel': 0,
-                    'cc_load_policy': 1
-                },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-        }
-        
-        // Called when the player is ready
-        function onPlayerReady(event) {
-            // Autoplay is handled by playerVars, but we can ensure it here
-            event.target.playVideo();
-        }
-        
-        // Handle player state changes
-        function onPlayerStateChange(event) {
-            // When video ends (state 0)
-            if (event.data == YT.PlayerState.ENDED) {
-                navigationButtons.classList.add('show');
-            }
-        }
-        
-        // Load the YouTube API script
-        const tag = document.createElement('script');
-        tag.src = 'https://www.youtube.com/iframe_api';
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        
-        // Fallback: Show buttons after a reasonable time if video end detection fails
+
+        videoPlayer.addEventListener('ended', function() {
+            navigationButtons.classList.add('show');
+        });
+
+        // Fallback: Show buttons after 3 minutes if video end detection fails
         setTimeout(() => {
             if (!navigationButtons.classList.contains('show')) {
                 navigationButtons.classList.add('show');
             }
-        }, 180000); // 3 minutes fallback - adjust based on your video length
+        }, 180000);
     </script>
 </body>
 </html>
