@@ -1,11 +1,10 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/renewstudy/renew_app
-    - /bin/cp -R accounts $DEPLOYPATH/
-    - /bin/cp -R templates $DEPLOYPATH/
-    - /bin/cp -R study_project $DEPLOYPATH/
-    - /bin/cp -R static $DEPLOYPATH/ 2>/dev/null; true
-    - /bin/cp manage.py $DEPLOYPATH/
-    - /bin/cp passenger_wsgi.py $DEPLOYPATH/
-    - /bin/cp requirements.txt $DEPLOYPATH/
+    - /bin/cp -R accounts /home/renewstudy/renew_app/
+    - /bin/cp -R templates /home/renewstudy/renew_app/
+    - /bin/cp -R study_project /home/renewstudy/renew_app/
+    - /bin/cp -R static /home/renewstudy/renew_app/ 2>/dev/null; true
+    - /bin/cp manage.py /home/renewstudy/renew_app/
+    - /bin/cp passenger_wsgi.py /home/renewstudy/renew_app/
+    - /bin/cp requirements.txt /home/renewstudy/renew_app/
