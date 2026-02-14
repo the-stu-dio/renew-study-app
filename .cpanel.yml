@@ -4,7 +4,7 @@ deployment:
     - /bin/cp -R accounts /home/renewstudy/renew_app/
     - /bin/cp -R templates /home/renewstudy/renew_app/
     - /bin/cp -R study_project /home/renewstudy/renew_app/
-    - /bin/cp -R static /home/renewstudy/renew_app/ 2>/dev/null; true
+    - '/bin/cp -R static /home/renewstudy/renew_app/ 2>/dev/null; true'
     - /bin/cp manage.py /home/renewstudy/renew_app/
     - /bin/cp passenger_wsgi.py /home/renewstudy/renew_app/
     - /bin/cp requirements.txt /home/renewstudy/renew_app/
