@@ -81,7 +81,9 @@ class PositiveEventResponse(models.Model):
         ('other', 'Other Types of Positive Events'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='positive_responses')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='positive_responses', null=True, blank=True)
+    session_key = models.CharField(max_length=100, blank=True, null=True)  # Track anonymous users
+    nickname = models.CharField(max_length=100, blank=True, null=True)  # User's chosen nickname
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     response_text = models.TextField()
     is_hidden = models.BooleanField(default=False)  # User can hide responses
@@ -89,7 +91,7 @@ class PositiveEventResponse(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = ['user', 'category']  # One response per category per user
+        unique_together = ['session_key', 'category']  # One response per category per session
         ordering = ['category']
     
     def __str__(self):
@@ -114,7 +116,9 @@ class NegativeEventResponse(models.Model):
         ('stress', 'Stressors and Hassles'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='negative_responses')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='negative_responses', null=True, blank=True)
+    session_key = models.CharField(max_length=100, blank=True, null=True)
+    nickname = models.CharField(max_length=100, blank=True, null=True)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     response_text = models.TextField()
     is_hidden = models.BooleanField(default=False)  # User can hide responses
@@ -122,7 +126,7 @@ class NegativeEventResponse(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        unique_together = ['user', 'category']  # One response per category per user
+        unique_together = ['session_key', 'category']  # One response per category per session
         ordering = ['category']
     
     def __str__(self):
@@ -180,6 +184,111 @@ class JournalingSurvey(models.Model):
         if self.dislike_both:
             responses.append("Dislike both writing and talking")
         return responses
+
+class PMRSurveyResponse(models.Model):
+    """User responses to the PMR body feeling survey"""
+    FEELING_CHOICES = [
+        ('relaxed', 'Relaxed'),
+        ('stressed', 'More stressed than ever'),
+        ('same', 'Kind of the same as before'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pmr_responses', null=True, blank=True)
+    session_key = models.CharField(max_length=100, blank=True, null=True)
+    nickname = models.CharField(max_length=100, blank=True, null=True)
+    selected_feelings = models.JSONField(default=list)  # List of selected options
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        # One response per session
+        unique_together = ['session_key']
+
+    def __str__(self):
+        return f"PMR Survey - {self.session_key} - {self.selected_feelings}"
+
+
+class AttentionCheckResponse(models.Model):
+    """Track incorrect attempts on attention check quiz questions"""
+    QUESTION_CHOICES = [
+        ('neg_p6_q1', 'Why might Mike react more to Coach Ramos\'s comments?'),
+        ('neg_p7_q1', 'How might Mike be feeling after Coach Ramos\'s comment?'),
+        ('emo_p2_q1', 'Dave is sad because angry thoughts'),
+        ('emo_p2_q2', 'Avoiding friends like Dave'),
+        ('emo_p2_q3', 'Strange Dave fighting mom'),
+        ('emo_p2_q4', 'Dave triggered'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='attention_checks', null=True, blank=True)
+    session_key = models.CharField(max_length=100, blank=True, null=True)
+    nickname = models.CharField(max_length=100, blank=True, null=True)
+    question_id = models.CharField(max_length=20, choices=QUESTION_CHOICES)
+    incorrect_attempts = models.IntegerField(default=0)
+    answered_correctly = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['session_key', 'question_id']
+        ordering = ['question_id']
+
+    def __str__(self):
+        return f"Attention Check - {self.question_id} - {self.incorrect_attempts} wrong"
+
+
+class IronSpongeResponse(models.Model):
+    """Per-domain results of the Iron & Sponge quiz (neg_p9)"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='iron_sponge_responses', null=True, blank=True)
+    session_key = models.CharField(max_length=100, blank=True, null=True)
+    nickname = models.CharField(max_length=100, blank=True, null=True)
+
+    # Domain types: 'iron', 'sponge', or 'balanced'
+    school_type = models.CharField(max_length=20, blank=True, null=True)
+    school_iron = models.IntegerField(default=0)
+    school_sponge = models.IntegerField(default=0)
+    school_neither = models.IntegerField(default=0)
+
+    friend_type = models.CharField(max_length=20, blank=True, null=True)
+    friend_iron = models.IntegerField(default=0)
+    friend_sponge = models.IntegerField(default=0)
+    friend_neither = models.IntegerField(default=0)
+
+    family_type = models.CharField(max_length=20, blank=True, null=True)
+    family_iron = models.IntegerField(default=0)
+    family_sponge = models.IntegerField(default=0)
+    family_neither = models.IntegerField(default=0)
+
+    # Full raw responses as JSON (question1–question9)
+    responses_json = models.JSONField(default=dict, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['session_key']
+
+    def __str__(self):
+        return f"Iron/Sponge - {self.session_key} - school:{self.school_type} friend:{self.friend_type} family:{self.family_type}"
+
+
+class PosplanActivityResponse(models.Model):
+    """Session-based positive planned activity responses (Who/Where/What/When)"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posplan_activity_responses', null=True, blank=True)
+    session_key = models.CharField(max_length=100, blank=True, null=True)
+    nickname = models.CharField(max_length=100, blank=True, null=True)
+    who = models.TextField(blank=True, default='')
+    where = models.TextField(blank=True, default='')
+    what = models.TextField(blank=True, default='')
+    when = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['session_key']
+
+    def __str__(self):
+        return f"PosplanActivity - {self.session_key} - Who:{self.who[:20]} What:{self.what[:20]}"
+
 
 class PosplanResponse(models.Model):
     """User responses for positive planned activities"""

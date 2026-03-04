@@ -453,7 +453,7 @@
     <!-- Video wrapper for local video -->
     <div class="video-wrapper">
       <video id="videoPlayer" controls autoplay>
-        <source src="{% static 'videos/RENEW_25-26.mp4' %}" type="video/mp4">
+        <source src="{% static 'videos/RENEW 25-26.mp4' %}" type="video/mp4">
         Your browser does not support the video tag.
       </video>
     </div>
@@ -747,6 +747,17 @@
       // Mark selected option
       optionElement.classList.add('selected');
       
+      // Track attention check attempt
+      fetch('/accounts/save-attention-check/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question_id: 'emo_p2_q1',
+          is_correct: isCorrect,
+          nickname: localStorage.getItem('nickname') || ''
+        })
+      }).catch(err => console.error('Attention check save error:', err));
+
       const feedback = document.getElementById('quizFeedback1');
       
       if (isCorrect) {
@@ -786,6 +797,17 @@
       
       optionElement.classList.add('selected');
       
+      // Track attention check attempt
+      fetch('/accounts/save-attention-check/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question_id: 'emo_p2_q2',
+          is_correct: isCorrect,
+          nickname: localStorage.getItem('nickname') || ''
+        })
+      }).catch(err => console.error('Attention check save error:', err));
+
       const feedback = document.getElementById('quizFeedback2');
       
       if (isCorrect) {
@@ -824,6 +846,17 @@
       
       optionElement.classList.add('selected');
       
+      // Track attention check attempt
+      fetch('/accounts/save-attention-check/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question_id: 'emo_p2_q3',
+          is_correct: isCorrect,
+          nickname: localStorage.getItem('nickname') || ''
+        })
+      }).catch(err => console.error('Attention check save error:', err));
+
       const feedback = document.getElementById('quizFeedback3');
       
       if (isCorrect) {
@@ -862,6 +895,17 @@
       
       optionElement.classList.add('selected');
       
+      // Track attention check attempt
+      fetch('/accounts/save-attention-check/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question_id: 'emo_p2_q4',
+          is_correct: isCorrect,
+          nickname: localStorage.getItem('nickname') || ''
+        })
+      }).catch(err => console.error('Attention check save error:', err));
+
       const feedback = document.getElementById('quizFeedback4');
       
       if (isCorrect) {

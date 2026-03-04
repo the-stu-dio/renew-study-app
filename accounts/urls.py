@@ -66,13 +66,22 @@ urlpatterns = [
     path('tips/', views.tips, name='tips'),
     path('discoveries/', views.discoveries_view, name='discoveries'),
     
+    path('save-positive-response/', views.save_positive_response, name='save_positive_response'),
+    path('save-negative-response/', views.save_negative_response, name='save_negative_response'),
     path('mark-video-complete/', views.mark_video_complete, name='mark_video_complete'),
     path('submit-feedback-survey/', views.submit_feedback_survey, name='submit_feedback_survey'),
     path('submit-journaling-survey/', views.submit_journaling_survey, name='submit_journaling_survey'),
     path('submit-pmr-survey/', views.submit_pmr_survey, name='submit_pmr_survey'),
+    path('save-attention-check/', views.save_attention_check, name='save_attention_check'),
     
     path('export-to-qualtrics/', views.export_to_qualtrics, name='export_to_qualtrics'),
+    path('save-iron-sponge/', views.save_iron_sponge, name='save_iron_sponge'),
+    path('save-posplan-activity/', views.save_posplan_activity, name='save_posplan_activity'),
     path('final-survey/', views.qualtrics_survey_view, name='qualtrics_survey'),
    
     path('completion-video/', views.completion_video, name='completion_video'),
+
+    # Summary sheet download
+    path('download-summary/', views.download_summary, name='download_summary'),
+    path('download-summary/<str:session_key>/', views.download_summary, name='download_summary_session'),
 ]

@@ -537,14 +537,30 @@
       const whatData = getPosplanResponse('what');
       const whenData = getPosplanResponse('when');
 
-      document.getElementById('whoValue').textContent = 
-        whoData?.response || whoData?.category || 'Not set';
-      document.getElementById('whereValue').textContent = 
-        whereData?.response || whereData?.category || 'Not set';
-      document.getElementById('whatValue').textContent = 
-        whatData?.activity || 'Not set';
-      document.getElementById('whenValue').textContent = 
-        whenData?.timing || 'Not set';
+      const whoVal = whoData?.response || whoData?.category || '';
+      const whereVal = whereData?.response || whereData?.category || '';
+      const whatVal = whatData?.activity || '';
+      const whenVal = whenData?.timing || '';
+
+      document.getElementById('whoValue').textContent = whoVal || 'Not set';
+      document.getElementById('whereValue').textContent = whereVal || 'Not set';
+      document.getElementById('whatValue').textContent = whatVal || 'Not set';
+      document.getElementById('whenValue').textContent = whenVal || 'Not set';
+
+      // Save to database
+      if (whoVal || whereVal || whatVal || whenVal) {
+        fetch('/accounts/save-posplan-activity/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            who: whoVal,
+            where: whereVal,
+            what: whatVal,
+            when: whenVal,
+            nickname: localStorage.getItem('nickname') || ''
+          })
+        }).catch(err => console.error('Error saving posplan to DB:', err));
+      }
     }
 
     function toggleEditMode() {

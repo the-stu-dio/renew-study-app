@@ -673,6 +673,22 @@
       }
     }
 
+    // Helper to get CSRF cookie
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
     function saveResponse(category, response) {
       try {
         // Get current data
@@ -687,6 +703,31 @@
         
         // Save back to localStorage
         localStorage.setItem('renew_study_data', JSON.stringify(data));
+
+        // Also save to the database
+        const nickname = data.nickname || '';
+        fetch('{% url "save_negative_response" %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          body: JSON.stringify({
+            category: category,
+            response_text: response,
+            nickname: nickname,
+          }),
+        })
+        .then(res => res.json())
+        .then(result => {
+          if (result.success) {
+            console.log('Response saved to database:', category);
+          } else {
+            console.warn('Database save warning:', result.error);
+          }
+        })
+        .catch(err => console.error('Database save error:', err));
+
         return true;
       } catch (e) {
         console.error('Error saving response:', e);

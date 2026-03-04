@@ -595,7 +595,7 @@
     <!-- Video wrapper for local video -->
     <div class="video-wrapper">
       <video id="videoPlayer" controls autoplay>
-        <source src="{% static 'videos/RENEW-_PMR.mp4' %}" type="video/mp4">
+        <source src="{% static 'videos/RENEW- PMR.mp4' %}" type="video/mp4">
         Your browser does not support the video tag.
       </video>
     </div>
@@ -956,13 +956,54 @@
       submitButton.textContent = 'Submitting...';
       
       // Save the response
+      const videoPlayer = document.getElementById('videoPlayer');
       const sidebarData = {
         selected_feelings: Array.from(sidebarSelectedOptions),
         timestamp: Date.now(),
-        video_time: player ? player.getCurrentTime() : null
+        video_time: videoPlayer ? videoPlayer.currentTime : null
       };
       
       if (saveSurveyResponse('pmr_sidebar_survey', sidebarData)) {
+        // Also save to the database
+        const studyData = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        const nickname = studyData.nickname || '';
+
+        function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        }
+
+        fetch('{% url "submit_pmr_survey" %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          body: JSON.stringify({
+            selected_feelings: Array.from(sidebarSelectedOptions),
+            nickname: nickname,
+          }),
+        })
+        .then(res => res.json())
+        .then(result => {
+          if (result.success) {
+            console.log('PMR survey saved to database:', result.selected_feelings);
+          } else {
+            console.warn('PMR survey DB save warning:', result.error);
+          }
+        })
+        .catch(err => console.error('PMR survey DB save error:', err));
+
         // Show success feedback
         feedback.textContent = "Thanks for sharing how you're feeling!";
         feedback.className = 'survey-feedback success show';

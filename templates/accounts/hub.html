@@ -490,6 +490,12 @@
             <div class="button-title">Tips</div>
             <div class="button-description">Important reminders for your well-being</div>
         </a>
+
+        <a href="#" onclick="downloadSummary(event)" class="hub-button" style="border-color: #16a34a;">
+            <div class="button-icon">📄</div>
+            <div class="button-title">Download Summary Sheet</div>
+            <div class="button-description">Download your RENEW Summary as a Word doc</div>
+        </a>
     </div>
 </div>
 
@@ -619,6 +625,49 @@ window.onclick = function(event) {
     if (event.target === modal && !startButton.disabled) {
         closeWelcomeModal();
     }
+}
+
+// Sync localStorage data to server before downloading summary
+async function downloadSummary(e) {
+    e.preventDefault();
+
+    // Sync Iron & Sponge
+    const ironSponge = localStorage.getItem('ironSpongeResults');
+    if (ironSponge) {
+        try {
+            await fetch('/accounts/save-iron-sponge/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ironSpongeResults: JSON.parse(ironSponge),
+                    nickname: localStorage.getItem('nickname') || ''
+                })
+            });
+        } catch (err) { console.error('Iron/Sponge sync error:', err); }
+    }
+
+    // Sync Posplan Activity
+    try {
+        const renewData = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        const pp = renewData.posplan_responses || {};
+        const whoVal = pp.who?.response || pp.who?.category || '';
+        const whereVal = pp.where?.response || pp.where?.category || '';
+        const whatVal = pp.what?.activity || '';
+        const whenVal = pp.when?.timing || '';
+        console.log('Posplan sync:', { whoVal, whereVal, whatVal, whenVal });
+        if (whoVal || whereVal || whatVal || whenVal) {
+            await fetch('/accounts/save-posplan-activity/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    who: whoVal, where: whereVal, what: whatVal, when: whenVal,
+                    nickname: localStorage.getItem('nickname') || ''
+                })
+            });
+        }
+    } catch (err) { console.error('Posplan sync error:', err); }
+
+    window.location.href = "{% url 'download_summary' %}";
 }
 </script>
 {% endblock %}

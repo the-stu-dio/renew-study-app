@@ -383,7 +383,7 @@
     <!-- Video wrapper for local video -->
     <div class="video-wrapper">
       <video id="videoPlayer" controls autoplay>
-        <source src="{% static 'videos/RENEW_16-17.mp4' %}" type="video/mp4">
+        <source src="{% static 'videos/RENEW 16-17.mp4' %}" type="video/mp4">
         Your browser does not support the video tag.
       </video>
     </div>
@@ -590,6 +590,17 @@
       document.querySelectorAll('.quiz-option').forEach(opt => opt.classList.remove('selected', 'correct', 'incorrect'));
       optionElement.classList.add('selected');
       const feedback = document.getElementById('quizFeedback');
+
+      // Track attention check attempt
+      fetch('/accounts/save-attention-check/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question_id: 'neg_p6_q1',
+          is_correct: isCorrect,
+          nickname: localStorage.getItem('nickname') || ''
+        })
+      }).catch(err => console.error('Attention check save error:', err));
 
       if (isCorrect) {
         optionElement.classList.add('correct');

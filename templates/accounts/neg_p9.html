@@ -1147,7 +1147,17 @@
 
       // Save to localStorage
       localStorage.setItem('ironSpongeResults', JSON.stringify(results));
-      
+
+      // Save to server DB so the summary sheet can include these results
+      fetch('/accounts/save-iron-sponge/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ironSpongeResults: results,
+          nickname: localStorage.getItem('nickname') || ''
+        })
+      }).catch(err => console.error('Failed to save Iron & Sponge to server:', err));
+
       // Mark as complete
       markComplete('neg_p9');
       

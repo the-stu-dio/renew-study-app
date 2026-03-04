@@ -171,7 +171,7 @@
         <div class="video-wrapper">
             <div class="video-embed">
                 <video id="videoPlayer" controls autoplay>
-                    <source src="{% static 'videos/RENEW-_Wrap_Up.mp4' %}" type="video/mp4">
+                    <source src="{% static 'videos/RENEW- Wrap Up.mp4' %}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
             </div>
@@ -217,6 +217,18 @@
 
                 localStorage.setItem('renew_ready_for_submission', JSON.stringify(preparedData));
                 localStorage.setItem('renew_completion_status', 'ready_for_survey');
+
+                // Also send iron sponge results to server session so download-summary can use them
+                try {
+                    const iron = preparedData.iron_sponge_results || JSON.parse(localStorage.getItem('ironSpongeResults') || '{}');
+                    fetch("{% url 'save_iron_sponge' %}", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ironSpongeResults: iron })
+                    }).catch(e => console.warn('Failed to save iron sponge to server session', e));
+                } catch (e) {
+                    console.warn('Error preparing iron sponge payload:', e);
+                }
 
                 // Redirect to Qualtrics survey page
                 window.location.href = "{% url 'qualtrics_survey' %}";
