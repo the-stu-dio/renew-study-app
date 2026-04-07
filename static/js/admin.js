@@ -97,8 +97,8 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById(BTN_ID);
-    if (btn) setupButton(btn);
+    const buttons = Array.from(document.querySelectorAll(`#${BTN_ID}`));
+    buttons.forEach(setupButton);
     // Auto-skip helper (exposed locally)
     function autoSkipIntro() {
       try {

@@ -86,8 +86,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        const btn = document.getElementById('mute-toggle');
-        if (!btn) return;
-        setupButton(btn);
+        const buttons = Array.from(document.querySelectorAll('#mute-toggle'));
+        if (!buttons.length) return;
+        buttons.forEach(setupButton);
     });
 })();
