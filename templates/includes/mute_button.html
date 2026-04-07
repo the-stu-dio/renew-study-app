@@ -1,0 +1,8 @@
+{% load static %}
+<!-- Mute toggle include -->
+<div style="display:flex;gap:8px;align-items:center">
+	<button id="mute-toggle" aria-pressed="false" title="Mute videos">🔊</button>
+	<button id="admin-unlock" title="Enter admin code" style="border-radius:8px;padding:8px">🔑</button>
+</div>
+<script src="{% static 'js/mute.js' %}"></script>
+<script src="{% static 'js/admin.js' %}"></script>

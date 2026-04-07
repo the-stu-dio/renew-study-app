@@ -301,6 +301,49 @@
         height: 50vh;
       }
     }
+    /* Trigger question styles */
+    .trigger-card {
+      background: #fff;
+      border: 1px solid #e6dbf5;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 18px;
+      box-shadow: 0 6px 18px rgba(90,62,140,0.06);
+      display: none;
+    }
+    .trigger-card.show { display: block; }
+    .trigger-card .trigger-title {
+      font-weight: 700;
+      color: #5a3e8c;
+      margin-bottom: 10px;
+      line-height: 1.35;
+    }
+    .trigger-card .trigger-sub {
+      margin-bottom: 12px;
+      font-weight: 600;
+      color: #333;
+    }
+    .trigger-list { list-style: none; padding: 0; margin: 0 0 14px 0; }
+    .trigger-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #f0eaf8; }
+    .trigger-item:last-child { border-bottom: none; }
+    .trigger-item label { cursor: pointer; color: #333; font-size: 0.98rem; }
+    .trigger-item input { margin-top: 4px; }
+    .trigger-submit { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .trigger-submit:disabled { background: #c5e0c7; cursor: not-allowed; opacity: 0.8; }
+    .trigger-thanks {
+      display: none;
+      margin-top: 10px;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #a8d5b0;
+      background: #cfe8d3;
+      color: #145a2b;
+      text-align: center;
+      font-weight: 400;
+      font-size: 1.6rem;
+      line-height: 1.25;
+    }
+    .trigger-thanks.show { display: block; }
   </style>
 </head>
 <body>
@@ -340,6 +383,37 @@
       
     </p>
     
+    <!-- Trigger reflection question shown after video ends -->
+    <div class="trigger-card" id="triggerQuestionCard">
+        <div class="trigger-intro">
+          <div class="trigger-sub">One reason we like talking to students about triggers is to help you understand yourself better. Pick any that fit you best (you can choose more than one):</div>
+        </div>
+
+        <ul class="trigger-list">
+          <li class="trigger-item">
+            <input type="checkbox" id="t1" name="triggerChoice" value="learned_about_world_like_talking">
+            <label for="t1">I liked learning about how the world around us affects people, and I want to talk to someone more about this.</label>
+          </li>
+          <li class="trigger-item">
+            <input type="checkbox" id="t2" name="triggerChoice" value="learned_about_world_want_more">
+            <label for="t2">I liked learning about how the world around us affects people, and I want to see or read more about it.</label>
+          </li>
+          <li class="trigger-item">
+            <input type="checkbox" id="t3" name="triggerChoice" value="found_some_boring">
+            <label for="t3">To be honest, I found some of this stuff a little boring, but I want to talk more about thoughts, feelings, and emotions.</label>
+          </li>
+          <li class="trigger-item">
+            <input type="checkbox" id="t4" name="triggerChoice" value="didnt_find_helpful">
+            <label for="t4">To be honest, I didn’t find what we talked about so far very interesting or helpful.</label>
+          </li>
+        </ul>
+
+        <div style="text-align: center; margin-top: 10px;">
+          <button id="triggerSubmit" class="trigger-submit" disabled>Submit responses</button>
+          <div id="triggerThanks" class="trigger-thanks">Thank you for selecting the option(s) that fit you best.</div>
+        </div>
+    </div>
+
     <a href="{% url 'adventure_map' %}" class="back-button">← Back to Adventure Map</a>
   </div>
   
@@ -427,32 +501,167 @@
 
     // HTML5 Video integration
     let videoEndDetected = false;
+    let triggerSubmitted = false;
+
+    function hasSubmittedTriggerResponse() {
+      try {
+        const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        const responses = data.triggers && data.triggers['emo_p4'];
+        return Array.isArray(responses) && responses.length > 0;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function updateNextButtonVisibility() {
+      const nextButtonContainer = document.getElementById('nextButtonContainer');
+      if (!nextButtonContainer) return;
+
+      if (videoEndDetected && triggerSubmitted) {
+        showNavigationButtons();
+      } else {
+        nextButtonContainer.style.display = 'none';
+      }
+    }
 
     // Check if already completed on page load
     document.addEventListener('DOMContentLoaded', function() {
       const videoPlayer = document.getElementById('videoPlayer');
 
-      if (isComplete('emo_p4')) {
-        showNavigationButtons();
-      }
+      // Next button requires both: video finished + trigger response submitted.
+      triggerSubmitted = hasSubmittedTriggerResponse();
+      updateNextButtonVisibility();
 
       // Listen for video end
       if (videoPlayer) {
-        videoPlayer.addEventListener('ended', function() {
+        // Centralized handler for when video finishes
+        function handleVideoEnded() {
+          if (videoEndDetected) return; // already handled
           videoEndDetected = true;
-          showNavigationButtons();
-          markVideoComplete();
+          // Always reveal the question when the video ends.
+          const q = document.getElementById('triggerQuestionCard');
+          if (q) {
+            q.classList.add('show');
+            q.style.display = 'block';
+          }
+          updateNextButtonVisibility();
+        }
+
+        videoPlayer.addEventListener('ended', function() {
+          handleVideoEnded();
         });
+
+        // Extra detection for browsers that don't consistently fire `ended`.
+        videoPlayer.addEventListener('timeupdate', () => {
+          try {
+            // If we are within 0.6s of the end, treat as ended.
+            if (videoPlayer.duration && isFinite(videoPlayer.duration) && (videoPlayer.duration - videoPlayer.currentTime) <= 0.6 && !videoEndDetected) {
+              handleVideoEnded();
+            }
+          } catch (e) {
+            console.warn('emo_p4: timeupdate handler error', e);
+          }
+        });
+
+        // Polling fallback: check currentTime vs duration every 500ms and treat as ended when very close
+        const pollInterval = setInterval(() => {
+          try {
+            if (!videoPlayer.duration || isNaN(videoPlayer.duration) || videoPlayer.duration === Infinity) return;
+            const remaining = videoPlayer.duration - videoPlayer.currentTime;
+            if (remaining <= 0.6 && !videoEndDetected) {
+              handleVideoEnded();
+              clearInterval(pollInterval);
+            }
+          } catch (e) {
+            console.warn('emo_p4: polling error', e);
+          }
+        }, 500);
       }
 
-      // Fallback timer - show button after 3 minutes regardless
-      setTimeout(() => {
-        if (!videoEndDetected && !isComplete('emo_p4')) {
-          showNavigationButtons();
-          markVideoComplete();
-        }
-      }, 180000);
+      // No fallback: only reveal the trigger when the video `ended` event fires.
     });
+
+    // Wire up trigger question interactions and submission
+    function initTriggerQuestionUI() {
+      const triggerCard = document.getElementById('triggerQuestionCard');
+      if (!triggerCard) return;
+      const checkboxes = Array.from(triggerCard.querySelectorAll('input[name="triggerChoice"]'));
+      const submitBtn = document.getElementById('triggerSubmit');
+      const thanksMsg = document.getElementById('triggerThanks');
+
+      // Revisit behavior: always show submit button and hide thank-you message.
+      if (submitBtn) submitBtn.style.display = 'inline-block';
+      if (thanksMsg) thanksMsg.classList.remove('show');
+
+      const updateSubmitState = () => {
+        const any = checkboxes.some(cb => cb.checked);
+        if (submitBtn) submitBtn.disabled = !any;
+      };
+      checkboxes.forEach(cb => cb.addEventListener('change', updateSubmitState));
+      // Initialize button state for restored checkbox values.
+      updateSubmitState();
+      // Ensure the submit button actually calls our handler
+      if (submitBtn) {
+        submitBtn.type = 'button';
+        submitBtn.onclick = function (e) {
+          e.preventDefault();
+          submitTriggerResponses();
+        };
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', initTriggerQuestionUI);
+
+    // Back/forward cache restores can bypass DOMContentLoaded; re-init safely.
+    window.addEventListener('pageshow', initTriggerQuestionUI);
+
+    function submitTriggerResponses() {
+      try {
+        const card = document.getElementById('triggerQuestionCard');
+        if (!card) return;
+        const checked = Array.from(card.querySelectorAll('input[name="triggerChoice"]:checked')).map(i => i.value);
+
+        // Save into renew_study_data.triggers (local copy)
+        try {
+          const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+          if (!data.triggers) data.triggers = {};
+          data.triggers['emo_p4'] = checked;
+          data.triggers['emo_p4_timestamp'] = Date.now();
+          localStorage.setItem('renew_study_data', JSON.stringify(data));
+        } catch (e) { console.error('Error saving trigger responses locally', e); }
+
+        // POST the responses to the server for persistent storage
+        try {
+          const payload = { checked: checked, nickname: (function(){ try { return JSON.parse(localStorage.getItem('renew_study_data')|| '{}').nickname || ''; } catch(e){ return ''; } })() };
+          console.log('Posting feedback survey payload:', payload);
+          fetch('{% url "submit_feedback_survey" %}', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          }).then(res => res.json()).then(res => {
+            console.log('Feedback save response:', res);
+            if (!res || !res.success) console.warn('Server save failed for feedback survey', res);
+          }).catch(err => console.warn('Feedback save request failed', err));
+        } catch (e) { console.warn('Failed to POST feedback survey', e); }
+
+        // Mark page complete and swap submit button for thank-you message for this visit.
+        try {
+          const submitBtn = document.getElementById('triggerSubmit');
+          const thanksMsg = document.getElementById('triggerThanks');
+          if (submitBtn) submitBtn.style.display = 'none';
+          if (thanksMsg) thanksMsg.classList.add('show');
+        } catch (e) {}
+
+        // mark page complete and show next
+        triggerSubmitted = true;
+        try { markComplete('emo_p4'); } catch (e) {}
+        try { updateNextButtonVisibility(); } catch (e) {}
+      } catch (e) { console.error('submitTriggerResponses error', e); }
+    }
+
+    // No manual reveal button — trigger card is shown automatically when the video finishes.
   </script>
+{% include 'includes/mute_button.html' %}
 </body>
 </html>

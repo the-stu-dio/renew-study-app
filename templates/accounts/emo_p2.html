@@ -927,6 +927,15 @@
             markQuizComplete();
             showNextButtonMotivational();
           }, { once: true });
+          // Fallback: if audio playback is blocked or doesn't end, ensure progress after 2.5s
+          setTimeout(function() {
+            if (!quizCompleted) {
+              console.warn('Fallback: audio did not end, forcing quiz completion');
+              quizCompleted = true;
+              try { markQuizComplete(); } catch (e) {}
+              try { showNextButtonMotivational(); } catch (e) {}
+            }
+          }, 2500);
         } else {
           // Fallback if audio doesn't exist
           setTimeout(() => {
@@ -1048,5 +1057,6 @@
       }
     });
   </script>
+{% include 'includes/mute_button.html' %}
 </body>
 </html>

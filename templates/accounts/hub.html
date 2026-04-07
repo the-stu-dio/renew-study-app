@@ -543,6 +543,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Mark hub visited immediately to suppress the welcome modal entirely
+    try { localStorage.setItem('renew_hub_visited', 'true'); } catch (e) {}
     const nickname = RENEWStorage.getNickname();
     const welcomeMessage = document.getElementById('welcomeMessage');
     

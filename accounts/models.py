@@ -152,6 +152,25 @@ class FeedbackSurvey(models.Model):
     
     def __str__(self):
         return f"Feedback Survey - {self.user.username}"
+
+
+class FeedbackSurveyResponse(models.Model):
+    """Store feedback survey responses keyed by session (supports anonymous users)."""
+    session_key = models.CharField(max_length=100, blank=True, null=True, db_index=True)
+    nickname = models.CharField(max_length=100, blank=True, null=True)
+    statement1_checked = models.BooleanField(default=False)
+    statement2_checked = models.BooleanField(default=False)
+    statement3_checked = models.BooleanField(default=False)
+    statement4_checked = models.BooleanField(default=False)
+    # Full selected statement texts (e.g. ["I liked learning about...", "To be honest..."])
+    responses = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"FeedbackSurveyResponse - {self.session_key or 'unknown'}"
         
 class JournalingSurvey(models.Model):
     """Survey responses about journaling preferences"""

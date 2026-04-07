@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+import traceback
 import uuid
 import os
 import io
@@ -262,7 +263,9 @@ def save_positive_response(request):
                 'category': category,
             })
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            # Print full traceback to server console for debugging
+            print('submit_feedback_survey: exception:\n', traceback.format_exc())
+            return JsonResponse({'error': str(e), 'trace': traceback.format_exc()}, status=500)
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
 @csrf_exempt
@@ -317,10 +320,74 @@ def mark_video_complete(request):
         return JsonResponse({'success': True, 'message': 'Handled by localStorage'})
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
+@csrf_exempt
 def submit_feedback_survey(request):
-    """Handle feedback survey - now handled by localStorage"""
+    """Accept feedback survey responses (emo_p4) and save to DB (session-keyed).
+
+    Expects JSON POST: { "checked": ["learned_about_world_like_talking", ...], "nickname": "..." }
+    Saves a FeedbackSurveyResponse keyed by session_key so the summary generator can include it.
+    """
     if request.method == 'POST':
-        return JsonResponse({'success': True, 'message': 'Handled by localStorage'})
+        try:
+            data = json.loads(request.body or b'{}')
+            checked = data.get('checked', []) or []
+            nickname = data.get('nickname', '')
+
+            # Map incoming option values to model boolean fields
+            mapping = {
+                'learned_about_world_like_talking': 'statement1_checked',
+                'learned_about_world_want_more': 'statement2_checked',
+                'found_some_boring': 'statement3_checked',
+                'didnt_find_helpful': 'statement4_checked',
+            }
+
+            # Human-readable statement text mapping
+            text_mapping = {
+                'learned_about_world_like_talking': 'I liked learning about how the world around us affects people, and I want to talk to someone more about this.',
+                'learned_about_world_want_more': 'I liked learning about how the world around us affects people, and I want to see or read more about it.',
+                'found_some_boring': 'To be honest, I found some of this stuff a little boring, but I want to talk more about thoughts, feelings, and emotions.',
+                'didnt_find_helpful': 'To be honest, I didn\'t find what we talked about so far very interesting or helpful.',
+            }
+
+            # Ensure a session exists
+            if not request.session.session_key:
+                request.session.create()
+            session_key = request.session.session_key
+
+            _purge_other_sessions(session_key)
+
+            from accounts.models import FeedbackSurveyResponse
+
+            defaults = {
+                'nickname': nickname,
+                'statement1_checked': False,
+                'statement2_checked': False,
+                'statement3_checked': False,
+                'statement4_checked': False,
+                'responses': [],
+            }
+
+            for opt in checked:
+                field = mapping.get(opt)
+                if field:
+                    defaults[field] = True
+            # Build list of actual statement texts for storage
+            selected_texts = [text_mapping.get(opt) for opt in checked if text_mapping.get(opt)]
+            defaults['responses'] = selected_texts
+
+            # Debug logging: print incoming payload and session
+            print('submit_feedback_survey: received checked=', checked, 'nickname=', nickname, 'session_key=', session_key)
+
+            obj, created = FeedbackSurveyResponse.objects.update_or_create(
+                session_key=session_key,
+                defaults=defaults
+            )
+
+            print(f'submit_feedback_survey: saved FeedbackSurveyResponse id={obj.id} created={created}')
+
+            return JsonResponse({'success': True, 'created': created, 'session_key': session_key, 'id': obj.id})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
 def submit_journaling_survey(request):
@@ -815,11 +882,15 @@ def download_summary(request, session_key=None):
         'other': 5,
     }
 
-    for category, para_idx in append_categories.items():
+    # Process from bottom to top so inserted spacing does not shift later target paragraphs.
+    for category, para_idx in sorted(append_categories.items(), key=lambda item: item[1], reverse=True):
         answer = response_map.get(category, '')
         if answer:
+            from docx.shared import RGBColor
+
             run = doc.paragraphs[para_idx].add_run(f'\n    {answer}')
             run.italic = True
+            run.font.color.rgb = RGBColor(192, 0, 0)
 
     # --- Negative events: append answers to P10-P13 ---
     neg_append_categories = {
@@ -832,14 +903,19 @@ def download_summary(request, session_key=None):
     for category, para_idx in neg_append_categories.items():
         answer = neg_response_map.get(category, '')
         if answer:
+            from docx.shared import RGBColor
+
             run = doc.paragraphs[para_idx].add_run(f'\n    {answer}')
             run.italic = True
+            run.font.color.rgb = RGBColor(192, 0, 0)
 
     # --- PMR survey: append feelings to P20 ---
     if pmr_response and pmr_response.selected_feelings:
         feelings_text = ', '.join(pmr_response.selected_feelings)
+        from docx.shared import RGBColor
         run = doc.paragraphs[20].add_run(f'\n    {feelings_text}')
         run.italic = True
+        run.font.color.rgb = RGBColor(192, 0, 0)
 
     # --- Positive Planned Activity: read from DB and append to P36 ---
     if posplan_db:
@@ -853,8 +929,10 @@ def download_summary(request, session_key=None):
         if posplan_db.when:
             lines.append(f'When: {posplan_db.when}')
         if lines:
+            from docx.shared import RGBColor
             run = doc.paragraphs[36].add_run('\n    ' + '\n    '.join(lines))
             run.italic = True
+            run.font.color.rgb = RGBColor(192, 0, 0)
 
     # --- Iron & Sponge: read from DB and append to P35 ---
     if iron_sponge_db:
@@ -864,8 +942,10 @@ def download_summary(request, session_key=None):
                 f"Friend: {(iron_sponge_db.friend_type or 'balanced').capitalize()} ({iron_sponge_db.friend_iron} Iron, {iron_sponge_db.friend_sponge} Sponge, {iron_sponge_db.friend_neither} Neither)",
                 f"Family: {(iron_sponge_db.family_type or 'balanced').capitalize()} ({iron_sponge_db.family_iron} Iron, {iron_sponge_db.family_sponge} Sponge, {iron_sponge_db.family_neither} Neither)",
             ]
+            from docx.shared import RGBColor
             run = doc.paragraphs[35].add_run('\n    ' + '\n    '.join(domain_lines))
             run.italic = True
+            run.font.color.rgb = RGBColor(192, 0, 0)
         except Exception:
             pass
 
@@ -887,8 +967,52 @@ def download_summary(request, session_key=None):
         resp = attention_map.get(qid)
         if resp:
             total_attempts = resp.incorrect_attempts + (1 if resp.answered_correctly else 0)
+            from docx.shared import RGBColor
             run = doc.paragraphs[para_idx].add_run(f'  →  {total_attempts} attempt(s)')
             run.italic = True
+            run.font.color.rgb = RGBColor(192, 0, 0)
+
+    # --- Feedback survey (emo_p4) responses: append summary to P22 ---
+    try:
+        from accounts.models import FeedbackSurveyResponse
+        # Use the feedback response for this session so answer changes are reflected per user/session.
+        feedback = FeedbackSurveyResponse.objects.filter(session_key=session_key).order_by('-created_at').first()
+        if feedback:
+            # Primary source: the JSON `responses` column.
+            lines = list(feedback.responses or [])
+
+            # Backward-compatible fallback if `responses` is empty on older rows.
+            if not lines:
+                if feedback.statement1_checked:
+                    lines.append('I liked learning about how the world around us affects people, and I want to talk to someone more about this.')
+                if feedback.statement2_checked:
+                    lines.append('I liked learning about how the world around us affects people, and I want to see or read more about it.')
+                if feedback.statement3_checked:
+                    lines.append('To be honest, I found some of this stuff a little boring, but I want to talk more about thoughts, feelings, and emotions.')
+                if feedback.statement4_checked:
+                    lines.append('To be honest, I didn\'t find what we talked about so far very interesting or helpful.')
+
+            if lines:
+                # Find the psychoeducation question paragraph dynamically so template edits don't break this.
+                feedback_para_idx = None
+                for idx, para in enumerate(doc.paragraphs):
+                    para_text = (para.text or '').lower()
+                    if 'how did' in para_text and 'psychoeducation' in para_text:
+                        feedback_para_idx = idx
+                        break
+
+                if feedback_para_idx is None:
+                    feedback_para_idx = 18  # Safe fallback for current template
+
+                from docx.shared import RGBColor
+
+                # Render each selected response on its own clean line under the question.
+                formatted_lines = '\n'.join(f'    {line}' for line in lines)
+                run = doc.paragraphs[feedback_para_idx].add_run('\n' + formatted_lines)
+                run.italic = True
+                run.font.color.rgb = RGBColor(192, 0, 0)
+    except Exception:
+        pass
 
     # Write to an in-memory buffer and return as a download
     buffer = io.BytesIO()
