@@ -70,6 +70,11 @@
     return /\/skill[-_]?p[1-4]\/?$/i.test(pathname || '');
   }
 
+  function getSidebarHeadingText() {
+    const heading = document.querySelector('.sidebar h1, .sidebar h2, .sidebar h3, .sidebar h4, .sidebar h5, .sidebar h6');
+    return heading ? heading.textContent.trim().toLowerCase() : '';
+  }
+
   function normalizePath(pathname) {
     const path = pathname || '';
     return path.endsWith('/') ? path : `${path}/`;
@@ -132,6 +137,60 @@
     }
 
     if (isSkillsPage(pathname)) {
+      const pages = buildSequentialPages('skill-p', 4);
+      return {
+        section: 'skills',
+        title: 'Admin Jump: Skills',
+        pages,
+        currentIndex: getCurrentIndex(pathname, pages)
+      };
+    }
+
+    // Fallback for environments/routes that don't match expected URL patterns.
+    const headingText = getSidebarHeadingText();
+    if (headingText.includes('positive events')) {
+      const pages = buildSequentialPages('pos-p', 5);
+      return {
+        section: 'positive',
+        title: 'Admin Jump: Positive',
+        pages,
+        currentIndex: getCurrentIndex(pathname, pages)
+      };
+    }
+
+    if (headingText.includes('negative events')) {
+      const pages = buildSequentialPages('neg-p', 10);
+      return {
+        section: 'negative',
+        title: 'Admin Jump: Negative',
+        pages,
+        currentIndex: getCurrentIndex(pathname, pages)
+      };
+    }
+
+    if (headingText.includes('thoughts') || headingText.includes('feelings')) {
+      const pages = [
+        { label: '1', target: '/accounts/emo-p1/' },
+        { label: '2', target: '/accounts/emo-p2/' },
+        { label: '3', target: '/accounts/emo-p3/' },
+        { label: '4', target: '/accounts/emo-p4/' },
+        { label: '5', target: '/accounts/emo-p5/' },
+        { label: '6', target: '/accounts/pmr-p1/' },
+        { label: '7', target: '/accounts/journal-p1/' },
+        { label: '8', target: '/accounts/journal-p2/' },
+        { label: '9', target: '/accounts/journal-option1/' },
+        { label: '10', target: '/accounts/journal-option2/' }
+      ];
+
+      return {
+        section: 'thoughts',
+        title: 'Admin Jump: Thoughts',
+        pages,
+        currentIndex: getCurrentIndex(pathname, pages)
+      };
+    }
+
+    if (headingText.includes('skills')) {
       const pages = buildSequentialPages('skill-p', 4);
       return {
         section: 'skills',
@@ -344,6 +403,9 @@
       }
     }
 
+    panel.hidden = false;
+    panel.style.display = 'block';
+
     const normalized = normalizePath(path);
     const partButtons = Array.from(panel.querySelectorAll('.admin-part-btn'));
     partButtons.forEach(btn => {
@@ -395,6 +457,7 @@
         try { autoShowThoughtsNext(); } catch (e) { /* ignore */ }
         try { autoShowSkills(); } catch (e) { /* ignore */ }
         try { ensureAdminSectionNavigator(); } catch (e) { /* ignore */ }
+        setTimeout(() => { try { ensureAdminSectionNavigator(); } catch (e) { /* ignore */ } }, 300);
       } else {
         alert('Incorrect admin code.');
       }
@@ -664,5 +727,6 @@
     autoShowThoughtsNext();
     autoShowSkills();
     ensureAdminSectionNavigator();
+    setTimeout(() => { try { ensureAdminSectionNavigator(); } catch (e) { /* ignore */ } }, 300);
   });
 })();
