@@ -54,12 +54,311 @@
     return localStorage.getItem(ADMIN_KEY) === '1';
   }
 
+  function isPositiveEventsPage(pathname) {
+    return /\/pos[-_]?p[1-5]\/?$/i.test(pathname || '');
+  }
+
+  function isNegativeEventsPage(pathname) {
+    return /\/neg[-_]?p(?:10|[1-9])\/?$/i.test(pathname || '');
+  }
+
+  function isThoughtsFeelingsPage(pathname) {
+    return /\/(emo[-_]?p[1-5]|pmr[-_]?p1|journal[-_]?p[1-2]|journal[-_]option[1-2])\/?$/i.test(pathname || '');
+  }
+
+  function isSkillsPage(pathname) {
+    return /\/skill[-_]?p[1-4]\/?$/i.test(pathname || '');
+  }
+
+  function normalizePath(pathname) {
+    const path = pathname || '';
+    return path.endsWith('/') ? path : `${path}/`;
+  }
+
+  function buildSequentialPages(prefix, count) {
+    return Array.from({ length: count }, (_, idx) => ({
+      label: String(idx + 1),
+      target: `/accounts/${prefix}${idx + 1}/`
+    }));
+  }
+
+  function getCurrentIndex(pathname, pages) {
+    const normalized = normalizePath(pathname);
+    const idx = pages.findIndex(p => p.target === normalized);
+    return idx >= 0 ? idx + 1 : 1;
+  }
+
+  function getJumpConfig(pathname) {
+    if (isPositiveEventsPage(pathname)) {
+      const pages = buildSequentialPages('pos-p', 5);
+      return {
+        section: 'positive',
+        title: 'Admin Jump: Positive',
+        pages,
+        currentIndex: getCurrentIndex(pathname, pages)
+      };
+    }
+
+    if (isNegativeEventsPage(pathname)) {
+      const pages = buildSequentialPages('neg-p', 10);
+      return {
+        section: 'negative',
+        title: 'Admin Jump: Negative',
+        pages,
+        currentIndex: getCurrentIndex(pathname, pages)
+      };
+    }
+
+    if (isThoughtsFeelingsPage(pathname)) {
+      const pages = [
+        { label: '1', target: '/accounts/emo-p1/' },
+        { label: '2', target: '/accounts/emo-p2/' },
+        { label: '3', target: '/accounts/emo-p3/' },
+        { label: '4', target: '/accounts/emo-p4/' },
+        { label: '5', target: '/accounts/emo-p5/' },
+        { label: '6', target: '/accounts/pmr-p1/' },
+        { label: '7', target: '/accounts/journal-p1/' },
+        { label: '8', target: '/accounts/journal-p2/' },
+        { label: '9', target: '/accounts/journal-option1/' },
+        { label: '10', target: '/accounts/journal-option2/' }
+      ];
+
+      return {
+        section: 'thoughts',
+        title: 'Admin Jump: Thoughts',
+        pages,
+        currentIndex: getCurrentIndex(pathname, pages)
+      };
+    }
+
+    if (isSkillsPage(pathname)) {
+      const pages = buildSequentialPages('skill-p', 4);
+      return {
+        section: 'skills',
+        title: 'Admin Jump: Skills',
+        pages,
+        currentIndex: getCurrentIndex(pathname, pages)
+      };
+    }
+
+    return null;
+  }
+
+  function openSectionJumpPrompt() {
+    const path = window.location.pathname || '';
+    const jumpConfig = getJumpConfig(path);
+    if (!jumpConfig) {
+      alert('Quick jump is available on Positive, Negative, Thoughts and Feelings, or Skills pages only.');
+      return;
+    }
+
+    const input = window.prompt(
+      `Jump to part (1-${jumpConfig.pages.length}):`,
+      String(jumpConfig.currentIndex || 1)
+    );
+    if (!input) return;
+
+    const part = String(input).trim();
+    const partNumber = Number(part);
+    if (!Number.isInteger(partNumber) || partNumber < 1 || partNumber > jumpConfig.pages.length) {
+      alert(`Please enter a number from 1 to ${jumpConfig.pages.length}.`);
+      return;
+    }
+
+    const target = jumpConfig.pages[partNumber - 1].target;
+    if (target !== normalizePath(path)) {
+      window.location.href = target;
+    }
+  }
+
+  function ensureAdminNavigatorStyles() {
+    if (document.getElementById('admin-nav-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'admin-nav-styles';
+    style.textContent = `
+      #admin-section-navigator {
+        position: fixed;
+        left: 16px;
+        top: 16px;
+        z-index: 1400;
+        background: #ffffff;
+        border: 1px solid #d9cfee;
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
+        padding: 8px;
+        width: fit-content;
+        max-width: calc(100vw - 24px);
+        overflow-x: auto;
+        font-family: 'Work Sans', sans-serif;
+        box-sizing: border-box;
+      }
+
+      #admin-section-navigator.in-sidebar {
+        position: static;
+        left: auto;
+        top: auto;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        margin: 6px 0 12px;
+        padding: 7px;
+      }
+
+      #admin-section-navigator .admin-nav-title {
+        font-size: 11px;
+        color: #5a3e8c;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      #admin-section-navigator .admin-nav-row {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: 100%;
+      }
+
+      #admin-section-navigator.multi-row-layout .admin-nav-row {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+
+      #admin-section-navigator .admin-part-btn {
+        border: 1px solid #cbbde5;
+        border-radius: 6px;
+        padding: 4px;
+        min-width: 34px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #4a3474;
+        background: #f9f6ff;
+        cursor: pointer;
+        box-sizing: border-box;
+      }
+
+      #admin-section-navigator.multi-row-layout .admin-part-btn {
+        min-width: 0;
+        width: 100%;
+      }
+
+      #admin-section-navigator .admin-part-btn:hover {
+        background: #ece2ff;
+      }
+
+      #admin-section-navigator .admin-part-btn.active {
+        border-color: #5a3e8c;
+        color: #fff;
+        background: #5a3e8c;
+      }
+
+      @media (max-width: 640px) {
+        #admin-section-navigator {
+          left: 10px;
+          top: 10px;
+          max-width: calc(100vw - 16px);
+          padding: 7px;
+        }
+
+        #admin-section-navigator.in-sidebar {
+          left: auto;
+          top: auto;
+          max-width: 100%;
+        }
+
+        #admin-section-navigator .admin-nav-title {
+          font-size: 10px;
+        }
+
+        #admin-section-navigator .admin-part-btn {
+          font-size: 10px;
+          padding: 4px;
+        }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  function removeAdminSectionNavigator() {
+    const panel = document.getElementById('admin-section-navigator');
+    if (panel) panel.remove();
+  }
+
+  function ensureAdminSectionNavigator() {
+    const path = window.location.pathname || '';
+    const jumpConfig = getJumpConfig(path);
+
+    if (!isAdminUnlocked() || !jumpConfig) {
+      removeAdminSectionNavigator();
+      return;
+    }
+
+    ensureAdminNavigatorStyles();
+
+    let panel = document.getElementById('admin-section-navigator');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'admin-section-navigator';
+      document.body.appendChild(panel);
+    }
+
+    if (panel.dataset.section !== jumpConfig.section) {
+      const buttonsMarkup = jumpConfig.pages
+        .map(page => `<button class="admin-part-btn" data-target="${page.target}" type="button">${page.label}</button>`)
+        .join('');
+
+      panel.innerHTML = `
+        <div class="admin-nav-title">${jumpConfig.title}</div>
+        <div class="admin-nav-row">${buttonsMarkup}</div>
+      `;
+      panel.dataset.section = jumpConfig.section;
+
+      const partButtons = Array.from(panel.querySelectorAll('.admin-part-btn'));
+      partButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.target || '';
+          if (target && target !== window.location.pathname) {
+            window.location.href = target;
+          }
+        });
+      });
+    }
+
+    panel.classList.toggle('multi-row-layout', jumpConfig.pages.length > 5);
+
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarHeading = sidebar ? sidebar.querySelector('h1, h2, h3, h4, h5, h6') : null;
+
+    if (sidebar) {
+      panel.classList.add('in-sidebar');
+      if (sidebarHeading && panel.previousElementSibling !== sidebarHeading) {
+        sidebarHeading.insertAdjacentElement('afterend', panel);
+      } else if (panel.parentElement !== sidebar) {
+        sidebar.prepend(panel);
+      }
+    } else {
+      panel.classList.remove('in-sidebar');
+      if (panel.parentElement !== document.body) {
+        document.body.appendChild(panel);
+      }
+    }
+
+    const normalized = normalizePath(path);
+    const partButtons = Array.from(panel.querySelectorAll('.admin-part-btn'));
+    partButtons.forEach(btn => {
+      const isCurrent = (btn.dataset.target || '') === normalized;
+      btn.classList.toggle('active', isCurrent);
+      btn.title = isCurrent ? 'Current part' : `Go to Part ${btn.textContent}`;
+    });
+  }
+
   function setupButton(btn) {
     function updateUI() {
       if (isAdminUnlocked()) {
         btn.textContent = '🔒';
-        btn.title = 'Admin unlocked';
-        btn.disabled = true;
+        btn.title = 'Admin unlocked (click to jump pages)';
+        btn.disabled = false;
       } else {
         btn.textContent = '🔑';
         btn.title = 'Enter admin code';
@@ -70,6 +369,11 @@
     updateUI();
 
     btn.addEventListener('click', () => {
+      if (isAdminUnlocked()) {
+        openSectionJumpPrompt();
+        return;
+      }
+
       const code = window.prompt('Enter admin code to unlock progress:');
       if (!code) return;
       if (code === DEFAULT_CODE) {
@@ -90,6 +394,7 @@
         try { autoShowNegNext(); } catch (e) { /* ignore */ }
         try { autoShowThoughtsNext(); } catch (e) { /* ignore */ }
         try { autoShowSkills(); } catch (e) { /* ignore */ }
+        try { ensureAdminSectionNavigator(); } catch (e) { /* ignore */ }
       } else {
         alert('Incorrect admin code.');
       }
@@ -358,5 +663,6 @@
     autoShowNegNext();
     autoShowThoughtsNext();
     autoShowSkills();
+    ensureAdminSectionNavigator();
   });
 })();

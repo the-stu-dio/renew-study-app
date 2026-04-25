@@ -17,5 +17,5 @@ pip install -r requirements.txt
 
 ### 3. Start the development server
 ```bash
-python3 manage.py runserver
+.venv/bin/python manage.py runserver
 ```
