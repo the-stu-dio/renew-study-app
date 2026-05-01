@@ -496,6 +496,12 @@
             <div class="button-title">Download Summary Sheet</div>
             <div class="button-description">Download your RENEW Summary as a Word doc</div>
         </a>
+
+        <a href="#" onclick="viewBeautifulSummary(event)" class="hub-button" style="border-color: #7c3aed;">
+            <div class="button-icon">🎨</div>
+            <div class="button-title">Beautiful Summary</div>
+            <div class="button-description">Open a polished summary page and save as PDF</div>
+        </a>
     </div>
 </div>
 
@@ -629,9 +635,8 @@ window.onclick = function(event) {
     }
 }
 
-// Sync localStorage data to server before downloading summary
-async function downloadSummary(e) {
-    e.preventDefault();
+// Sync localStorage data to server before generating summary exports/previews
+async function syncSummaryData() {
 
     // Sync Iron & Sponge
     const ironSponge = localStorage.getItem('ironSpongeResults');
@@ -669,7 +674,20 @@ async function downloadSummary(e) {
         }
     } catch (err) { console.error('Posplan sync error:', err); }
 
+}
+
+async function downloadSummary(e) {
+    e.preventDefault();
+    await syncSummaryData();
     window.location.href = "{% url 'download_summary' %}";
+}
+
+async function viewBeautifulSummary(e) {
+    e.preventDefault();
+    await syncSummaryData();
+
+    const summaryUrl = "{% url 'beautiful_summary' %}";
+    window.location.href = summaryUrl;
 }
 </script>
 {% endblock %}

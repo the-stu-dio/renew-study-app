@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RENEW Beautiful Summary</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #e9e6f7;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .topbar {
+      max-width: 1060px;
+      margin: 0 auto 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .topbar-title {
+      color: #3f2f76;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .action-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+      border: 1px solid #c8b8f0;
+      color: #3f2f76;
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .action-btn:hover {
+      background: #f5f0ff;
+    }
+
+    .action-link {
+      text-decoration: none;
+    }
+
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+        animation: none !important;
+      }
+      body {
+        background: white;
+        padding: 0;
+        margin: 0;
+      }
+      .topbar {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-title">RENEW Beautiful Summary</div>
+    <div class="action-group">
+      <a class="action-btn action-link" href="{% url 'hub' %}">Back to Hub</a>
+      <button class="action-btn" type="button" onclick="downloadSummaryPdf()">Download PDF</button>
+    </div>
+  </div>
+
+  {% include 'accounts/qualtrics_summary.html' %}
+
+  <script>
+    async function downloadSummaryPdf() {
+      const summaryElement = document.querySelector('.summary-shell');
+
+      if (!summaryElement) {
+        alert('Summary content is not available yet.');
+        return;
+      }
+
+      if (typeof html2pdf === 'undefined') {
+        alert('PDF export is temporarily unavailable. Please try again.');
+        return;
+      }
+
+      const options = {
+        margin: 0.25,
+        filename: 'RENEW-Beautiful-Summary.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+      };
+
+      await html2pdf().set(options).from(summaryElement).save();
+    }
+  </script>
+</body>
+</html>

@@ -84,4 +84,8 @@ urlpatterns = [
     # Summary sheet download
     path('download-summary/', views.download_summary, name='download_summary'),
     path('download-summary/<str:session_key>/', views.download_summary, name='download_summary_session'),
+    path('summary-beautiful/', views.beautiful_summary_view, name='beautiful_summary'),
+    path('summary-beautiful/<str:session_key>/', views.beautiful_summary_view, name='beautiful_summary_session'),
+    path('download-summary-beautiful/', views.download_beautiful_summary, name='download_beautiful_summary'),
+    path('download-summary-beautiful/<str:session_key>/', views.download_beautiful_summary, name='download_beautiful_summary_session'),
 ]

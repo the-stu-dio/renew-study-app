@@ -1,212 +1,667 @@
-<!-- accounts/templates/accounts/qualtrics_summary.html -->
-<div style="max-width: 800px; margin: 0 auto; font-family: 'Arial', sans-serif; background-color: #f4f0fb; padding: 20px;">
-    
-    <!-- Header -->
-    <div style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); text-align: center;">
-        <h1 style="font-size: 2rem; color: #5a3e8c; margin-bottom: 10px; font-weight: 700;">{{ nickname }}'s RENEW Summary</h1>
-        <p style="color: #666; margin: 0;">Participant ID: {{ participant_id }}</p>
-        <p style="color: #666; margin: 5px 0 0 0;">Completed: {{ sections_completed_count }}/4 sections</p>
-    </div>
+<div class="summary-shell">
+  <style>
+    :root {
+      --bg-0: #f7f4ff;
+      --bg-1: #eefaf6;
+      --ink: #1f1e3a;
+      --muted: #656386;
+      --card: #ffffff;
+      --line: #e4dcff;
+      --brand: #5f45ad;
+      --brand-soft: #efe8ff;
+      --positive: #16a34a;
+      --negative: #dc2626;
+      --journal: #7c3aed;
+      --plan: #0ea5e9;
+      --shadow: 0 14px 34px rgba(44, 34, 89, 0.14);
+      --radius-lg: 22px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
 
-    <!-- Positive Events Section -->
-    {% if positive_events %}
-    <div style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
-        <h2 style="font-size: 1.8rem; color: #5a3e8c; margin-bottom: 20px; font-weight: 600;">🌟 Positive Events Responses</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-            {% if positive_events.recreation %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
-                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🏃 Recreational</div>
-                <div style="line-height: 1.6; color: #333;">{{ positive_events.recreation }}</div>
-            </div>
-            {% endif %}
-            {% if positive_events.achievement %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
-                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🏆 Achievement</div>
-                <div style="line-height: 1.6; color: #333;">{{ positive_events.achievement }}</div>
-            </div>
-            {% endif %}
-            {% if positive_events.relationship %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
-                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">❤️ Relationship</div>
-                <div style="line-height: 1.6; color: #333;">{{ positive_events.relationship }}</div>
-            </div>
-            {% endif %}
-            {% if positive_events.other %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
-                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">✨ Other</div>
-                <div style="line-height: 1.6; color: #333;">{{ positive_events.other }}</div>
-            </div>
-            {% endif %}
+    * {
+      box-sizing: border-box;
+    }
+
+    .summary-shell {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 28px 18px 42px;
+      color: var(--ink);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background:
+        radial-gradient(circle at 94% 8%, rgba(95, 69, 173, 0.18), transparent 44%),
+        radial-gradient(circle at 10% 92%, rgba(14, 165, 233, 0.14), transparent 45%),
+        linear-gradient(160deg, var(--bg-0), var(--bg-1));
+      border-radius: 26px;
+    }
+
+    .hero {
+      position: relative;
+      background: linear-gradient(135deg, #5f45ad 0%, #7b63da 44%, #4a91e2 100%);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 30px 28px 26px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 22px;
+    }
+
+    .hero::before,
+    .hero::after {
+      content: '';
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      filter: blur(0.3px);
+    }
+
+    .hero::before {
+      width: 260px;
+      height: 260px;
+      top: -130px;
+      right: -70px;
+    }
+
+    .hero::after {
+      width: 180px;
+      height: 180px;
+      left: -60px;
+      bottom: -88px;
+    }
+
+    .hero-kicker {
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      opacity: 0.88;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .hero-title {
+      margin: 0;
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 3.6vw, 2.95rem);
+      line-height: 1.08;
+    }
+
+    .hero-subtitle {
+      margin: 10px 0 0;
+      max-width: 680px;
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .hero-meta {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #fff;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .progress-card {
+      margin-bottom: 20px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      box-shadow: 0 6px 18px rgba(95, 69, 173, 0.08);
+    }
+
+    .progress-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .progress-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .progress-value {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--brand);
+    }
+
+    .track {
+      width: 100%;
+      background: #ece7ff;
+      border-radius: 999px;
+      height: 12px;
+      overflow: hidden;
+      border: 1px solid #e0d6ff;
+    }
+
+    .bar {
+      height: 100%;
+      width: {% widthratio sections_completed_count 4 100 %}%;
+      background: linear-gradient(90deg, #4a91e2, #6b57cf, #7c3aed);
+      border-radius: 999px;
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 10px 26px rgba(32, 22, 78, 0.08);
+      animation: riseIn 0.5s ease-out both;
+    }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: clamp(1.25rem, 2.4vw, 1.65rem);
+      line-height: 1.2;
+      font-weight: 800;
+      color: var(--ink);
+    }
+
+    .section-tag {
+      border-radius: 999px;
+      padding: 6px 11px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .tag-positive { color: #166534; background: #dcfce7; border-color: #86efac; }
+    .tag-negative { color: #7f1d1d; background: #fee2e2; border-color: #fca5a5; }
+    .tag-journal { color: #581c87; background: #f3e8ff; border-color: #d8b4fe; }
+    .tag-plan { color: #0c4a6e; background: #e0f2fe; border-color: #7dd3fc; }
+    .tag-quiz { color: #3f3f46; background: #f4f4f5; border-color: #d4d4d8; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .item {
+      grid-column: span 6;
+      border-radius: var(--radius-md);
+      background: #faf9ff;
+      border: 1px solid #ede7ff;
+      padding: 14px;
+    }
+
+    .item-full {
+      grid-column: 1 / -1;
+    }
+
+    .item-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--brand);
+    }
+
+    .item-text {
+      margin: 0;
+      color: #2e2b4f;
+      line-height: 1.65;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .result-pill {
+      font-size: 12px;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-weight: 700;
+      border: 1px solid;
+    }
+
+    .pill-iron { background: #dbeafe; border-color: #93c5fd; color: #1d4ed8; }
+    .pill-sponge { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+    .pill-balanced { background: #e5e7eb; border-color: #cbd5e1; color: #334155; }
+
+    .empty-note {
+      border: 1px dashed #d1c4f8;
+      background: #f8f6ff;
+      color: #6d66a1;
+      border-radius: var(--radius-md);
+      padding: 14px;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 840px) {
+      .item {
+        grid-column: 1 / -1;
+      }
+      .summary-shell {
+        padding: 16px 12px 28px;
+        border-radius: 16px;
+      }
+      .section {
+        padding: 16px;
+      }
+      .hero {
+        padding: 22px 16px 18px;
+      }
+    }
+
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color-adjust: exact;
+         animation: none !important;
+      }
+      body {
+        background: white;
+         margin: 0;
+         padding: 0;
+      }
+      .summary-shell {
+        max-width: 100%;
+        background: white;
+        border-radius: 0;
+          padding: 0;
+          margin: 0;
+        }
+        .progress-card {
+          margin-bottom: 18px;
+      }
+      .section {
+          margin-bottom: 18px;
+        break-inside: auto;
+        page-break-inside: auto;
+      }
+      .hero,
+      .progress-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+    }
+
+    @keyframes riseIn {
+      from {
+        transform: translateY(8px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+
+  <header class="hero">
+    <div class="hero-kicker">RENEW Reflection Portfolio</div>
+    <h1 class="hero-title">{{ nickname }}'s Summary Sheet</h1>
+    <p class="hero-subtitle">
+      A snapshot of strengths, stressors, reflection insights, and your personalized activity plan.
+    </p>
+    <div class="hero-meta">
+      <span class="chip">Sections complete: {{ sections_completed_count }}/4</span>
+    </div>
+  </header>
+
+  <section class="progress-card">
+    <div class="progress-row">
+      <div class="progress-label">Overall Completion</div>
+      <div class="progress-value">{% widthratio sections_completed_count 4 100 %}%</div>
+    </div>
+    <div class="track" aria-hidden="true">
+      <div class="bar"></div>
+    </div>
+  </section>
+
+  {% if positive_events %}
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">Positive Events</h2>
+      <span class="section-tag tag-positive">Strength Moments</span>
+    </div>
+    <div class="grid">
+      {% if positive_events.recreation %}
+      <article class="item">
+        <div class="item-label">🏃 Recreational</div>
+        <p class="item-text">{{ positive_events.recreation }}</p>
+      </article>
+      {% endif %}
+      {% if positive_events.achievement %}
+      <article class="item">
+        <div class="item-label">🏆 Achievement</div>
+        <p class="item-text">{{ positive_events.achievement }}</p>
+      </article>
+      {% endif %}
+      {% if positive_events.relationship %}
+      <article class="item">
+        <div class="item-label">❤️ Relationship</div>
+        <p class="item-text">{{ positive_events.relationship }}</p>
+      </article>
+      {% endif %}
+      {% if positive_events.other %}
+      <article class="item">
+        <div class="item-label">✨ Other Wins</div>
+        <p class="item-text">{{ positive_events.other }}</p>
+      </article>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if negative_events %}
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">Negative Events</h2>
+      <span class="section-tag tag-negative">Stress Landscape</span>
+    </div>
+    <div class="grid">
+      {% if negative_events.adverse %}
+      <article class="item">
+        <div class="item-label">⚠️ Adverse Events</div>
+        <p class="item-text">{{ negative_events.adverse }}</p>
+      </article>
+      {% endif %}
+      {% if negative_events.neighbor %}
+      <article class="item">
+        <div class="item-label">🏘️ Neighborhood Issues</div>
+        <p class="item-text">{{ negative_events.neighbor }}</p>
+      </article>
+      {% endif %}
+      {% if negative_events.discriminate %}
+      <article class="item">
+        <div class="item-label">🚫 Discrimination</div>
+        <p class="item-text">{{ negative_events.discriminate }}</p>
+      </article>
+      {% endif %}
+      {% if negative_events.stress %}
+      <article class="item">
+        <div class="item-label">😰 Stressors & Hassles</div>
+        <p class="item-text">{{ negative_events.stress }}</p>
+      </article>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if iron_sponge %}
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">Iron & Sponge Reflection</h2>
+      <span class="section-tag tag-quiz">Domain Patterns</span>
+    </div>
+    <div class="grid">
+      {% if iron_sponge.school_type %}
+      <article class="item">
+        <div class="item-label">🎓 School Domain</div>
+        <div class="pill-row">
+          <span class="result-pill {% if iron_sponge.school_type == 'iron' %}pill-iron{% elif iron_sponge.school_type == 'sponge' %}pill-sponge{% else %}pill-balanced{% endif %}">
+            {% if iron_sponge.school_type == 'iron' %}Iron-Like{% elif iron_sponge.school_type == 'sponge' %}Sponge-Like{% else %}Balanced{% endif %}
+          </span>
         </div>
-    </div>
-    {% endif %}
+        <p class="item-text">Iron: {{ iron_sponge.school_iron_count|default:0 }} | Sponge: {{ iron_sponge.school_sponge_count|default:0 }} | Neither: {{ iron_sponge.school_neither_count|default:0 }}</p>
+      </article>
+      {% endif %}
 
-    <!-- Negative Events Section -->
-    {% if negative_events %}
-    <div style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
-        <h2 style="font-size: 1.8rem; color: #2c3e50; margin-bottom: 20px; font-weight: 600;">⚠️ Negative Events Responses</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-            {% if negative_events.adverse %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #2c3e50;">
-                <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px;">⚠️ Adverse Events</div>
-                <div style="line-height: 1.6; color: #333;">{{ negative_events.adverse }}</div>
-            </div>
-            {% endif %}
-            {% if negative_events.neighbor %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #2c3e50;">
-                <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px;">🏘️ Neighborhood Issues</div>
-                <div style="line-height: 1.6; color: #333;">{{ negative_events.neighbor }}</div>
-            </div>
-            {% endif %}
-            {% if negative_events.discriminate %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #2c3e50;">
-                <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px;">🚫 Discrimination</div>
-                <div style="line-height: 1.6; color: #333;">{{ negative_events.discriminate }}</div>
-            </div>
-            {% endif %}
-            {% if negative_events.stress %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #2c3e50;">
-                <div style="font-weight: 600; color: #2c3e50; margin-bottom: 10px;">😰 Stressors & Hassles</div>
-                <div style="line-height: 1.6; color: #333;">{{ negative_events.stress }}</div>
-            </div>
-            {% endif %}
+      {% if iron_sponge.family_type %}
+      <article class="item">
+        <div class="item-label">🏠 Family Domain</div>
+        <div class="pill-row">
+          <span class="result-pill {% if iron_sponge.family_type == 'iron' %}pill-iron{% elif iron_sponge.family_type == 'sponge' %}pill-sponge{% else %}pill-balanced{% endif %}">
+            {% if iron_sponge.family_type == 'iron' %}Iron-Like{% elif iron_sponge.family_type == 'sponge' %}Sponge-Like{% else %}Balanced{% endif %}
+          </span>
         </div>
-    </div>
-    {% endif %}
+        <p class="item-text">Iron: {{ iron_sponge.family_iron_count|default:0 }} | Sponge: {{ iron_sponge.family_sponge_count|default:0 }} | Neither: {{ iron_sponge.family_neither_count|default:0 }}</p>
+      </article>
+      {% endif %}
 
-    <!-- Iron & Sponge Quiz Results -->
-    {% if iron_sponge %}
-    <div style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
-        <h2 style="font-size: 1.8rem; color: #6c757d; margin-bottom: 20px; font-weight: 600;">🧽 Iron & Sponge Quiz Results</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-            {% if iron_sponge.school_type %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #6c757d; text-align: center;">
-                <div style="font-weight: 600; color: #6c757d; margin-bottom: 10px;">🎓 School Domain</div>
-                <div style="display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: 600; margin-bottom: 10px; font-size: 0.9em; 
-                    {% if iron_sponge.school_type == 'iron' %}background: linear-gradient(135deg, #007bff, #0056b3); color: white;
-                    {% elif iron_sponge.school_type == 'sponge' %}background: linear-gradient(135deg, #ffc107, #e0a800); color: white;
-                    {% else %}background: linear-gradient(135deg, #6c757d, #495057); color: white;{% endif %}">
-                    {% if iron_sponge.school_type == 'iron' %}🛡️ Iron-Like
-                    {% elif iron_sponge.school_type == 'sponge' %}🧽 Sponge-Like
-                    {% else %}⚖️ Balanced{% endif %}
-                </div>
-                <div style="font-size: 0.85em; color: #666;">
-                    Iron: {{ iron_sponge.school_iron_count|default:0 }} | 
-                    Sponge: {{ iron_sponge.school_sponge_count|default:0 }} | 
-                    Neither: {{ iron_sponge.school_neither_count|default:0 }}
-                </div>
-            </div>
-            {% endif %}
-            {% if iron_sponge.family_type %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #6c757d; text-align: center;">
-                <div style="font-weight: 600; color: #6c757d; margin-bottom: 10px;">🏠 Family Domain</div>
-                <div style="display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: 600; margin-bottom: 10px; font-size: 0.9em;
-                    {% if iron_sponge.family_type == 'iron' %}background: linear-gradient(135deg, #007bff, #0056b3); color: white;
-                    {% elif iron_sponge.family_type == 'sponge' %}background: linear-gradient(135deg, #ffc107, #e0a800); color: white;
-                    {% else %}background: linear-gradient(135deg, #6c757d, #495057); color: white;{% endif %}">
-                    {% if iron_sponge.family_type == 'iron' %}🛡️ Iron-Like
-                    {% elif iron_sponge.family_type == 'sponge' %}🧽 Sponge-Like
-                    {% else %}⚖️ Balanced{% endif %}
-                </div>
-                <div style="font-size: 0.85em; color: #666;">
-                    Iron: {{ iron_sponge.family_iron_count|default:0 }} | 
-                    Sponge: {{ iron_sponge.family_sponge_count|default:0 }} | 
-                    Neither: {{ iron_sponge.family_neither_count|default:0 }}
-                </div>
-            </div>
-            {% endif %}
-            {% if iron_sponge.friend_type %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #6c757d; text-align: center;">
-                <div style="font-weight: 600; color: #6c757d; margin-bottom: 10px;">👥 Friend Domain</div>
-                <div style="display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: 600; margin-bottom: 10px; font-size: 0.9em;
-                    {% if iron_sponge.friend_type == 'iron' %}background: linear-gradient(135deg, #007bff, #0056b3); color: white;
-                    {% elif iron_sponge.friend_type == 'sponge' %}background: linear-gradient(135deg, #ffc107, #e0a800); color: white;
-                    {% else %}background: linear-gradient(135deg, #6c757d, #495057); color: white;{% endif %}">
-                    {% if iron_sponge.friend_type == 'iron' %}🛡️ Iron-Like
-                    {% elif iron_sponge.friend_type == 'sponge' %}🧽 Sponge-Like
-                    {% else %}⚖️ Balanced{% endif %}
-                </div>
-                <div style="font-size: 0.85em; color: #666;">
-                    Iron: {{ iron_sponge.friend_iron_count|default:0 }} | 
-                    Sponge: {{ iron_sponge.friend_sponge_count|default:0 }} | 
-                    Neither: {{ iron_sponge.friend_neither_count|default:0 }}
-                </div>
-            </div>
-            {% endif %}
+      {% if iron_sponge.friend_type %}
+      <article class="item">
+        <div class="item-label">👥 Friend Domain</div>
+        <div class="pill-row">
+          <span class="result-pill {% if iron_sponge.friend_type == 'iron' %}pill-iron{% elif iron_sponge.friend_type == 'sponge' %}pill-sponge{% else %}pill-balanced{% endif %}">
+            {% if iron_sponge.friend_type == 'iron' %}Iron-Like{% elif iron_sponge.friend_type == 'sponge' %}Sponge-Like{% else %}Balanced{% endif %}
+          </span>
         </div>
+        <p class="item-text">Iron: {{ iron_sponge.friend_iron_count|default:0 }} | Sponge: {{ iron_sponge.friend_sponge_count|default:0 }} | Neither: {{ iron_sponge.friend_neither_count|default:0 }}</p>
+      </article>
+      {% endif %}
     </div>
-    {% endif %}
+  </section>
+  {% endif %}
 
-    <!-- Journal Responses -->
-    {% if journal_entries %}
-    <div style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
-        <h2 style="font-size: 1.8rem; color: #5a3e8c; margin-bottom: 20px; font-weight: 600;">📝 Journal Responses</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-            {% if journal_entries.things_to_change %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
-                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🎯 Things I Want to Work On</div>
-                <div style="line-height: 1.6; color: #333;">{{ journal_entries.things_to_change }}</div>
-            </div>
-            {% endif %}
-            {% if journal_entries.answer1 %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
-                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🌟 An experience that changed you</div>
-                <div style="line-height: 1.6; color: #333;">{{ journal_entries.answer1 }}</div>
-            </div>
-            {% endif %}
-            {% if journal_entries.answer2 %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
-                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🌟 How your thinking has changed</div>
-                <div style="line-height: 1.6; color: #333;">{{ journal_entries.answer2 }}</div>
-            </div>
-            {% endif %}
-            {% if journal_entries.answer3 %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
-                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🌟 Feelings or triggers you notice</div>
-                <div style="line-height: 1.6; color: #333;">{{ journal_entries.answer3 }}</div>
-            </div>
-            {% endif %}
-            {% if journal_entries.answer4 %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #5a3e8c;">
-                <div style="font-weight: 600; color: #5a3e8c; margin-bottom: 10px;">🌟 How it felt to reflect on it</div>
-                <div style="line-height: 1.6; color: #333;">{{ journal_entries.answer4 }}</div>
-            </div>
-            {% endif %}
+  {% if journal_entries %}
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">Journal Reflections</h2>
+      <span class="section-tag tag-journal">Story Fragments</span>
+    </div>
+    <div class="grid">
+      {% if journal_entries.things_to_change %}
+      <article class="item item-full">
+        <div class="item-label">🎯 Things I Want to Work On</div>
+        <p class="item-text">{{ journal_entries.things_to_change }}</p>
+      </article>
+      {% endif %}
+      {% if journal_entries.answer1 %}
+      <article class="item">
+        <div class="item-label">🌟 Experience That Changed You</div>
+        <p class="item-text">{{ journal_entries.answer1 }}</p>
+      </article>
+      {% endif %}
+      {% if journal_entries.answer2 %}
+      <article class="item">
+        <div class="item-label">🧠 Thinking Shift</div>
+        <p class="item-text">{{ journal_entries.answer2 }}</p>
+      </article>
+      {% endif %}
+      {% if journal_entries.answer3 %}
+      <article class="item">
+        <div class="item-label">🎭 Feelings or Triggers</div>
+        <p class="item-text">{{ journal_entries.answer3 }}</p>
+      </article>
+      {% endif %}
+      {% if journal_entries.answer4 %}
+      <article class="item">
+        <div class="item-label">💬 Reflection Process</div>
+        <p class="item-text">{{ journal_entries.answer4 }}</p>
+      </article>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if activity_plan %}
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">Positive Activity Plan</h2>
+      <span class="section-tag tag-plan">Action Blueprint</span>
+    </div>
+    <div class="grid">
+      {% if activity_plan.who %}
+      <article class="item">
+        <div class="item-label">👥 Who</div>
+        <p class="item-text">{{ activity_plan.who.response|default:activity_plan.who.category }}</p>
+      </article>
+      {% endif %}
+      {% if activity_plan.where %}
+      <article class="item">
+        <div class="item-label">📍 Where</div>
+        <p class="item-text">{{ activity_plan.where.response|default:activity_plan.where.category }}</p>
+      </article>
+      {% endif %}
+      {% if activity_plan.what %}
+      <article class="item">
+        <div class="item-label">🎯 What</div>
+        <p class="item-text">{{ activity_plan.what.activity }}</p>
+      </article>
+      {% endif %}
+      {% if activity_plan.when %}
+      <article class="item">
+        <div class="item-label">⏰ When</div>
+        <p class="item-text">{{ activity_plan.when.timing }}</p>
+      </article>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if implementation_feedback or pmr_feedback.response %}
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">Implementation Considerations</h2>
+      <span class="section-tag tag-quiz">Feedback Insights</span>
+    </div>
+    <div class="grid">
+      {% if implementation_feedback.psychoeducation %}
+      <article class="item item-full" style="background: #f5f0ff; border: 1px solid #ede7ff;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span style="font-size: 20px;">📚</span>
+          <div class="item-label" style="margin: 0;">Psychoeducation Feedback</div>
         </div>
-    </div>
-    {% endif %}
-
-    <!-- Activity Plan -->
-    {% if activity_plan %}
-    <div style="background: white; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
-        <h2 style="font-size: 1.8rem; color: #28a745; margin-bottom: 20px; font-weight: 600;">🌟 Your Positive Activity Plan</h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-            {% if activity_plan.who %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #28a745;">
-                <div style="font-weight: 600; color: #28a745; margin-bottom: 10px;">👥 Who</div>
-                <div style="line-height: 1.6; color: #333;">{{ activity_plan.who.response|default:activity_plan.who.category }}</div>
-            </div>
-            {% endif %}
-            {% if activity_plan.where %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #28a745;">
-                <div style="font-weight: 600; color: #28a745; margin-bottom: 10px;">📍 Where</div>
-                <div style="line-height: 1.6; color: #333;">{{ activity_plan.where.response|default:activity_plan.where.category }}</div>
-            </div>
-            {% endif %}
-            {% if activity_plan.what %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #28a745;">
-                <div style="font-weight: 600; color: #28a745; margin-bottom: 10px;">🎯 What</div>
-                <div style="line-height: 1.6; color: #333;">{{ activity_plan.what.activity }}</div>
-            </div>
-            {% endif %}
-            {% if activity_plan.when %}
-            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; border-left: 4px solid #28a745;">
-                <div style="font-weight: 600; color: #28a745; margin-bottom: 10px;">⏰ When</div>
-                <div style="line-height: 1.6; color: #333;">{{ activity_plan.when.timing }}</div>
-            </div>
-            {% endif %}
+        <p class="item-text" style="margin: 0 0 8px 0; color: #1f1e3a; font-weight: 600;">How did {{ nickname }} feel about psychoeducation?</p>
+        <p class="item-text" style="margin: 0; color: #7c3aed; font-style: italic; font-weight: 500; line-height: 1.6;">{{ implementation_feedback.psychoeducation }}</p>
+      </article>
+      {% endif %}
+      {% if pmr_feedback.response %}
+      <article class="item item-full" style="background: #f5f0ff; border: 1px solid #ede7ff;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span style="font-size: 20px;">😌</span>
+          <div class="item-label" style="margin: 0;">Progressive Muscle Relaxation Feedback</div>
         </div>
+        <p class="item-text" style="margin: 0 0 8px 0; color: #1f1e3a; font-weight: 600;">{{ pmr_feedback.question }}</p>
+        <p class="item-text" style="margin: 0; color: #7c3aed; font-style: italic; font-weight: 500; line-height: 1.6;">{{ pmr_feedback.response }}</p>
+      </article>
+      {% endif %}
+      {% if implementation_feedback.pmr_feeling %}
+      <article class="item item-full" style="background: #f5f0ff; border: 1px solid #ede7ff;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span style="font-size: 20px;">😌</span>
+          <div class="item-label" style="margin: 0;">Progressive Muscle Relaxation</div>
+        </div>
+        <p class="item-text" style="margin: 0 0 8px 0; color: #1f1e3a; font-weight: 600;">How did {{ nickname }}'s body feel after PMR?</p>
+        <p class="item-text" style="margin: 0; color: #7c3aed; font-style: italic; font-weight: 500;">{{ implementation_feedback.pmr_feeling }}</p>
+      </article>
+      {% endif %}
+      {% if implementation_feedback.pmr_again %}
+      <article class="item item-full" style="background: #f5f0ff; border: 1px solid #ede7ff;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span style="font-size: 20px;">🔄</span>
+          <div class="item-label" style="margin: 0;">Willingness to Continue</div>
+        </div>
+        <p class="item-text" style="margin: 0 0 8px 0; color: #1f1e3a; font-weight: 600;">Does {{ nickname }} want to try PMR again?</p>
+        <p class="item-text" style="margin: 0; color: #7c3aed; font-style: italic; font-weight: 500;">{{ implementation_feedback.pmr_again }}</p>
+      </article>
+      {% endif %}
     </div>
-    {% endif %}
+  </section>
+  {% endif %}
 
+  {% if attention_check %}
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">Attention Check Results</h2>
+      <span class="section-tag tag-quiz">Engagement Markers</span>
+    </div>
+    <p style="color: #656386; font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
+      Throughout RENEW, engagement with psychoeducation content was measured through attention check questions. The number of attempts reflects engagement with the material.
+    </p>
+    <div style="display: grid; gap: 14px;">
+      {% for question in attention_check %}
+      <article style="
+        background: #f3f0ff;
+        border: 1px solid #e8e0ff;
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 2px 8px rgba(95, 69, 173, 0.05);
+      ">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="
+            background: #fecccb;
+            color: #dc2626;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            flex-shrink: 0;
+          ">?</div>
+          <div style="flex: 1;">
+            <p style="
+              margin: 0 0 8px 0;
+              font-size: 12px;
+              font-weight: 800;
+              letter-spacing: 0.03em;
+              color: #5f45ad;
+              text-transform: uppercase;
+            ">Question {{ forloop.counter }}</p>
+            <p style="
+              margin: 0 0 10px 0;
+              font-size: 14px;
+              font-weight: 600;
+              color: #1f1e3a;
+              line-height: 1.5;
+            ">{{ question.text }}</p>
+            <p style="
+              margin: 0;
+              font-size: 14px;
+              font-weight: 700;
+              color: #16a34a;
+            ">{{ question.attempts }} attempt{{ question.attempts|pluralize }}</p>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if not positive_events and not negative_events and not iron_sponge and not journal_entries and not activity_plan and not implementation_feedback and not attention_check %}
+  <div class="empty-note">No summary data is available yet for this participant.</div>
+  {% endif %}
 </div>

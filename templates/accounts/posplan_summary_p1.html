@@ -103,6 +103,68 @@
       margin-bottom: 30px;
     }
 
+    .question-section {
+      background: white;
+      border-radius: 16px;
+      padding: 35px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      margin-bottom: 30px;
+      text-align: left;
+    }
+
+    .question-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #5a3e8c;
+      margin-bottom: 25px;
+      text-align: left;
+    }
+
+    .option-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .option {
+      background: #f8f9fa;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      text-align: left;
+    }
+
+    .option:hover {
+      border-color: #5a3e8c;
+      background: #f4f0fb;
+      transform: translateX(5px);
+    }
+
+    .option.selected {
+      border-color: #5a3e8c;
+      background: #e8e2f4;
+      box-shadow: 0 4px 12px rgba(90, 62, 140, 0.15);
+    }
+
+    .option input[type="radio"] {
+      width: 20px;
+      height: 20px;
+      margin-right: 15px;
+      cursor: pointer;
+      accent-color: #5a3e8c;
+    }
+
+    .option-text {
+      font-size: 1.05rem;
+      color: #333;
+      cursor: pointer;
+      flex: 1;
+    }
+
     .summary-title {
       font-size: 1.5rem;
       font-weight: 600;
@@ -406,6 +468,25 @@
           </div>
         </div>
       </div>
+
+      <div class="question-section">
+        <h3 class="question-title">Would you like us to:</h3>
+
+        <div class="option-group">
+          <div class="option" onclick="selectOption('email', event)">
+            <input type="radio" name="sharing" value="email" id="sharing_email">
+            <label for="sharing_email" class="option-text">📧 Email it to you</label>
+          </div>
+          <div class="option" onclick="selectOption('counselor', event)">
+            <input type="radio" name="sharing" value="counselor" id="sharing_counselor">
+            <label for="sharing_counselor" class="option-text">🖨️ Have your counselor print it out</label>
+          </div>
+          <div class="option" onclick="selectOption('none', event)">
+            <input type="radio" name="sharing" value="none" id="sharing_none">
+            <label for="sharing_none" class="option-text">❌ None of the above</label>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   
@@ -434,6 +515,7 @@
   <script>
     const pageId = 'posplan_summary_p1';
     let editMode = false;
+    let selectedValue = null;
     const audioPlayer = document.getElementById('audioPlayer');
     const nextButtonContainer = document.getElementById('nextButtonContainer');
     const nextButton = document.getElementById('nextButton');
@@ -530,6 +612,43 @@
       }
     }
 
+    function saveSharingResponse(value) {
+      try {
+        let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        if (!data.posplan_summary) data.posplan_summary = {};
+        data.posplan_summary.sharing = value;
+        data.posplan_summary.sharing_timestamp = Date.now();
+        localStorage.setItem('renew_study_data', JSON.stringify(data));
+        return true;
+      } catch (e) {
+        console.error('Error saving sharing response:', e);
+        return false;
+      }
+    }
+
+    function getSharingResponse() {
+      try {
+        const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        return data.posplan_summary?.sharing || null;
+      } catch (e) {
+        console.error('Error getting sharing response:', e);
+        return null;
+      }
+    }
+
+    function selectOption(value, clickEvent) {
+      selectedValue = value;
+
+      document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+      clickEvent.currentTarget.classList.add('selected');
+
+      document.getElementById('sharing_' + value).checked = true;
+      saveSharingResponse(value);
+
+      markComplete(pageId);
+      showNextButtonMotivational();
+    }
+
     // Load summary data
     function loadSummary() {
       const whoData = getPosplanResponse('who');
@@ -590,6 +709,13 @@
     // Click on summary item to edit
     document.addEventListener('DOMContentLoaded', function() {
       loadSummary();
+
+      const existingSharingResponse = getSharingResponse();
+      if (existingSharingResponse) {
+        selectedValue = existingSharingResponse;
+        document.getElementById('sharing_' + existingSharingResponse).checked = true;
+        document.querySelector(`[onclick="selectOption('${existingSharingResponse}')"]`).classList.add('selected');
+      }
       
       document.querySelectorAll('.summary-item').forEach(item => {
         item.addEventListener('click', function(e) {
@@ -628,6 +754,11 @@
             }, { once: true });
           });
         }, 100);
+      }
+
+      if (existingSharingResponse && !isComplete(pageId)) {
+        markComplete(pageId);
+        showNextButtonMotivational();
       }
       
       // Track when audio ends - SHOW NEXT BUTTON

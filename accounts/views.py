@@ -801,6 +801,161 @@ def completion_video(request):
     return render(request, 'accounts/completion_video.html')
 
 
+def _build_beautiful_summary_context(session_key):
+    """Build context for the redesigned summary template from session-linked DB data."""
+    from accounts.models import (
+        PositiveEventResponse,
+        NegativeEventResponse,
+        PMRSurveyResponse,
+        IronSpongeResponse,
+        PosplanActivityResponse,
+        FeedbackSurveyResponse,
+        AttentionCheckResponse,
+    )
+
+    pos_responses = list(PositiveEventResponse.objects.filter(session_key=session_key))
+    neg_responses = list(NegativeEventResponse.objects.filter(session_key=session_key))
+    pmr_response = PMRSurveyResponse.objects.filter(session_key=session_key).first()
+    iron_sponge_db = IronSpongeResponse.objects.filter(session_key=session_key).first()
+    posplan_db = PosplanActivityResponse.objects.filter(session_key=session_key).first()
+    feedback_db = FeedbackSurveyResponse.objects.filter(session_key=session_key).first()
+    attention_checks = list(AttentionCheckResponse.objects.filter(session_key=session_key).order_by('question_id'))
+
+    positive_events = {r.category: r.response_text for r in pos_responses}
+    negative_events = {r.category: r.response_text for r in neg_responses}
+
+    nickname = 'Participant'
+    for candidate in [
+        (pos_responses[0].nickname if pos_responses else None),
+        (neg_responses[0].nickname if neg_responses else None),
+        (pmr_response.nickname if pmr_response else None),
+        (iron_sponge_db.nickname if iron_sponge_db else None),
+        (posplan_db.nickname if posplan_db else None),
+        (feedback_db.nickname if feedback_db else None),
+    ]:
+        if candidate:
+            nickname = candidate
+            break
+
+    activity_plan = {}
+    if posplan_db:
+        activity_plan = {
+            'who': {'response': posplan_db.who, 'category': ''},
+            'where': {'response': posplan_db.where, 'category': ''},
+            'what': {'activity': posplan_db.what},
+            'when': {'timing': posplan_db.when},
+        }
+
+    iron_sponge = {}
+    if iron_sponge_db:
+        iron_sponge = {
+            'school_type': iron_sponge_db.school_type,
+            'school_iron_count': iron_sponge_db.school_iron,
+            'school_sponge_count': iron_sponge_db.school_sponge,
+            'school_neither_count': iron_sponge_db.school_neither,
+            'family_type': iron_sponge_db.family_type,
+            'family_iron_count': iron_sponge_db.family_iron,
+            'family_sponge_count': iron_sponge_db.family_sponge,
+            'family_neither_count': iron_sponge_db.family_neither,
+            'friend_type': iron_sponge_db.friend_type,
+            'friend_iron_count': iron_sponge_db.friend_iron,
+            'friend_sponge_count': iron_sponge_db.friend_sponge,
+            'friend_neither_count': iron_sponge_db.friend_neither,
+        }
+
+    # Build implementation feedback context
+    pmr_feedback = {}
+    if pmr_response and pmr_response.selected_feelings:
+        pmr_feedback = {
+            'question': f"How did {nickname} body feel after PMR?",
+            'response': ', '.join(pmr_response.selected_feelings),
+        }
+
+    implementation_feedback = {}
+    if feedback_db and feedback_db.responses:
+        # responses is a list of selected feedback statements
+        for response in feedback_db.responses:
+            if 'psychoeducation' in response.lower() or 'feel about psychoeducation' in response.lower():
+                implementation_feedback['psychoeducation'] = response
+            elif 'body' in response.lower() and 'pmr' in response.lower():
+                implementation_feedback['pmr_feeling'] = response
+            elif 'again' in response.lower() or 'try it again' in response.lower():
+                implementation_feedback['pmr_again'] = response
+
+    # If responses weren't properly categorized, check if we have a single psychoeducation response
+    if not implementation_feedback and feedback_db and feedback_db.responses:
+        if len(feedback_db.responses) > 0:
+            implementation_feedback['psychoeducation'] = feedback_db.responses[0]
+
+    # Build attention check context
+    attention_check_data = []
+    question_text_map = {
+        'neg_p6_q1': 'Why might Mike react more to Coach Ramos\'s comments than Jackie does?',
+        'neg_p7_q1': 'How might Mike be feeling after Coach Ramos\'s comment?',
+        'emo_p2_q1': 'Dave is sad because he has had angry thoughts about the world from a very young age.',
+        'emo_p2_q2': 'Avoiding friends, like Dave is, is a common for youth who had a bad thing happen to them like losing a loved one.',
+        'emo_p2_q3': 'It\'s strange that Dave is fighting with his mom, as kids are usually just avoidant after a major life event.',
+        'emo_p2_q4': 'Dave may keep thinking about his grandfather, and feeling sad in the room, because he is being "triggered".',
+    }
+
+    for check in attention_checks:
+        attention_check_data.append({
+            'text': question_text_map.get(check.question_id, check.get_question_id_display()),
+            'attempts': check.incorrect_attempts + 1,  # +1 to include the correct attempt
+        })
+
+    # Approximate section completion from persisted session-linked responses.
+    sections_completed_count = sum([
+        1 if positive_events else 0,
+        1 if negative_events else 0,
+        1 if (pmr_response or feedback_db) else 0,
+        1 if activity_plan else 0,
+    ])
+
+    return {
+        'participant_id': session_key,
+        'nickname': nickname,
+        'sections_completed_count': sections_completed_count,
+        'positive_events': positive_events,
+        'negative_events': negative_events,
+        'pmr_feedback': pmr_feedback,
+        # Journal narrative answers are stored in localStorage in current implementation.
+        'journal_entries': {},
+        'activity_plan': activity_plan,
+        'iron_sponge': iron_sponge,
+        'implementation_feedback': implementation_feedback,
+        'attention_check': attention_check_data,
+        'current_session_key': session_key,
+    }
+
+
+def beautiful_summary_view(request, session_key=None):
+    """Render redesigned summary sheet in a standalone, print-friendly page."""
+    if not session_key:
+        session_key = request.session.session_key
+    if not session_key:
+        return HttpResponse('No session found. Please complete an activity first.', status=404)
+
+    context = _build_beautiful_summary_context(session_key)
+    return render(request, 'accounts/summary_download_page.html', context)
+
+
+def download_beautiful_summary(request, session_key=None):
+    """Download redesigned summary as a standalone HTML file."""
+    if not session_key:
+        session_key = request.session.session_key
+    if not session_key:
+        return HttpResponse('No session found. Please complete an activity first.', status=404)
+
+    context = _build_beautiful_summary_context(session_key)
+    html = render_to_string('accounts/summary_download_page.html', context, request=request)
+    safe_name = ''.join(c if c.isalnum() or c in ('-', '_') else '_' for c in context['nickname']).strip('_') or 'participant'
+
+    response = HttpResponse(html, content_type='text/html; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="RENEW-Beautiful-Summary-{safe_name}.html"'
+    return response
+
+
 def download_summary(request, session_key=None):
     """Generate and download a filled RENEW Summary Sheet as a .docx file.
     
