@@ -466,7 +466,7 @@
     </audio>
 
     <!-- Auto-play audio element -->
-    <audio id="autoPlayAudio" autoplay>
+    <audio id="autoPlayAudio" preload="auto">
       <source src="https://illinois.qualtrics.com/ControlPanel/File.php?F=F_EYuo1Tm9WLVxJc2" type="audio/mpeg">
       Your browser does not support the audio element.
     </audio>
@@ -969,44 +969,11 @@
     document.addEventListener('DOMContentLoaded', function() {
       const submitBtn = document.getElementById('submitQuiz');
       
-      // Initialize all questions as disabled except the first one (which waits for audio)
+      // Initialize all questions as disabled
       const allQuestions = document.querySelectorAll('.quiz-question');
       allQuestions.forEach((question, index) => {
         question.classList.add('disabled');
       });
-      
-      // Auto-play background audio with fallback
-      const autoPlayAudio = document.getElementById('autoPlayAudio');
-      let audioEnded = false;
-      
-      if (autoPlayAudio) {
-        // Set this as the currently playing audio
-        currentlyPlayingAudio = autoPlayAudio;
-        
-        // When audio ends, enable the first question
-        autoPlayAudio.addEventListener('ended', function() {
-          audioEnded = true;
-          enableQuestion(1);
-        });
-        
-        // Try to play immediately
-        autoPlayAudio.play().catch(function(error) {
-          console.log('Auto-play was prevented. Will try on first user interaction.');
-          
-          // Fallback: play on first user interaction
-          const playOnInteraction = function() {
-            autoPlayAudio.play().catch(e => console.log('Audio play failed:', e));
-            // Remove listeners after first successful attempt
-            document.removeEventListener('click', playOnInteraction);
-            document.removeEventListener('touchstart', playOnInteraction);
-            document.removeEventListener('keydown', playOnInteraction);
-          };
-          
-          document.addEventListener('click', playOnInteraction);
-          document.addEventListener('touchstart', playOnInteraction);
-          document.addEventListener('keydown', playOnInteraction);
-        });
-      }
       
       // Track which questions have already been unlocked (to avoid repeating unlock audio)
       const unlockedQuestions = new Set();
@@ -1039,6 +1006,36 @@
           questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }
+      
+      // Try to play background audio in parallel (non-blocking)
+      const autoPlayAudio = document.getElementById('autoPlayAudio');
+      if (autoPlayAudio) {
+        currentlyPlayingAudio = autoPlayAudio;
+        
+        const isAudioMuted = localStorage.getItem('renew_mute_all') === '1';
+        
+        if (!isAudioMuted) {
+          // Try muted autoplay (browsers usually allow this)
+          autoPlayAudio.muted = true;
+          const playPromise = autoPlayAudio.play();
+          
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                // Unmute after a short delay
+                setTimeout(() => {
+                  autoPlayAudio.muted = false;
+                }, 100);
+              })
+              .catch((error) => {
+                console.log('Instruction audio autoplay was blocked:', error);
+              });
+          }
+        }
+      }
+
+      // Unlock the first question on page load so the quiz can start
+      enableQuestion(1);
       
       // Add event listeners to all radio buttons to unlock next question
       const radioButtons = document.querySelectorAll('input[type="radio"]');

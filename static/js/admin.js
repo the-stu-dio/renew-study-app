@@ -120,12 +120,7 @@
         { label: '2', target: '/accounts/emo-p2/' },
         { label: '3', target: '/accounts/emo-p3/' },
         { label: '4', target: '/accounts/emo-p4/' },
-        { label: '5', target: '/accounts/emo-p5/' },
-        { label: '6', target: '/accounts/pmr-p1/' },
-        { label: '7', target: '/accounts/journal-p1/' },
-        { label: '8', target: '/accounts/journal-p2/' },
-        { label: '9', target: '/accounts/journal-option1/' },
-        { label: '10', target: '/accounts/journal-option2/' }
+        { label: '5', target: '/accounts/emo-p5/' }
       ];
 
       return {
@@ -174,12 +169,7 @@
         { label: '2', target: '/accounts/emo-p2/' },
         { label: '3', target: '/accounts/emo-p3/' },
         { label: '4', target: '/accounts/emo-p4/' },
-        { label: '5', target: '/accounts/emo-p5/' },
-        { label: '6', target: '/accounts/pmr-p1/' },
-        { label: '7', target: '/accounts/journal-p1/' },
-        { label: '8', target: '/accounts/journal-p2/' },
-        { label: '9', target: '/accounts/journal-option1/' },
-        { label: '10', target: '/accounts/journal-option2/' }
+        { label: '5', target: '/accounts/emo-p5/' }
       ];
 
       return {
