@@ -114,6 +114,42 @@
       };
     }
 
+    // Explicit mappings for PMR, Journaling, and Positive Planned Activities
+    if (/\/accounts\/pmr[-_]?p1\/?$/i.test(pathname)) {
+      const pages = [ { label: '1', target: '/accounts/pmr-p1/' } ];
+      return {
+        section: 'pmr',
+        title: 'Admin Jump: PMR',
+        pages,
+        currentIndex: getCurrentIndex(pathname, pages)
+      };
+    }
+
+    if (/\/accounts\/journal[-_]?p[1-2]\/??$/i.test(pathname) || /\/accounts\/journal[-_]?option[1-2]\/??$/i.test(pathname)) {
+      const pages = [
+        { label: '1', target: '/accounts/journal-p1/' },
+        { label: '2', target: '/accounts/journal-p2/' },
+        { label: '3', target: '/accounts/journal-option1/' },
+        { label: '4', target: '/accounts/journal-option2/' }
+      ];
+      return {
+        section: 'journaling',
+        title: 'Admin Jump: Journaling',
+        pages,
+        currentIndex: getCurrentIndex(pathname, pages)
+      };
+    }
+
+    if (/\/accounts\/posplan[-_]?p[1-5]\/??$/i.test(pathname)) {
+      const pages = buildSequentialPages('posplan-p', 5);
+      return {
+        section: 'posplan',
+        title: 'Admin Jump: Positive Planned Activities',
+        pages,
+        currentIndex: getCurrentIndex(pathname, pages)
+      };
+    }
+
     if (isThoughtsFeelingsPage(pathname)) {
       const pages = [
         { label: '1', target: '/accounts/emo-p1/' },
