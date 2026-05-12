@@ -9,6 +9,5 @@ deployment:
     - /bin/cp manage.py $DEPLOYPATH/
     - /bin/cp passenger_wsgi.py $DEPLOYPATH/
     - /bin/cp requirements.txt $DEPLOYPATH/
-    - '/bin/cp RENEW\ Summary\ Sheet.docx $DEPLOYPATH/ 2>/dev/null; true'
     - mkdir -p $DEPLOYPATH/tmp
     - touch $DEPLOYPATH/tmp/restart.txt

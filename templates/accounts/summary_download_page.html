@@ -88,6 +88,7 @@
     <div class="action-group">
       <a class="action-btn action-link" href="{% url 'hub' %}">Back to Hub</a>
       <button class="action-btn" type="button" onclick="downloadSummaryPdf()">Download PDF</button>
+      <button class="action-btn" type="button" onclick="downloadInteractiveHtml()">Download Interactive HTML</button>
     </div>
   </div>
 
@@ -115,8 +116,103 @@
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
       };
 
-      await html2pdf().set(options).from(summaryElement).save();
+      // disable action buttons while export runs
+      const actionButtons = Array.from(document.querySelectorAll('.action-btn'));
+      actionButtons.forEach(b => b.disabled = true);
+
+      try {
+        await html2pdf().set(options).from(summaryElement).save();
+      } catch (err) {
+        console.error('PDF export failed', err);
+        alert('PDF export failed. Please try again or use the "Download Interactive HTML" option.');
+      } finally {
+        // allow interaction again and remove any leftover overlays created by the library
+        actionButtons.forEach(b => b.disabled = false);
+        cleanupPdfOverlay();
+      }
     }
+
+    function cleanupPdfOverlay() {
+      try {
+        // common overlay element/class names used by html2pdf/html2canvas
+        const selectors = ['.html2pdf__overlay', '#html2pdf', '.html2canvas-container', '.__html2pdf__overlay'];
+        selectors.forEach(sel => {
+          document.querySelectorAll(sel).forEach(el => el.remove());
+        });
+
+        // also remove any temporary iframes or wrappers
+        document.querySelectorAll('iframe[data-html2pdf], div[data-html2pdf-wrapper]').forEach(el => el.remove());
+
+        // reset inline style changes that may dim the page
+        document.documentElement.style.removeProperty('opacity');
+        document.body.style.removeProperty('opacity');
+        document.body.style.removeProperty('pointer-events');
+        // reset summary-shell inline styles (html2canvas sometimes applies filters/opacity)
+        const summary = document.querySelector('.summary-shell');
+        if (summary) {
+          summary.style.removeProperty('opacity');
+          summary.style.removeProperty('filter');
+          summary.style.removeProperty('pointer-events');
+        }
+
+        // remove any large absolutely/fixed positioned semi-transparent overlays (deeper scan)
+        document.querySelectorAll('*').forEach(el => {
+          try {
+            const cs = getComputedStyle(el);
+            const pos = cs.position;
+            const z = parseInt(cs.zIndex) || 0;
+            const bg = cs.backgroundColor || '';
+            const op = parseFloat(cs.opacity) || 1;
+            const rect = el.getBoundingClientRect();
+            const coversLarge = rect.width >= (window.innerWidth * 0.45) && rect.height >= (window.innerHeight * 0.18);
+            let semiTransparentBg = false;
+            if (/rgba\(|hsla\(/.test(bg)) {
+              // try to extract alpha
+              const m = bg.match(/rgba?\([^\)]+\)/);
+              if (m) {
+                const parts = m[0].split(',').map(s=>s.trim());
+                const alpha = parseFloat(parts[3] || '1');
+                semiTransparentBg = alpha > 0 && alpha < 1;
+              }
+            }
+            const hasTransparentFilter = /opacity\(|alpha\(|grayscale\(|blur\(/.test(cs.filter || '');
+            if ((pos === 'fixed' || pos === 'absolute' || pos === 'sticky') && (op < 1 || semiTransparentBg || hasTransparentFilter) && coversLarge) {
+              // avoid removing our main containers
+              if (!el.classList.contains('summary-shell') && !el.classList.contains('hero') && !el.classList.contains('progress-card')) {
+                el.remove();
+              }
+            }
+          } catch (e) {
+            // ignore
+          }
+        });
+      } catch (e) {
+        // don't break UI cleanup if something unexpected happens
+        console.warn('cleanupPdfOverlay error', e);
+      }
+    }
+
+    // Run cleanup on load in case any overlays are present already
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      setTimeout(cleanupPdfOverlay, 20);
+    } else {
+      window.addEventListener('DOMContentLoaded', () => setTimeout(cleanupPdfOverlay, 20));
+    }
+
+      function downloadInteractiveHtml() {
+        const doctype = '<!doctype html>';
+        // capture the current full document so expanded/collapsed states persist
+        const html = doctype + document.documentElement.outerHTML;
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'RENEW-Interactive-Summary.html';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
   </script>
 </body>
 </html>

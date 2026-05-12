@@ -468,25 +468,6 @@
           </div>
         </div>
       </div>
-
-      <div class="question-section">
-        <h3 class="question-title">Would you like us to:</h3>
-
-        <div class="option-group">
-          <div class="option" onclick="selectOption('email', event)">
-            <input type="radio" name="sharing" value="email" id="sharing_email">
-            <label for="sharing_email" class="option-text">📧 Email it to you</label>
-          </div>
-          <div class="option" onclick="selectOption('counselor', event)">
-            <input type="radio" name="sharing" value="counselor" id="sharing_counselor">
-            <label for="sharing_counselor" class="option-text">🖨️ Have your counselor print it out</label>
-          </div>
-          <div class="option" onclick="selectOption('none', event)">
-            <input type="radio" name="sharing" value="none" id="sharing_none">
-            <label for="sharing_none" class="option-text">❌ None of the above</label>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
   
@@ -778,7 +759,24 @@
         nextButton.classList.add('next-button-pulse', 'visible');
         specialEffectsShown = true; // Already completed, effects were shown before
       } else {
-        nextButtonContainer.style.display = 'none';
+        // Show next button after audio finishes or after page loads
+        if (audioPlayer && audioPlayer.duration > 0) {
+          // Audio will play - show button when it ends
+          audioPlayer.addEventListener('ended', function() {
+            if (!isComplete(pageId)) {
+              markComplete(pageId);
+              showNextButtonMotivational();
+            }
+          });
+        } else {
+          // No audio or audio not ready - show button after a short delay
+          setTimeout(() => {
+            if (!isComplete(pageId)) {
+              markComplete(pageId);
+              showNextButtonMotivational();
+            }
+          }, 1000);
+        }
       }
     });
 

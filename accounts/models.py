@@ -341,3 +341,20 @@ class PosplanResponse(models.Model):
             'timing': '⏰'
         }
         return emojis.get(self.step, '📝')
+
+
+class JournalEntry(models.Model):
+    """Persist journaling responses: things to change and experiences that shaped me"""
+    session_key = models.CharField(max_length=100, blank=True, null=True, db_index=True)
+    nickname = models.CharField(max_length=100, blank=True, null=True)
+    things_to_change = models.TextField(blank=True, default='')
+    experiences_shaped_me = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['session_key']
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"JournalEntry - {self.session_key} - {self.nickname or 'Anonymous'}"

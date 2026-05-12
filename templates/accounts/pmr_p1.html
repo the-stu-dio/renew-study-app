@@ -607,6 +607,43 @@
 
   </div>
   
+  <!-- Psychoeducation Feedback Survey Modal -->
+  <div class="survey-overlay" id="psychoedSurveyOverlay">
+    <div class="survey-modal">
+      <h2 class="modal-survey-title">Psychoeducation Feedback</h2>
+      
+      <p class="modal-survey-subtitle">How did Bob feel about psycoeducation?<br><em>(Click all that fit you)</em></p>
+      
+      <div id="psychoedSurveyForm">
+        <div class="survey-level level-1">
+          <div class="modal-survey-option" onclick="selectPsychoeducationOption('learned_about_world_like_talking')">
+            <div class="survey-checkbox"></div>
+            <div class="survey-option-text">I liked learning about how the world around us affects people, and I want to talk to someone more about this.</div>
+          </div>
+          
+          <div class="modal-survey-option" onclick="selectPsychoeducationOption('learned_about_world_want_more')">
+            <div class="survey-checkbox"></div>
+            <div class="survey-option-text">I liked learning about how the world around us affects people, and I want to see or read more about it.</div>
+          </div>
+          
+          <div class="modal-survey-option" onclick="selectPsychoeducationOption('found_some_boring')">
+            <div class="survey-checkbox"></div>
+            <div class="survey-option-text">To be honest, I found some of this stuff a little boring, but I want to talk more about thoughts, feelings, and emotions.</div>
+          </div>
+          
+          <div class="modal-survey-option" onclick="selectPsychoeducationOption('didnt_find_helpful')">
+            <div class="survey-checkbox"></div>
+            <div class="survey-option-text">To be honest, I didn't find what we talked about so far very interesting or helpful.</div>
+          </div>
+        </div>
+        
+        <div class="survey-buttons">
+          <button type="button" class="survey-btn primary" id="submitPsychoeducation" onclick="submitPsychoeducationSurvey()">Submit Feedback</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <!-- Survey Modal (end of video survey) -->
   <div class="survey-overlay" id="surveyOverlay">
     <div class="survey-modal">
@@ -1029,12 +1066,67 @@
 
     // Audio functionality
     let selectedOptions = new Set();
+    let psychoeducationSelectedOptions = new Set();
 
     function showSurvey() {
-      document.getElementById('surveyOverlay').classList.add('show');
+      // Show psychoeducation survey first
+      document.getElementById('psychoedSurveyOverlay').classList.add('show');
+    }
+
+    function selectPsychoeducationOption(value) {
+      const options = document.querySelectorAll('#psychoedSurveyForm .modal-survey-option');
+      let selectedOption = null;
       
-      // Automatically play both audio files when survey opens
-      playAudioOnSurveyOpen();
+      // Find the option element with this value
+      options.forEach(option => {
+        const text = option.querySelector('.survey-option-text').textContent;
+        // Match based on the value parameter
+        if ((value === 'learned_about_world_like_talking' && text.includes('want to talk to someone more about this')) ||
+            (value === 'learned_about_world_want_more' && text.includes('want to see or read more about it')) ||
+            (value === 'found_some_boring' && text.includes('little boring')) ||
+            (value === 'didnt_find_helpful' && text.includes('very interesting or helpful'))) {
+          selectedOption = option;
+        }
+      });
+      
+      if (selectedOption) {
+        if (selectedOption.classList.contains('selected')) {
+          selectedOption.classList.remove('selected');
+          psychoeducationSelectedOptions.delete(value);
+        } else {
+          selectedOption.classList.add('selected');
+          psychoeducationSelectedOptions.add(value);
+        }
+      }
+      
+      // Update submit button state
+      const submitButton = document.getElementById('submitPsychoeducation');
+      submitButton.disabled = psychoeducationSelectedOptions.size === 0;
+    }
+
+    function submitPsychoeducationSurvey() {
+      if (psychoeducationSelectedOptions.size === 0) return;
+      
+      // Save to localStorage
+      const surveyData = {
+        selected_options: Array.from(psychoeducationSelectedOptions),
+        activity_id: 'pmr_p1_psychoed',
+        timestamp: Date.now()
+      };
+      
+      if (saveSurveyResponse('pmr_p1_psychoed_survey', surveyData)) {
+        // Close psychoeducation survey
+        document.getElementById('psychoedSurveyOverlay').classList.remove('show');
+        
+        // Show PMR survey next
+        setTimeout(() => {
+          document.getElementById('surveyOverlay').classList.add('show');
+          // Play PMR survey audio
+          playAudioOnSurveyOpen();
+        }, 300);
+      } else {
+        alert('Error saving survey response. Please try again.');
+      }
     }
 
     function playAudioOnSurveyOpen() {
@@ -1225,21 +1317,60 @@
       };
       
       if (saveSurveyResponse('pmr_survey', surveyData)) {
+        // Also POST the PMR selections to the server so the summary can read them
+        try {
+          const studyData = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+          const nickname = studyData.nickname || '';
+
+          function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+              const cookies = document.cookie.split(';');
+              for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+                }
+              }
+            }
+            return cookieValue;
+          }
+
+          fetch('{% url "submit_pmr_full" %}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({ selected_options: Array.from(selectedOptions), nickname: nickname })
+          }).then(r => r.json()).then(res => {
+            if (!res || !res.success) console.warn('submit_pmr_full failed', res);
+          }).catch(err => console.warn('submit_pmr_full error', err));
+        } catch (e) { console.warn('Failed to POST PMR survey full:', e); }
+
         // Stop all audio files if playing
         stopAllAudio();
-        
+
         // Close survey
         document.getElementById('surveyOverlay').classList.remove('show');
-        
+
         // Navigate to skill-p4 immediately after submission
         setTimeout(() => {
           window.location.href = "{% url 'skill_p4' %}";
         }, 500); // Small delay to show "Submitting..." state
-        
+
       } else {
         this.disabled = false;
         this.textContent = 'Submit Feedback';
         alert('Error saving survey response. Please try again.');
+      }
+    });
+
+    // Close psychoeducation survey when clicking outside (optional)
+    document.getElementById('psychoedSurveyOverlay').addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.classList.remove('show');
       }
     });
 

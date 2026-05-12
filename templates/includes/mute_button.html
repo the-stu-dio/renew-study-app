@@ -1,5 +1,17 @@
+
 {% load static %}
 <!-- Mute toggle include -->
+<style>
+	body.intro-page #mute-toggle {
+		left: 20px;
+		right: auto;
+	}
+
+	body.intro-page #admin-unlock {
+		left: 84px;
+		right: auto;
+	}
+</style>
 <div style="display:flex;gap:8px;align-items:center">
 	<button id="mute-toggle" aria-pressed="false" title="Mute videos">🔊</button>
 	<button id="admin-unlock" title="Enter admin code" style="border-radius:8px;padding:8px">🔑</button>

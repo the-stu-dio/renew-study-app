@@ -491,12 +491,6 @@
             <div class="button-description">Important reminders for your well-being</div>
         </a>
 
-        <a href="#" onclick="downloadSummary(event)" class="hub-button" style="border-color: #16a34a;">
-            <div class="button-icon">📄</div>
-            <div class="button-title">Download Summary Sheet</div>
-            <div class="button-description">Download your RENEW Summary as a Word doc</div>
-        </a>
-
         <a href="#" onclick="viewBeautifulSummary(event)" class="hub-button" style="border-color: #7c3aed;">
             <div class="button-icon">🎨</div>
             <div class="button-title">Beautiful Summary</div>
@@ -674,12 +668,6 @@ async function syncSummaryData() {
         }
     } catch (err) { console.error('Posplan sync error:', err); }
 
-}
-
-async function downloadSummary(e) {
-    e.preventDefault();
-    await syncSummaryData();
-    window.location.href = "{% url 'download_summary' %}";
 }
 
 async function viewBeautifulSummary(e) {

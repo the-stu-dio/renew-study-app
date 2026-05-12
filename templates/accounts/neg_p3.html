@@ -1095,7 +1095,8 @@
         if (completedResponses.size >= totalCategories) {
           showNextButtonMotivational(); // Use the enhanced version
           markComplete('neg_p3');
-          markSectionComplete('negative_events');
+          // Do NOT mark the entire 'negative_events' section complete here.
+          // The full section should only be marked complete on the final quiz page (neg_p10).
         }
       } else {
         alert('Error saving response. Please try again.');

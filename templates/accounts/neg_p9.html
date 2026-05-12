@@ -864,6 +864,16 @@
               </div>
             </div>
 
+            <div class="mt-4 mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="fw-bold text-secondary">Quiz Progress</div>
+                <div class="fw-bold text-secondary" id="quizProgressText">0/9 answered</div>
+              </div>
+              <div class="progress" style="height: 14px; border-radius: 999px; overflow: hidden; background: #ece7ff; border: 1px solid #d9cfee;">
+                <div id="quizProgressBar" class="progress-bar" role="progressbar" style="width: 0%; background: linear-gradient(90deg, #4a91e2, #6b57cf, #7c3aed);"></div>
+              </div>
+            </div>
+
             <div class="text-center mt-4">
               <button type="button" class="btn btn-primary btn-lg" id="submitQuiz" disabled onclick="submitQuiz()">
                 <i class="fas fa-check"></i> Submit Quiz
@@ -964,6 +974,73 @@
           nextButton.classList.add('next-button-pulse', 'visible');
         }
       }
+    }
+
+    const TOTAL_QUIZ_QUESTIONS = 9;
+
+    function getQuizResultsFromDOM() {
+      const responses = {};
+      const domainCounts = {
+        school: { iron: 0, sponge: 0, neither: 0 },
+        friend: { iron: 0, sponge: 0, neither: 0 },
+        family: { iron: 0, sponge: 0, neither: 0 }
+      };
+
+      for (let i = 1; i <= TOTAL_QUIZ_QUESTIONS; i++) {
+        const selectedOption = document.querySelector(`input[name="question${i}"]:checked`);
+        if (selectedOption) {
+          const domain = selectedOption.getAttribute('data-domain');
+          const value = selectedOption.value;
+          responses[`question${i}`] = { value, domain };
+          domainCounts[domain][value]++;
+        }
+      }
+
+      return {
+        school: calculateDomainResult(domainCounts.school),
+        friend: calculateDomainResult(domainCounts.friend),
+        family: calculateDomainResult(domainCounts.family),
+        responses: responses,
+        timestamp: Date.now()
+      };
+    }
+
+    function getAnsweredQuizCount() {
+      let answeredCount = 0;
+      for (let i = 1; i <= TOTAL_QUIZ_QUESTIONS; i++) {
+        if (document.querySelector(`input[name="question${i}"]:checked`)) {
+          answeredCount += 1;
+        }
+      }
+      return answeredCount;
+    }
+
+    function updateQuizProgress() {
+      const answeredCount = getAnsweredQuizCount();
+      const progressPercent = Math.round((answeredCount / TOTAL_QUIZ_QUESTIONS) * 100);
+      const quizProgressBar = document.getElementById('quizProgressBar');
+      const quizProgressText = document.getElementById('quizProgressText');
+
+      if (quizProgressBar) {
+        quizProgressBar.style.width = `${progressPercent}%`;
+      }
+      if (quizProgressText) {
+        quizProgressText.textContent = `${answeredCount}/${TOTAL_QUIZ_QUESTIONS} answered`;
+      }
+    }
+
+    function saveQuizProgress() {
+      const results = getQuizResultsFromDOM();
+      localStorage.setItem('ironSpongeResults', JSON.stringify(results));
+
+      fetch('/accounts/save-iron-sponge/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ironSpongeResults: results,
+          nickname: localStorage.getItem('nickname') || ''
+        })
+      }).catch(err => console.error('Failed to save Iron & Sponge progress:', err));
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -1069,6 +1146,10 @@
           
           // Check form completion for submit button
           checkFormCompletion();
+
+          // Update the live quiz progress bar and save partial progress
+          updateQuizProgress();
+          saveQuizProgress();
         });
       });
       
@@ -1091,7 +1172,7 @@
       // Enable submit button when all questions are answered
       function checkFormCompletion() {
         let allAnswered = true;
-        for (let i = 1; i <= 9; i++) {
+        for (let i = 1; i <= TOTAL_QUIZ_QUESTIONS; i++) {
           const questionAnswered = document.querySelector(`input[name="question${i}"]:checked`);
           if (!questionAnswered) {
             allAnswered = false;
@@ -1111,36 +1192,12 @@
       }
       
       // Initial check
+      updateQuizProgress();
       checkFormCompletion();
     });
 
     function submitQuiz() {
-      const responses = {};
-      const domainCounts = {
-        school: { iron: 0, sponge: 0, neither: 0 },
-        friend: { iron: 0, sponge: 0, neither: 0 },
-        family: { iron: 0, sponge: 0, neither: 0 }
-      };
-
-      // Collect all responses
-      for (let i = 1; i <= 9; i++) {
-        const selectedOption = document.querySelector(`input[name="question${i}"]:checked`);
-        if (selectedOption) {
-          const domain = selectedOption.getAttribute('data-domain');
-          const value = selectedOption.value;
-          responses[`question${i}`] = { value, domain };
-          domainCounts[domain][value]++;
-        }
-      }
-
-      // Calculate domain results
-      const results = {
-        school: calculateDomainResult(domainCounts.school),
-        friend: calculateDomainResult(domainCounts.friend),
-        family: calculateDomainResult(domainCounts.family),
-        responses: responses,
-        timestamp: Date.now()
-      };
+      const results = getQuizResultsFromDOM();
 
       // Save to localStorage
       localStorage.setItem('ironSpongeResults', JSON.stringify(results));

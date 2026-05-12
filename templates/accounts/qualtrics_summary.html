@@ -157,7 +157,7 @@
 
     .bar {
       height: 100%;
-      width: {% widthratio sections_completed_count 4 100 %}%;
+      width: {{ overall_percent }}%;
       background: linear-gradient(90deg, #4a91e2, #6b57cf, #7c3aed);
       border-radius: 999px;
     }
@@ -337,7 +337,7 @@
 
   <header class="hero">
     <div class="hero-kicker">RENEW Reflection Portfolio</div>
-    <h1 class="hero-title">{{ nickname }}'s Summary Sheet</h1>
+    <h1 class="hero-title"><span class="nick">{{ nickname }}</span>'s Summary Sheet</h1>
     <p class="hero-subtitle">
       A snapshot of strengths, stressors, reflection insights, and your personalized activity plan.
     </p>
@@ -349,319 +349,728 @@
   <section class="progress-card">
     <div class="progress-row">
       <div class="progress-label">Overall Completion</div>
-      <div class="progress-value">{% widthratio sections_completed_count 4 100 %}%</div>
+      <div class="progress-value">{{ overall_percent }}%</div>
     </div>
     <div class="track" aria-hidden="true">
       <div class="bar"></div>
     </div>
   </section>
 
-  {% if positive_events %}
   <section class="section">
-    <div class="section-head">
-      <h2 class="section-title">Positive Events</h2>
-      <span class="section-tag tag-positive">Strength Moments</span>
+    <div style="margin-bottom: 14px; color: #1f1e3a; font-size: 18px; line-height: 1.4; font-weight: 600;">
+      <span style="font-weight: 800; text-decoration: underline;">Strength-Based Rapport Building:</span>
+      Use the information below to help build rapport with <span class="nick">{{ nickname }}</span>. This information can be used in RENEW session 2 to help <span class="nick">{{ nickname }}</span> feel welcome or to help problem solve engagement with homework.
     </div>
-    <div class="grid">
-      {% if positive_events.recreation %}
-      <article class="item">
-        <div class="item-label">🏃 Recreational</div>
-        <p class="item-text">{{ positive_events.recreation }}</p>
-      </article>
-      {% endif %}
-      {% if positive_events.achievement %}
-      <article class="item">
-        <div class="item-label">🏆 Achievement</div>
-        <p class="item-text">{{ positive_events.achievement }}</p>
-      </article>
-      {% endif %}
-      {% if positive_events.relationship %}
-      <article class="item">
-        <div class="item-label">❤️ Relationship</div>
-        <p class="item-text">{{ positive_events.relationship }}</p>
-      </article>
-      {% endif %}
-      {% if positive_events.other %}
-      <article class="item">
-        <div class="item-label">✨ Other Wins</div>
-        <p class="item-text">{{ positive_events.other }}</p>
-      </article>
-      {% endif %}
+    <style>
+      .accordion { display:block; border-radius:12px; overflow:hidden; border:1px solid var(--line); }
+      .acc-item { border-bottom:1px solid var(--line); background: #faf9ff; }
+      .acc-header { display:flex; align-items:center; justify-content:flex-start; gap:12px; padding:14px; cursor:pointer; }
+      .acc-label { display:flex; align-items:center; gap:8px; font-weight:800; color:var(--brand); }
+      .acc-toggle { min-width:36px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e9e6f7; transition:transform .22s ease; margin-right:6px; font-weight:800; }
+      .acc-body { padding: 0 14px 0 14px; color:#2e2b4f; line-height:1.6; font-size:14px; display:none; }
+      .acc-body.open { display:block; padding: 8px 14px 16px 14px; }
+      .acc-item:last-child { border-bottom:none; }
+      @media print {
+        .acc-body { display:block !important; max-height: none !important; overflow: visible !important; padding: 8px 14px 16px 14px !important; }
+        .acc-toggle { display:none; }
+      }
+    </style>
+
+    <div class="accordion" role="list">
+      <div class="acc-item">
+        <button type="button" class="acc-header" aria-expanded="false">
+          <div class="acc-toggle" aria-hidden="true">-&gt;</div>
+            <div class="acc-label"><span class="label-text">What does <span class="nick">{{ nickname }}</span> like to do for fun?</span></div>
+        </button>
+        <div class="acc-body">{{ positive_events.recreation|default:'No response recorded yet.' }}</div>
+      </div>
+
+      <div class="acc-item">
+        <button type="button" class="acc-header" aria-expanded="false">
+          <div class="acc-toggle" aria-hidden="true">-&gt;</div>
+            <div class="acc-label"><span class="label-text">What kinds of events give <span class="nick">{{ nickname }}</span> confidence?</span></div>
+        </button>
+        <div class="acc-body">{{ positive_events.achievement|default:'No response recorded yet.' }}</div>
+      </div>
+
+      <div class="acc-item">
+        <button type="button" class="acc-header" aria-expanded="false">
+          <div class="acc-toggle" aria-hidden="true">-&gt;</div>
+            <div class="acc-label"><span class="label-text">Who are the people that are most positive and important to <span class="nick">{{ nickname }}</span>?</span></div>
+        </button>
+        <div class="acc-body">{{ positive_events.relationship|default:'No response recorded yet.' }}</div>
+      </div>
+
+      <div class="acc-item">
+        <button type="button" class="acc-header" aria-expanded="false">
+          <div class="acc-toggle" aria-hidden="true">-&gt;</div>
+            <div class="acc-label"><span class="label-text">Here are some additional positive things <span class="nick">{{ nickname }}</span> mentioned that are important to them</span></div>
+        </button>
+        <div class="acc-body">{{ positive_events.other|default:'No response recorded yet.' }}</div>
+      </div>
+    </div>
+
+    <script>
+      (function(){
+        const items = document.querySelectorAll('.acc-item');
+        const COLLAPSED = '▶';
+        const EXPANDED = '▼';
+        items.forEach(item=>{
+          const btn = item.querySelector('.acc-header');
+          const body = item.querySelector('.acc-body');
+          const toggle = item.querySelector('.acc-toggle');
+          // ensure initial icon
+          if (toggle) toggle.textContent = COLLAPSED;
+          btn.addEventListener('click', ()=>{
+            const expanded = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+            if (!expanded) {
+              body.classList.add('open');
+              if (toggle) toggle.textContent = EXPANDED;
+            } else {
+              body.classList.remove('open');
+              if (toggle) toggle.textContent = COLLAPSED;
+            }
+          });
+        });
+      })();
+    </script>
+  </section>
+
+  <section id="topic-session-2-section" class="section">
+    <div style="margin-bottom: 14px; color: #1f1e3a; font-size: 18px; line-height: 1.4; font-weight: 600;">
+      <span style="font-weight: 800; text-decoration: underline;">Topic for Session 2:</span>
+      In the first session, <span class="nick">{{ nickname }}</span> was asked to write about either "things I want to change" or "experiences that shaped me." Below is their answers to which one they decided to write about (or both responses). These initial prompts can be things you follow-up on during the session.
+    </div>
+
+    <div class="accordion" role="list">
+      <div id="topic-things-wrap" class="acc-item">
+        <button type="button" class="acc-header" aria-expanded="false">
+          <div class="acc-toggle" aria-hidden="true">▶</div>
+          <div class="acc-label">Things I want to change:</div>
+        </button>
+        <div id="topic-things-text" class="acc-body">{{ journal_entries.things_to_change|default:"No response recorded yet." }}</div>
+      </div>
+
+      <div id="topic-experiences-wrap" class="acc-item">
+        <button type="button" class="acc-header" aria-expanded="false">
+          <div class="acc-toggle" aria-hidden="true">▶</div>
+          <div class="acc-label">Experiences that shaped me:</div>
+        </button>
+        <div id="topic-experiences-text" class="acc-body">{{ journal_entries.answer1|default:"No response recorded yet." }}</div>
+      </div>
     </div>
   </section>
-  {% endif %}
 
-  {% if negative_events %}
+  <script>
+    (function () {
+      const section = document.getElementById('topic-session-2-section');
+      const thingsWrap = document.getElementById('topic-things-wrap');
+      const thingsText = document.getElementById('topic-things-text');
+      const expWrap = document.getElementById('topic-experiences-wrap');
+      const expText = document.getElementById('topic-experiences-text');
+
+      if (!section || !thingsWrap || !thingsText || !expWrap || !expText) {
+        return;
+      }
+
+      function normalize(value) {
+        return (value || '').toString().trim();
+      }
+
+      function applyBlock(wrapEl, textEl, value) {
+        const content = normalize(value);
+        if (content) {
+          textEl.textContent = content;
+        } else {
+          textEl.textContent = 'No response recorded yet.';
+        }
+        wrapEl.style.display = '';
+      }
+
+      // Start with server-side values
+      let thingsValue = normalize(thingsText.textContent);
+      let experiencesValue = normalize(expText.textContent);
+
+      // Fallback to localStorage if server values are empty
+      try {
+        const raw = localStorage.getItem('renew_study_data');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const journal = (parsed && parsed.journal_entries) || {};
+
+          const localThings = normalize((journal.things_to_change || {}).content);
+          if (localThings && !thingsValue) {
+            thingsValue = localThings;
+          }
+
+          let localExperiences = normalize((journal.experiences_shaped_me || {}).content);
+          if (localExperiences) {
+            // Handle backward compatibility for JSON payloads
+            if (localExperiences.startsWith('{') && localExperiences.endsWith('}')) {
+              try {
+                const expJson = JSON.parse(localExperiences);
+                localExperiences = normalize(
+                  [expJson.answer1, expJson.answer2, expJson.answer3, expJson.answer4]
+                    .map(normalize)
+                    .filter(Boolean)
+                    .join('\n\n')
+                );
+              } catch (e) {
+                // keep raw value if JSON parse fails
+              }
+            }
+            if (localExperiences && !experiencesValue) {
+              experiencesValue = localExperiences;
+            }
+          }
+        }
+      } catch (e) {
+        // localStorage unavailable or malformed; continue with server values
+      }
+
+      applyBlock(thingsWrap, thingsText, thingsValue);
+      applyBlock(expWrap, expText, experiencesValue);
+
+      // Set up accordion functionality
+      const items = section.querySelectorAll('.acc-item');
+      const COLLAPSED = '▶';
+      const EXPANDED = '▼';
+      items.forEach(item => {
+        const btn = item.querySelector('.acc-header');
+        const body = item.querySelector('.acc-body');
+        const toggle = item.querySelector('.acc-toggle');
+        if (toggle) toggle.textContent = COLLAPSED;
+        btn.addEventListener('click', () => {
+          const expanded = btn.getAttribute('aria-expanded') === 'true';
+          btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+          if (!expanded) {
+            body.classList.add('open');
+            if (toggle) toggle.textContent = EXPANDED;
+          } else {
+            body.classList.remove('open');
+            if (toggle) toggle.textContent = COLLAPSED;
+          }
+        });
+      });
+    })();
+  </script>
+
   <section class="section">
-    <div class="section-head">
-      <h2 class="section-title">Negative Events</h2>
-      <span class="section-tag tag-negative">Stress Landscape</span>
+    <div style="margin-bottom: 14px; color: #1f1e3a; font-size: 18px; line-height: 1.4; font-weight: 600;">
+      <span style="font-weight: 800; text-decoration: underline;">Negative Events:</span>
+      Below is information about events the kid may have experienced that contributes towards distress or impairment. Note, these only are the events the youth feels comfortable to disclosing at this time, not an exhaustive list. If only a "yes" or "no" appear, it means that <span class="nick">{{ nickname }}</span> did not want to share any more details at this time.
     </div>
-    <div class="grid">
-      {% if negative_events.adverse %}
-      <article class="item">
-        <div class="item-label">⚠️ Adverse Events</div>
-        <p class="item-text">{{ negative_events.adverse }}</p>
-      </article>
-      {% endif %}
-      {% if negative_events.neighbor %}
-      <article class="item">
-        <div class="item-label">🏘️ Neighborhood Issues</div>
-        <p class="item-text">{{ negative_events.neighbor }}</p>
-      </article>
-      {% endif %}
-      {% if negative_events.discriminate %}
-      <article class="item">
-        <div class="item-label">🚫 Discrimination</div>
-        <p class="item-text">{{ negative_events.discriminate }}</p>
-      </article>
-      {% endif %}
-      {% if negative_events.stress %}
-      <article class="item">
-        <div class="item-label">😰 Stressors & Hassles</div>
-        <p class="item-text">{{ negative_events.stress }}</p>
-      </article>
-      {% endif %}
+    <style>
+      .neg-accordion { display:block; border-radius:12px; overflow:hidden; border:1px solid var(--line); }
+      .neg-acc-item { border-bottom:1px solid var(--line); background: #faf9ff; }
+      .neg-acc-header { display:flex; align-items:center; justify-content:flex-start; gap:12px; padding:14px; cursor:pointer; }
+      .neg-acc-label { display:flex; align-items:center; gap:8px; font-weight:800; color:var(--brand); }
+      .neg-acc-toggle { min-width:36px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e9e6f7; transition:transform .22s ease; margin-right:6px; font-weight:800; }
+      .neg-acc-body { padding: 0 14px 0 14px; color:#2e2b4f; line-height:1.6; font-size:14px; display:none; }
+      .neg-acc-body.open { display:block; padding: 8px 14px 16px 14px; }
+      .neg-acc-item:last-child { border-bottom:none; }
+      @media print {
+        .neg-acc-body { display:block !important; max-height: none !important; overflow: visible !important; padding: 8px 14px 16px 14px !important; }
+        .neg-acc-toggle { display:none; }
+      }
+    </style>
+
+    <div class="neg-accordion" role="list">
+      <div class="neg-acc-item">
+        <button type="button" class="neg-acc-header" aria-expanded="false">
+          <div class="neg-acc-toggle" aria-hidden="true">▶</div>
+          <div class="neg-acc-label"><span class="label-text">Has <span class="nick">{{ nickname }}</span> ever experienced an adversity?</span></div>
+        </button>
+        <div class="neg-acc-body">{{ negative_events.adverse|default:'No response recorded yet.' }}</div>
+      </div>
+
+      <div class="neg-acc-item">
+        <button type="button" class="neg-acc-header" aria-expanded="false">
+          <div class="neg-acc-toggle" aria-hidden="true">▶</div>
+          <div class="neg-acc-label"><span class="label-text">Does <span class="nick">{{ nickname }}</span> feel safe in their neighborhood?</span></div>
+        </button>
+        <div class="neg-acc-body">{{ negative_events.neighbor|default:'No response recorded yet.' }}</div>
+      </div>
+
+      <div class="neg-acc-item">
+        <button type="button" class="neg-acc-header" aria-expanded="false">
+          <div class="neg-acc-toggle" aria-hidden="true">▶</div>
+          <div class="neg-acc-label"><span class="label-text">Does <span class="nick">{{ nickname }}</span> feel discriminated against?</span></div>
+        </button>
+        <div class="neg-acc-body">{{ negative_events.discriminate|default:'No response recorded yet.' }}</div>
+      </div>
+
+      <div class="neg-acc-item">
+        <button type="button" class="neg-acc-header" aria-expanded="false">
+          <div class="neg-acc-toggle" aria-hidden="true">▶</div>
+          <div class="neg-acc-label"><span class="label-text">What does <span class="nick">{{ nickname }}</span> struggle with daily?</span></div>
+        </button>
+        <div class="neg-acc-body">{{ negative_events.stress|default:'No response recorded yet.' }}</div>
+      </div>
     </div>
+
+    <script>
+      (function(){
+        const items = document.querySelectorAll('.neg-acc-item');
+        const COLLAPSED = '▶';
+        const EXPANDED = '▼';
+        items.forEach(item=>{
+          const btn = item.querySelector('.neg-acc-header');
+          const body = item.querySelector('.neg-acc-body');
+          const toggle = item.querySelector('.neg-acc-toggle');
+          // ensure initial icon
+          if (toggle) toggle.textContent = COLLAPSED;
+          btn.addEventListener('click', ()=>{
+            const expanded = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+            if (!expanded) {
+              body.classList.add('open');
+              if (toggle) toggle.textContent = EXPANDED;
+            } else {
+              body.classList.remove('open');
+              if (toggle) toggle.textContent = COLLAPSED;
+            }
+          });
+        });
+      })();
+    </script>
   </section>
-  {% endif %}
 
-  {% if iron_sponge %}
-  <section class="section">
-    <div class="section-head">
-      <h2 class="section-title">Iron & Sponge Reflection</h2>
-      <span class="section-tag tag-quiz">Domain Patterns</span>
-    </div>
-    <div class="grid">
-      {% if iron_sponge.school_type %}
-      <article class="item">
-        <div class="item-label">🎓 School Domain</div>
-        <div class="pill-row">
-          <span class="result-pill {% if iron_sponge.school_type == 'iron' %}pill-iron{% elif iron_sponge.school_type == 'sponge' %}pill-sponge{% else %}pill-balanced{% endif %}">
-            {% if iron_sponge.school_type == 'iron' %}Iron-Like{% elif iron_sponge.school_type == 'sponge' %}Sponge-Like{% else %}Balanced{% endif %}
-          </span>
-        </div>
-        <p class="item-text">Iron: {{ iron_sponge.school_iron_count|default:0 }} | Sponge: {{ iron_sponge.school_sponge_count|default:0 }} | Neither: {{ iron_sponge.school_neither_count|default:0 }}</p>
-      </article>
-      {% endif %}
-
-      {% if iron_sponge.family_type %}
-      <article class="item">
-        <div class="item-label">🏠 Family Domain</div>
-        <div class="pill-row">
-          <span class="result-pill {% if iron_sponge.family_type == 'iron' %}pill-iron{% elif iron_sponge.family_type == 'sponge' %}pill-sponge{% else %}pill-balanced{% endif %}">
-            {% if iron_sponge.family_type == 'iron' %}Iron-Like{% elif iron_sponge.family_type == 'sponge' %}Sponge-Like{% else %}Balanced{% endif %}
-          </span>
-        </div>
-        <p class="item-text">Iron: {{ iron_sponge.family_iron_count|default:0 }} | Sponge: {{ iron_sponge.family_sponge_count|default:0 }} | Neither: {{ iron_sponge.family_neither_count|default:0 }}</p>
-      </article>
-      {% endif %}
-
-      {% if iron_sponge.friend_type %}
-      <article class="item">
-        <div class="item-label">👥 Friend Domain</div>
-        <div class="pill-row">
-          <span class="result-pill {% if iron_sponge.friend_type == 'iron' %}pill-iron{% elif iron_sponge.friend_type == 'sponge' %}pill-sponge{% else %}pill-balanced{% endif %}">
-            {% if iron_sponge.friend_type == 'iron' %}Iron-Like{% elif iron_sponge.friend_type == 'sponge' %}Sponge-Like{% else %}Balanced{% endif %}
-          </span>
-        </div>
-        <p class="item-text">Iron: {{ iron_sponge.friend_iron_count|default:0 }} | Sponge: {{ iron_sponge.friend_sponge_count|default:0 }} | Neither: {{ iron_sponge.friend_neither_count|default:0 }}</p>
-      </article>
-      {% endif %}
-    </div>
-  </section>
-  {% endif %}
-
-  {% if journal_entries %}
-  <section class="section">
-    <div class="section-head">
-      <h2 class="section-title">Journal Reflections</h2>
-      <span class="section-tag tag-journal">Story Fragments</span>
-    </div>
-    <div class="grid">
-      {% if journal_entries.things_to_change %}
-      <article class="item item-full">
-        <div class="item-label">🎯 Things I Want to Work On</div>
-        <p class="item-text">{{ journal_entries.things_to_change }}</p>
-      </article>
-      {% endif %}
-      {% if journal_entries.answer1 %}
-      <article class="item">
-        <div class="item-label">🌟 Experience That Changed You</div>
-        <p class="item-text">{{ journal_entries.answer1 }}</p>
-      </article>
-      {% endif %}
-      {% if journal_entries.answer2 %}
-      <article class="item">
-        <div class="item-label">🧠 Thinking Shift</div>
-        <p class="item-text">{{ journal_entries.answer2 }}</p>
-      </article>
-      {% endif %}
-      {% if journal_entries.answer3 %}
-      <article class="item">
-        <div class="item-label">🎭 Feelings or Triggers</div>
-        <p class="item-text">{{ journal_entries.answer3 }}</p>
-      </article>
-      {% endif %}
-      {% if journal_entries.answer4 %}
-      <article class="item">
-        <div class="item-label">💬 Reflection Process</div>
-        <p class="item-text">{{ journal_entries.answer4 }}</p>
-      </article>
-      {% endif %}
-    </div>
-  </section>
-  {% endif %}
-
-  {% if activity_plan %}
-  <section class="section">
-    <div class="section-head">
-      <h2 class="section-title">Positive Activity Plan</h2>
-      <span class="section-tag tag-plan">Action Blueprint</span>
-    </div>
-    <div class="grid">
-      {% if activity_plan.who %}
-      <article class="item">
-        <div class="item-label">👥 Who</div>
-        <p class="item-text">{{ activity_plan.who.response|default:activity_plan.who.category }}</p>
-      </article>
-      {% endif %}
-      {% if activity_plan.where %}
-      <article class="item">
-        <div class="item-label">📍 Where</div>
-        <p class="item-text">{{ activity_plan.where.response|default:activity_plan.where.category }}</p>
-      </article>
-      {% endif %}
-      {% if activity_plan.what %}
-      <article class="item">
-        <div class="item-label">🎯 What</div>
-        <p class="item-text">{{ activity_plan.what.activity }}</p>
-      </article>
-      {% endif %}
-      {% if activity_plan.when %}
-      <article class="item">
-        <div class="item-label">⏰ When</div>
-        <p class="item-text">{{ activity_plan.when.timing }}</p>
-      </article>
-      {% endif %}
-    </div>
-  </section>
-  {% endif %}
-
-  {% if implementation_feedback or pmr_feedback.response %}
   <section class="section">
     <div class="section-head">
       <h2 class="section-title">Implementation Considerations</h2>
-      <span class="section-tag tag-quiz">Feedback Insights</span>
     </div>
-    <div class="grid">
-      {% if implementation_feedback.psychoeducation %}
-      <article class="item item-full" style="background: #f5f0ff; border: 1px solid #ede7ff;">
+    <div style="margin-bottom: 14px; color: #1f1e3a; font-size: 14px; line-height: 1.6;">
+      Below is a list of responses youth gave concerning what their views are of the unique elements of RENEW.
+    </div>
+
+    <style>
+      .impl-accordion { display:block; border-radius:12px; overflow:hidden; border:1px solid var(--line); }
+      .impl-acc-item { border-bottom:1px solid var(--line); background: #faf9ff; }
+      .impl-acc-header { display:flex; align-items:center; justify-content:flex-start; gap:12px; padding:14px; cursor:pointer; }
+      .impl-acc-label { display:flex; align-items:center; gap:8px; font-weight:800; color:var(--brand); }
+      .impl-acc-toggle { min-width:36px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e9e6f7; transition:transform .22s ease; margin-right:6px; font-weight:800; }
+      .impl-acc-body { padding: 0 14px 0 14px; color:#2e2b4f; line-height:1.6; font-size:14px; display:none; }
+      .impl-acc-body.open { display:block; padding: 8px 14px 16px 14px; }
+      .impl-acc-item:last-child { border-bottom:none; }
+      @media print {
+        .impl-acc-body { display:block !important; max-height: none !important; overflow: visible !important; padding: 8px 14px 16px 14px !important; }
+        .impl-acc-toggle { display:none; }
+      }
+    </style>
+
+    <div class="impl-accordion" role="list">
+      {% if psychoeducation_feedback_list and psychoeducation_feedback_list|length > 0 %}
+      <div class="impl-acc-item">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
           <span style="font-size: 20px;">📚</span>
           <div class="item-label" style="margin: 0;">Psychoeducation Feedback</div>
         </div>
-        <p class="item-text" style="margin: 0 0 8px 0; color: #1f1e3a; font-weight: 600;">How did {{ nickname }} feel about psychoeducation?</p>
-        <p class="item-text" style="margin: 0; color: #7c3aed; font-style: italic; font-weight: 500; line-height: 1.6;">{{ implementation_feedback.psychoeducation }}</p>
-      </article>
+        <button type="button" class="impl-acc-header" aria-expanded="false">
+          <div class="impl-acc-toggle" aria-hidden="true">▶</div>
+          <div class="impl-acc-label"><span class="label-text">How did <span class="nick">{{ nickname }}</span> feel about psychoeducation?</span></div>
+        </button>
+        <div class="impl-acc-body">
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            {% for opt in psychoeducation_feedback_list %}
+            <div style="display:flex; align-items:center; gap:12px; padding:14px; border-radius:10px; border:1px solid #ddd; background: {% if opt.selected %}#f4eefb{% else %}#fafafa{% endif %};">
+              <div style="width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; border:1px solid {% if opt.selected %}var(--brand){% else %}#d1d5db{% endif %}; background: {% if opt.selected %}var(--brand){% else %}#fff{% endif %}; color:#fff; font-weight:800;">
+                {% if opt.selected %}✓{% endif %}
+              </div>
+              <div style="color:#1f1e3a; font-weight:600;">{{ opt.label }}</div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% elif implementation_feedback.psychoeducation %}
+      <div class="impl-acc-item">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span style="font-size: 20px;">📚</span>
+          <div class="item-label" style="margin: 0;">Psychoeducation Feedback</div>
+        </div>
+        <button type="button" class="impl-acc-header" aria-expanded="false">
+          <div class="impl-acc-toggle" aria-hidden="true">▶</div>
+          <div class="impl-acc-label"><span class="label-text">How did <span class="nick">{{ nickname }}</span> feel about psychoeducation?</span></div>
+        </button>
+        <div class="impl-acc-body">{{ implementation_feedback.psychoeducation }}</div>
+      </div>
       {% endif %}
-      {% if pmr_feedback.response %}
-      <article class="item item-full" style="background: #f5f0ff; border: 1px solid #ede7ff;">
+
+      <div class="impl-acc-item">
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
           <span style="font-size: 20px;">😌</span>
           <div class="item-label" style="margin: 0;">Progressive Muscle Relaxation Feedback</div>
         </div>
-        <p class="item-text" style="margin: 0 0 8px 0; color: #1f1e3a; font-weight: 600;">{{ pmr_feedback.question }}</p>
-        <p class="item-text" style="margin: 0; color: #7c3aed; font-style: italic; font-weight: 500; line-height: 1.6;">{{ pmr_feedback.response }}</p>
-      </article>
-      {% endif %}
-      {% if implementation_feedback.pmr_feeling %}
-      <article class="item item-full" style="background: #f5f0ff; border: 1px solid #ede7ff;">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-          <span style="font-size: 20px;">😌</span>
-          <div class="item-label" style="margin: 0;">Progressive Muscle Relaxation</div>
-        </div>
-        <p class="item-text" style="margin: 0 0 8px 0; color: #1f1e3a; font-weight: 600;">How did {{ nickname }}'s body feel after PMR?</p>
-        <p class="item-text" style="margin: 0; color: #7c3aed; font-style: italic; font-weight: 500;">{{ implementation_feedback.pmr_feeling }}</p>
-      </article>
-      {% endif %}
-      {% if implementation_feedback.pmr_again %}
-      <article class="item item-full" style="background: #f5f0ff; border: 1px solid #ede7ff;">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-          <span style="font-size: 20px;">🔄</span>
-          <div class="item-label" style="margin: 0;">Willingness to Continue</div>
-        </div>
-        <p class="item-text" style="margin: 0 0 8px 0; color: #1f1e3a; font-weight: 600;">Does {{ nickname }} want to try PMR again?</p>
-        <p class="item-text" style="margin: 0; color: #7c3aed; font-style: italic; font-weight: 500;">{{ implementation_feedback.pmr_again }}</p>
-      </article>
-      {% endif %}
-    </div>
-  </section>
-  {% endif %}
-
-  {% if attention_check %}
-  <section class="section">
-    <div class="section-head">
-      <h2 class="section-title">Attention Check Results</h2>
-      <span class="section-tag tag-quiz">Engagement Markers</span>
-    </div>
-    <p style="color: #656386; font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
-      Throughout RENEW, engagement with psychoeducation content was measured through attention check questions. The number of attempts reflects engagement with the material.
-    </p>
-    <div style="display: grid; gap: 14px;">
-      {% for question in attention_check %}
-      <article style="
-        background: #f3f0ff;
-        border: 1px solid #e8e0ff;
-        border-radius: 14px;
-        padding: 18px;
-        box-shadow: 0 2px 8px rgba(95, 69, 173, 0.05);
-      ">
-        <div style="display: flex; align-items: flex-start; gap: 12px;">
-          <div style="
-            background: #fecccb;
-            color: #dc2626;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 20px;
-            flex-shrink: 0;
-          ">?</div>
-          <div style="flex: 1;">
-            <p style="
-              margin: 0 0 8px 0;
-              font-size: 12px;
-              font-weight: 800;
-              letter-spacing: 0.03em;
-              color: #5f45ad;
-              text-transform: uppercase;
-            ">Question {{ forloop.counter }}</p>
-            <p style="
-              margin: 0 0 10px 0;
-              font-size: 14px;
-              font-weight: 600;
-              color: #1f1e3a;
-              line-height: 1.5;
-            ">{{ question.text }}</p>
-            <p style="
-              margin: 0;
-              font-size: 14px;
-              font-weight: 700;
-              color: #16a34a;
-            ">{{ question.attempts }} attempt{{ question.attempts|pluralize }}</p>
+        <button type="button" class="impl-acc-header" aria-expanded="false">
+          <div class="impl-acc-toggle" aria-hidden="true">▶</div>
+          <div class="impl-acc-label"><span class="label-text">How did <span class="nick">{{ nickname }}</span>'s body feel after PMR?</span></div>
+        </button>
+        <div class="impl-acc-body">
+          <div style="border:1px solid #e8e0ff; border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:12px; background:#fff;">
+            <div class="pmr-option" style="padding:14px; border-radius:10px; border:1px solid #e9e6f7; {% if 'relaxed' in pmr_feedback.selected %}background:var(--brand); color:#fff; border-color:var(--brand);{% endif %}">Relaxed</div>
+            <div class="pmr-option" style="padding:14px; border-radius:10px; border:1px solid #e9e6f7; {% if 'stressed' in pmr_feedback.selected %}background:var(--brand); color:#fff; border-color:var(--brand);{% endif %}">More stressed than ever</div>
+            <div class="pmr-option" style="padding:14px; border-radius:10px; border:1px solid #e9e6f7; {% if 'same' in pmr_feedback.selected %}background:var(--brand); color:#fff; border-color:var(--brand);{% endif %}">Kind of the same as before</div>
           </div>
         </div>
-      </article>
+      </div>
+
+      <div class="impl-acc-item">
+        <button type="button" class="impl-acc-header" aria-expanded="false">
+          <div class="impl-acc-toggle" aria-hidden="true">▶</div>
+          <div class="impl-acc-label"><span class="label-text">Does <span class="nick">{{ nickname }}</span> want to try PMR again?</span></div>
+        </button>
+        <div class="impl-acc-body">
+          {% if pmr_try_list and pmr_try_list|length > 0 %}
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            {% for opt in pmr_try_list %}
+            <div style="display:flex; align-items:center; gap:12px; padding:14px; border-radius:10px; border:1px solid #ddd; background: {% if opt.selected %}#f4eefb{% else %}#fafafa{% endif %};">
+              <div style="width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; border:1px solid {% if opt.selected %}var(--brand){% else %}#d1d5db{% endif %}; background: {% if opt.selected %}var(--brand){% else %}#fff{% endif %}; color:#fff; font-weight:800;">
+                {% if opt.selected %}✓{% endif %}
+              </div>
+              <div style="color:#1f1e3a; font-weight:600;">{{ opt.label }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+            <div style="color:#7c3aed; font-style: italic; font-weight: 500;">No PMR try-again response recorded.</div>
+          {% endif %}
+        </div>
+      </div>
+
+
+
+      <!-- New: Journaling Feedback (checkbox-style) -->
+      <div class="impl-acc-item">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span style="font-size: 20px;">📝</span>
+          <div class="item-label" style="margin: 0;">Journaling Feedback</div>
+        </div>
+        <button type="button" class="impl-acc-header" aria-expanded="false">
+          <div class="impl-acc-toggle" aria-hidden="true">▶</div>
+          <div class="impl-acc-label"><span class="label-text">How did <span class="nick">{{ nickname }}</span> feel about journaling?</span></div>
+        </button>
+        <div class="impl-acc-body">
+          {% if journaling_feedback_list and journaling_feedback_list|length > 0 %}
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            {% for opt in journaling_feedback_list %}
+            <div style="display:flex; align-items:center; gap:12px; padding:14px; border-radius:10px; border:1px solid #ddd; background: {% if opt.selected %}#f4eefb{% else %}#fafafa{% endif %};">
+              <div style="width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; border:1px solid {% if opt.selected %}var(--brand){% else %}#d1d5db{% endif %}; background: {% if opt.selected %}var(--brand){% else %}#fff{% endif %}; color:#fff; font-weight:800;">
+                {% if opt.selected %}✓{% endif %}
+              </div>
+              <div style="color:#1f1e3a; font-weight:600;">{{ opt.label }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+            <div style="color:#7c3aed; font-style: italic; font-weight: 500;">No journaling feedback recorded.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Positive Activity Plan Feedback -->
+      <div class="impl-acc-item">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span style="font-size: 20px;">🌟</span>
+          <div class="item-label" style="margin: 0;">Positive Activity Plan</div>
+        </div>
+        <button type="button" class="impl-acc-header" aria-expanded="false">
+          <div class="impl-acc-toggle" aria-hidden="true">▶</div>
+          <div class="impl-acc-label"><span class="label-text">Is <span class="nick">{{ nickname }}</span> optimistic about the positive activity plan?</span></div>
+        </button>
+        <div class="impl-acc-body">
+          {% if activity_plan_list and activity_plan_list|length > 0 %}
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            {% for opt in activity_plan_list %}
+            <div style="display:flex; align-items:center; gap:12px; padding:14px; border-radius:10px; border:1px solid #ddd; background: {% if opt.selected %}#f4eefb{% else %}#fafafa{% endif %};">
+              <div style="width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; border:1px solid {% if opt.selected %}var(--brand){% else %}#d1d5db{% endif %}; background: {% if opt.selected %}var(--brand){% else %}#fff{% endif %}; color:#fff; font-weight:800;">
+                {% if opt.selected %}✓{% endif %}
+              </div>
+              <div style="color:#1f1e3a; font-weight:600;">{{ opt.label }}</div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+            <div style="color:#7c3aed; font-style: italic; font-weight: 500;">No positive activity plan feedback recorded.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if implementation_feedback.journaling_support %}
+      <div class="impl-acc-item">
+        <button type="button" class="impl-acc-header" aria-expanded="false">
+          <div class="impl-acc-toggle" aria-hidden="true">▶</div>
+          <div class="impl-acc-label">What type of support do they want about journaling?</div>
+        </button>
+        <div class="impl-acc-body">{{ implementation_feedback.journaling_support }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <script>
+      (function(){
+        const items = document.querySelectorAll('.impl-acc-item');
+        const COLLAPSED = '▶';
+        const EXPANDED = '▼';
+        items.forEach(item=>{
+          const btn = item.querySelector('.impl-acc-header');
+          const body = item.querySelector('.impl-acc-body');
+          const toggle = item.querySelector('.impl-acc-toggle');
+          // ensure initial icon
+          if (toggle) toggle.textContent = COLLAPSED;
+          btn.addEventListener('click', ()=>{
+            const expanded = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+            if (!expanded) {
+              body.classList.add('open');
+              if (toggle) toggle.textContent = EXPANDED;
+            } else {
+              body.classList.remove('open');
+              if (toggle) toggle.textContent = COLLAPSED;
+            }
+          });
+        });
+      })();
+    </script>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">Attention Check</h2>
+    </div>
+      <p style="color: #656386; font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
+      <span class="label-text">Throughout RENEW, <span class="nick">{{ nickname }}</span> was asked some questions as part of the psychoeducation. The number of times <span class="nick">{{ nickname }}</span> got it right could be used as a marker of engagement in the first session. Here are the number of times it took <span class="nick">{{ nickname }}</span> to get the correct answer:</span>
+    </p>
+
+    <style>
+      .attn-accordion { display:block; border-radius:12px; overflow:hidden; border:1px solid var(--line); }
+      .attn-acc-item { border-bottom:1px solid var(--line); background: #faf9ff; }
+      .attn-acc-header { display:flex; align-items:center; justify-content:flex-start; gap:12px; padding:14px; cursor:pointer; width:100%; border:none; background:transparent; text-align:left; }
+      .attn-acc-label { display:flex; align-items:center; gap:8px; font-weight:800; color:var(--brand); }
+      .attn-acc-toggle { min-width:36px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e9e6f7; transition:transform .22s ease; margin-right:6px; font-weight:800; }
+      .attn-acc-body { padding: 0 14px 0 14px; color:#2e2b4f; line-height:1.6; font-size:14px; display:none; }
+      .attn-acc-body.open { display:block; padding: 8px 14px 16px 14px; }
+      .attn-acc-item:last-child { border-bottom:none; }
+      @media print {
+        .attn-acc-body { display:block !important; max-height: none !important; overflow: visible !important; padding: 8px 14px 16px 14px !important; }
+        .attn-acc-toggle { display:none; }
+      }
+    </style>
+
+    <div class="attn-accordion" role="list">
+      {% for question in attention_check %}
+      <div class="attn-acc-item">
+        <button type="button" class="attn-acc-header" aria-expanded="false">
+          <div class="attn-acc-toggle" aria-hidden="true">▶</div>
+          <div class="attn-acc-label">{{ forloop.counter }}. {{ question.text }}</div>
+        </button>
+        <div class="attn-acc-body">
+          {% if question.answered %}
+          <div style="font-weight:800; color:#dc2626;">{{ question.attempts }} attempt{{ question.attempts|pluralize }}</div>
+          {% else %}
+          <div style="color:#7c3aed; font-style: italic; font-weight: 500;"><span class="nick">{{ nickname }}</span> hasn't answered this question yet.</div>
+          {% endif %}
+        </div>
+      </div>
       {% endfor %}
     </div>
+
+    <script>
+      (function(){
+        const items = document.querySelectorAll('.attn-acc-item');
+        const COLLAPSED = '▶';
+        const EXPANDED = '▼';
+        items.forEach(item => {
+          const btn = item.querySelector('.attn-acc-header');
+          const body = item.querySelector('.attn-acc-body');
+          const toggle = item.querySelector('.attn-acc-toggle');
+          if (toggle) toggle.textContent = COLLAPSED;
+          btn.addEventListener('click', () => {
+            const expanded = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+            if (!expanded) {
+              body.classList.add('open');
+              if (toggle) toggle.textContent = EXPANDED;
+            } else {
+              body.classList.remove('open');
+              if (toggle) toggle.textContent = COLLAPSED;
+            }
+          });
+        });
+      })();
+    </script>
   </section>
-  {% endif %}
+
+  {# Journal Reflections removed per design request #}
+
+  <section class="section">
+    <div class="section-head">
+      <h2 class="section-title">Additional Information</h2>
+    </div>
+
+    <style>
+      .info-accordion { display:block; border-radius:12px; overflow:hidden; border:1px solid var(--line); }
+      .info-acc-item { border-bottom:1px solid var(--line); background: #faf9ff; }
+      .info-acc-header { display:flex; align-items:center; justify-content:flex-start; gap:12px; padding:14px; cursor:pointer; width:100%; border:none; background:transparent; text-align:left; }
+      .info-acc-label { display:flex; align-items:center; gap:8px; font-weight:800; color:var(--brand); }
+      .info-acc-toggle { min-width:36px; height:28px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; background:#fff; border:1px solid #e9e6f7; transition:transform .22s ease; margin-right:6px; font-weight:800; }
+      .info-acc-body { padding: 0 14px 0 14px; color:#2e2b4f; line-height:1.6; font-size:14px; display:none; }
+      .info-acc-body.open { display:block; padding: 8px 14px 16px 14px; }
+      .info-acc-item:last-child { border-bottom:none; }
+      .info-subtitle { font-weight: 800; color: #1f1e3a; text-decoration: underline; margin-bottom: 8px; }
+      .info-description { color:#1f1e3a; margin-bottom: 10px; }
+      .info-response-list { display:block; padding:0; margin:0; }
+      .iron-sponge-grid { display:flex; flex-direction:column; gap:10px; }
+      .domain-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px; border-radius:8px; background: #fff; box-shadow: 0 1px 0 rgba(31,30,58,0.04); }
+      .domain-left { display:flex; align-items:center; gap:10px; font-weight:700; color:var(--brand); }
+      .domain-icon { width:28px; height:28px; object-fit:contain; display:inline-block; }
+      .domain-stats { display:flex; gap:8px; align-items:center; }
+      .is-badge { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-size:13px; color:#fff; font-weight:700; }
+      .is-badge .count { font-weight:800; margin-left:6px; background:rgba(255,255,255,0.12); padding:2px 6px; border-radius:999px; font-size:12px; }
+      .is-badge.iron { background: linear-gradient(180deg,#3b82f6,#1e40af); }
+      .is-badge.sponge { background: linear-gradient(180deg,#fb7185,#b91c1c); }
+      .is-badge.neither { background: linear-gradient(180deg,#9ca3af,#6b7280); }
+      @media print {
+        .info-acc-body { display:block !important; max-height: none !important; overflow: visible !important; padding: 8px 14px 16px 14px !important; }
+        .info-acc-toggle { display:none; }
+      }
+    </style>
+
+    <div class="info-accordion" role="list">
+      <div class="info-acc-item">
+        <button type="button" class="info-acc-header" aria-expanded="false">
+          <div class="info-acc-toggle" aria-hidden="true">▶</div>
+          <div class="info-acc-label">Iron and Sponge Quiz Results</div>
+        </button>
+        <div class="info-acc-body">
+          <div class="info-subtitle">Iron and Sponge Quiz Results:</div>
+          <div class="info-description">This provides information on how the youth perceives how sensitive they are to different situations. It could provide insight into certain environments where youth experience high emotions.</div>
+          <div class="info-response-list">
+            <div class="iron-sponge-grid">
+              <div class="domain-row">
+                <div class="domain-left"><span class="domain-icon" aria-hidden="true">🎓</span><span>School</span></div>
+                <div class="domain-stats">
+                  <div class="is-badge iron">🛡️ Iron <span class="count">{{ iron_sponge.school_iron_count|default:0 }}</span></div>
+                  <div class="is-badge sponge">🧽 Sponge <span class="count">{{ iron_sponge.school_sponge_count|default:0 }}</span></div>
+                  <div class="is-badge neither">➖ Neither <span class="count">{{ iron_sponge.school_neither_count|default:0 }}</span></div>
+                </div>
+              </div>
+
+              <div class="domain-row">
+                <div class="domain-left"><span class="domain-icon" aria-hidden="true">🧑‍🤝‍🧑</span><span>Friend</span></div>
+                <div class="domain-stats">
+                  <div class="is-badge iron">🛡️ Iron <span class="count">{{ iron_sponge.friend_iron_count|default:0 }}</span></div>
+                  <div class="is-badge sponge">🧽 Sponge <span class="count">{{ iron_sponge.friend_sponge_count|default:0 }}</span></div>
+                  <div class="is-badge neither">➖ Neither <span class="count">{{ iron_sponge.friend_neither_count|default:0 }}</span></div>
+                </div>
+              </div>
+
+              <div class="domain-row">
+                <div class="domain-left"><span class="domain-icon" aria-hidden="true">🏠</span><span>Family</span></div>
+                <div class="domain-stats">
+                  <div class="is-badge iron">🛡️ Iron <span class="count">{{ iron_sponge.family_iron_count|default:0 }}</span></div>
+                  <div class="is-badge sponge">🧽 Sponge <span class="count">{{ iron_sponge.family_sponge_count|default:0 }}</span></div>
+                  <div class="is-badge neither">➖ Neither <span class="count">{{ iron_sponge.family_neither_count|default:0 }}</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="info-acc-item">
+        <button type="button" class="info-acc-header" aria-expanded="false">
+          <div class="info-acc-toggle" aria-hidden="true">▶</div>
+          <div class="info-acc-label">Positive Planned Activity Details</div>
+        </button>
+        <div class="info-acc-body">
+          <div class="info-subtitle">Positive Planned Activity Details:</div>
+          <div class="info-description">Below is the activity that {{ nickname }} stated they would like to engage in, including what they wanted to share with what they learned from RENEW</div>
+          <div class="info-response-list">
+            <div class="iron-sponge-grid">
+              <div class="domain-row">
+                <div class="domain-left"><span class="domain-icon" aria-hidden="true">👥</span><span>Who</span></div>
+                <div class="domain-stats">
+                  <div class="is-badge neither">{{ activity_plan.who.response|default:activity_plan.who.category|default:'No response recorded yet.' }}</div>
+                </div>
+              </div>
+
+              <div class="domain-row">
+                <div class="domain-left"><span class="domain-icon" aria-hidden="true">📍</span><span>Where</span></div>
+                <div class="domain-stats">
+                  <div class="is-badge neither">{{ activity_plan.where.response|default:activity_plan.where.category|default:'No response recorded yet.' }}</div>
+                </div>
+              </div>
+
+              <div class="domain-row">
+                <div class="domain-left"><span class="domain-icon" aria-hidden="true">📝</span><span>What</span></div>
+                <div class="domain-stats">
+                  <div class="is-badge neither">{{ activity_plan.what.activity|default:'No response recorded yet.' }}</div>
+                </div>
+              </div>
+
+              <div class="domain-row">
+                <div class="domain-left"><span class="domain-icon" aria-hidden="true">⏰</span><span>When</span></div>
+                <div class="domain-stats">
+                  <div class="is-badge neither">{{ activity_plan.when.timing|default:'No response recorded yet.' }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function(){
+        const items = document.querySelectorAll('.info-acc-item');
+        const COLLAPSED = '▶';
+        const EXPANDED = '▼';
+        items.forEach(item=>{
+          const btn = item.querySelector('.info-acc-header');
+          const body = item.querySelector('.info-acc-body');
+          const toggle = item.querySelector('.info-acc-toggle');
+          if (!btn) return;
+          if (toggle) toggle.textContent = COLLAPSED;
+          btn.addEventListener('click', ()=>{
+            const expanded = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+            if (!expanded) {
+              body.classList.add('open');
+              if (toggle) toggle.textContent = EXPANDED;
+            } else {
+              body.classList.remove('open');
+              if (toggle) toggle.textContent = COLLAPSED;
+            }
+          });
+        });
+      })();
+    </script>
+  </section>
 
   {% if not positive_events and not negative_events and not iron_sponge and not journal_entries and not activity_plan and not implementation_feedback and not attention_check %}
   <div class="empty-note">No summary data is available yet for this participant.</div>
   {% endif %}
 </div>
+
+<script>
+(function(){
+  try {
+    // Try to read nickname from structured localStorage (renew_study_data) or from legacy 'nickname'
+    var localNickname = '';
+    try {
+      var raw = localStorage.getItem('renew_study_data');
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.nickname) localNickname = parsed.nickname;
+      }
+    } catch (e) {}
+    if (!localNickname) {
+      try { localNickname = localStorage.getItem('nickname') || ''; } catch (e) {}
+    }
+    localNickname = (localNickname || '').toString().trim();
+    if (localNickname) {
+      document.querySelectorAll('.nick').forEach(function(el){ el.textContent = localNickname; });
+    }
+  } catch (e) { /* ignore */ }
+})();
+</script>

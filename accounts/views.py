@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 import json
 import traceback
 import uuid
@@ -136,6 +136,7 @@ def skill_p3_view(request):
     """Skills Part 3"""
     return render(request, 'accounts/skill_p3.html')
 
+@ensure_csrf_cookie
 def skill_p4_view(request):
     """Skills Part 4 - Three Skill Categories Overview"""
     return render(request, 'accounts/skill_p4.html')
@@ -391,9 +392,51 @@ def submit_feedback_survey(request):
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
 def submit_journaling_survey(request):
-    """Handle journaling survey - now handled by localStorage"""
+    """Accept journaling survey responses and persist to FeedbackSurveyResponse.responses
+
+    Expects JSON: { "responses": ["share_family", ...], "nickname": "..." }
+    """
     if request.method == 'POST':
-        return JsonResponse({'success': True, 'message': 'Handled by localStorage'})
+        try:
+            data = json.loads(request.body or b'{}')
+            selected = data.get('responses', []) or []
+            nickname = data.get('nickname', '')
+
+            if not request.session.session_key:
+                request.session.create()
+            session_key = request.session.session_key
+
+            # Map the data-value codes to human-readable labels (matches skill_p4.html)
+            mapping = {
+                'share_family': 'I like writing about these things, and I want to share it with a family member or friend.',
+                'share_counselor': 'I like writing about these things, and I want to share it with a counselor.',
+                'like_private': "I like writing about these things, but I don't want to share with anyone.",
+                'prefer_talking': "I don't like writing about these things. I would rather talk to someone.",
+                'dislike_both': "I don't like writing or talking about these things. It makes me feel worse.",
+            }
+
+            labels = [mapping.get(code, code) for code in selected]
+
+            from accounts.models import FeedbackSurveyResponse
+
+            obj, created = FeedbackSurveyResponse.objects.get_or_create(
+                session_key=session_key,
+                defaults={'nickname': nickname, 'responses': []}
+            )
+
+            existing = obj.responses or []
+            for lbl in labels:
+                if lbl and lbl not in existing:
+                    existing.append(lbl)
+
+            obj.responses = existing
+            if nickname:
+                obj.nickname = nickname
+            obj.save()
+
+            return JsonResponse({'success': True, 'saved': labels, 'created': created})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
 @csrf_exempt
@@ -435,6 +478,116 @@ def submit_pmr_survey(request):
                 'created': created,
                 'selected_feelings': selected_feelings,
             })
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+
+@csrf_exempt
+def submit_pmr_full(request):
+    """Save the full PMR survey selections (main modal) to FeedbackSurveyResponse.responses
+    Expects JSON: { "selected_options": [...], "nickname": "..." }
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body or b'{}')
+            selected = data.get('selected_options', []) or []
+            nickname = data.get('nickname', '')
+
+            if not request.session.session_key:
+                request.session.create()
+            session_key = request.session.session_key
+
+            # Map option codes to human-readable labels (should match pmr_p1.js texts)
+            mapping = {
+                'category_liked': 'I liked it',
+                'sub_liked_own': 'I want to try it on my own',
+                'sub_liked_counselor': 'I would like to try doing it more with a counselor',
+                'category_didnt_like': "I didn't like it",
+                'sub_didnt_like_no_again': 'I would prefer not to try something like that again',
+                'sub_didnt_like_try_counselor': 'I would be open to trying it with a counselor again to see if there was something I was doing wrong',
+                'sub_didnt_like_other_relaxation': 'I would be interested in talking to a counselor about other things I can practice to feel more relaxed',
+                'category_dont_know': "I don't know how I feel about it",
+            }
+
+            labels = [mapping.get(code, code) for code in selected]
+
+            from accounts.models import FeedbackSurveyResponse
+
+            # Merge into existing FeedbackSurveyResponse.responses (avoid duplicates)
+            obj, created = FeedbackSurveyResponse.objects.get_or_create(
+                session_key=session_key,
+                defaults={'nickname': nickname, 'responses': []}
+            )
+
+            existing = obj.responses or []
+            # Add new labels preserving order, avoid dupes
+            for lbl in labels:
+                if lbl and lbl not in existing:
+                    existing.append(lbl)
+
+            obj.responses = existing
+            if nickname:
+                obj.nickname = nickname
+            obj.save()
+
+            return JsonResponse({'success': True, 'saved': labels, 'created': created})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+
+@csrf_exempt
+def submit_posplan_survey(request):
+    """Save Positive Activity Plan feeling selections into FeedbackSurveyResponse.responses
+
+    Expects JSON: { "selected": ["will_happen","excited",...], "nickname": "..." }
+    Maps codes to human-readable labels and appends to FeedbackSurveyResponse.responses.
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body or b'{}')
+            selected = data.get('selected', []) or []
+            nickname = data.get('nickname', '')
+
+            if not request.session.session_key:
+                request.session.create()
+            session_key = request.session.session_key
+
+            # Map codes to labels (must match UI texts)
+            mapping = {
+                'will_happen': 'I think this positive planned activity will happen',
+                'excited': "I'm excited",
+                'counselor_help': "But I'd love to talk to a counselor about it to make sure it happens!",
+                'wont_happen': "I don't think this will happen",
+                'not_sure': "I'm not sure this will happen",
+                'counselor_help_make': "But I'd like to talk to a counselor to give me help to make it happen",
+                'someone_else': 'I would like to share it with someone else at school',
+                'no_sharing': "I don't want to share this with anyone",
+                'open_counselor': "But I'd be open to talking to a counselor about it",
+                'no_counselor': "I don't want to talk to a counselor about it",
+            }
+
+            labels = [mapping.get(code, code) for code in selected]
+
+            from accounts.models import FeedbackSurveyResponse
+
+            obj, created = FeedbackSurveyResponse.objects.get_or_create(
+                session_key=session_key,
+                defaults={'nickname': nickname, 'responses': []}
+            )
+
+            existing = obj.responses or []
+            for lbl in labels:
+                if lbl and lbl not in existing:
+                    existing.append(lbl)
+
+            obj.responses = existing
+            if nickname:
+                obj.nickname = nickname
+            obj.save()
+
+            return JsonResponse({'success': True, 'saved': labels, 'created': created})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Invalid method'}, status=405)
@@ -497,6 +650,41 @@ def get_posplan_summary(request):
         return JsonResponse({'success': True, 'message': 'Handled by localStorage'})
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
+@csrf_exempt
+def save_journal_entry(request):
+    """AJAX endpoint to save journal entries to the database."""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            session_key = request.session.session_key
+            if not session_key:
+                request.session.create()
+                session_key = request.session.session_key
+
+            from accounts.models import JournalEntry
+            entry, created = JournalEntry.objects.get_or_create(
+                session_key=session_key,
+                defaults={'nickname': data.get('nickname', '')}
+            )
+
+            if 'things_to_change' in data:
+                entry.things_to_change = data['things_to_change']
+            if 'experiences_shaped_me' in data:
+                entry.experiences_shaped_me = data['experiences_shaped_me']
+            if 'nickname' in data:
+                entry.nickname = data['nickname']
+
+            entry.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Journal entry saved',
+                'session_key': session_key
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
 # New endpoint for Qualtrics export
 # Replace your existing export_to_qualtrics function with this enhanced version
 
@@ -552,6 +740,7 @@ def export_to_qualtrics(request):
             
             # Extract additional teaching survey data
             additional_teaching_survey = renew_data.get('additional_teaching_survey', {})
+            individual_privacy_settings = renew_data.get('individual_privacy_settings', {})
             
             # Debug: Print all survey response keys to help identify missing data
             print("All survey response keys:", list(survey_responses.keys()))
@@ -811,6 +1000,7 @@ def _build_beautiful_summary_context(session_key):
         PosplanActivityResponse,
         FeedbackSurveyResponse,
         AttentionCheckResponse,
+        JournalEntry,
     )
 
     pos_responses = list(PositiveEventResponse.objects.filter(session_key=session_key))
@@ -837,27 +1027,45 @@ def _build_beautiful_summary_context(session_key):
             nickname = candidate
             break
 
-    activity_plan = {}
+    activity_plan = {
+        'who': {'response': '', 'category': ''},
+        'where': {'response': '', 'category': ''},
+        'what': {'activity': ''},
+        'when': {'timing': ''},
+    }
     if posplan_db:
         activity_plan = {
-            'who': {'response': posplan_db.who, 'category': ''},
-            'where': {'response': posplan_db.where, 'category': ''},
-            'what': {'activity': posplan_db.what},
-            'when': {'timing': posplan_db.when},
+            'who': {'response': posplan_db.who or '', 'category': ''},
+            'where': {'response': posplan_db.where or '', 'category': ''},
+            'what': {'activity': posplan_db.what or ''},
+            'when': {'timing': posplan_db.when or ''},
         }
 
-    iron_sponge = {}
+    iron_sponge = {
+        'school_type': '',
+        'school_iron_count': 0,
+        'school_sponge_count': 0,
+        'school_neither_count': 0,
+        'family_type': '',
+        'family_iron_count': 0,
+        'family_sponge_count': 0,
+        'family_neither_count': 0,
+        'friend_type': '',
+        'friend_iron_count': 0,
+        'friend_sponge_count': 0,
+        'friend_neither_count': 0,
+    }
     if iron_sponge_db:
         iron_sponge = {
-            'school_type': iron_sponge_db.school_type,
+            'school_type': iron_sponge_db.school_type or '',
             'school_iron_count': iron_sponge_db.school_iron,
             'school_sponge_count': iron_sponge_db.school_sponge,
             'school_neither_count': iron_sponge_db.school_neither,
-            'family_type': iron_sponge_db.family_type,
+            'family_type': iron_sponge_db.family_type or '',
             'family_iron_count': iron_sponge_db.family_iron,
             'family_sponge_count': iron_sponge_db.family_sponge,
             'family_neither_count': iron_sponge_db.family_neither,
-            'friend_type': iron_sponge_db.friend_type,
+            'friend_type': iron_sponge_db.friend_type or '',
             'friend_iron_count': iron_sponge_db.friend_iron,
             'friend_sponge_count': iron_sponge_db.friend_sponge,
             'friend_neither_count': iron_sponge_db.friend_neither,
@@ -869,25 +1077,107 @@ def _build_beautiful_summary_context(session_key):
         pmr_feedback = {
             'question': f"How did {nickname} body feel after PMR?",
             'response': ', '.join(pmr_response.selected_feelings),
+            'selected': list(pmr_response.selected_feelings),
         }
+    else:
+        pmr_feedback = {'question': f"How did {nickname} body feel after PMR?", 'response': '', 'selected': []}
+
+    thoughts_question_ids = ['emo_p2_q1', 'emo_p2_q2', 'emo_p2_q3', 'emo_p2_q4']
+    thoughts_trigger_labels = [
+        'I liked learning about how the world around us affects people, and I want to talk to someone more about this.',
+        'I liked learning about how the world around us affects people, and I want to see or read more about it.',
+        'To be honest, I found some of this stuff a little boring, but I want to talk more about thoughts, feelings, and emotions.',
+        "To be honest, I didn't find what we talked about so far very interesting or helpful.",
+    ]
+
+    thoughts_correct_count = sum(
+        1 for check in attention_checks
+        if check.question_id in thoughts_question_ids and check.answered_correctly
+    )
+    thoughts_part4_done = 0
+    if feedback_db and feedback_db.responses:
+        saved_feedback = feedback_db.responses or []
+        if any(label in saved_feedback for label in thoughts_trigger_labels):
+            thoughts_part4_done = 1
+
+    thoughts_progress = min((thoughts_correct_count + thoughts_part4_done) / 5.0, 1.0)
 
     implementation_feedback = {}
     if feedback_db and feedback_db.responses:
         # responses is a list of selected feedback statements
         for response in feedback_db.responses:
-            if 'psychoeducation' in response.lower() or 'feel about psychoeducation' in response.lower():
+            response_lower = response.lower()
+            if 'psychoeducation' in response_lower or 'feel about psychoeducation' in response_lower:
                 implementation_feedback['psychoeducation'] = response
-            elif 'body' in response.lower() and 'pmr' in response.lower():
+            elif 'body' in response_lower and 'pmr' in response_lower:
                 implementation_feedback['pmr_feeling'] = response
-            elif 'again' in response.lower() or 'try it again' in response.lower():
+            elif 'again' in response_lower or 'try it again' in response_lower:
                 implementation_feedback['pmr_again'] = response
+            elif 'journaling' in response_lower and 'feel about journaling' in response_lower:
+                implementation_feedback['journaling'] = response
+            elif 'optimistic' in response_lower or 'activity plan' in response_lower:
+                if 'optimistic' in response_lower:
+                    implementation_feedback['activity_plan_optimistic'] = response
+            elif 'support' in response_lower and 'journaling' in response_lower:
+                implementation_feedback['journaling_support'] = response
 
     # If responses weren't properly categorized, check if we have a single psychoeducation response
     if not implementation_feedback and feedback_db and feedback_db.responses:
         if len(feedback_db.responses) > 0:
             implementation_feedback['psychoeducation'] = feedback_db.responses[0]
 
-    # Build attention check context
+    # Determine PMR 'try again' flag from implementation feedback if available
+    pmr_wants_try = False
+    pmr_try_text = ''
+    pmr_try_list = []
+
+    # Known PMR option labels (must match texts in pmr_p1.html)
+    pmr_option_labels = [
+        'I liked it',
+        'I want to try it on my own',
+        'I would like to try doing it more with a counselor',
+        "I didn't like it",
+        'I would prefer not to try something like that again',
+        'I would be open to trying it with a counselor again to see if there was something I was doing wrong',
+        'I would be interested in talking to a counselor about other things I can practice to feel more relaxed',
+        "I don't know how I feel about it",
+    ]
+
+    if feedback_db and feedback_db.responses:
+        # Build a selection list for PMR options based on stored responses
+        responses = feedback_db.responses or []
+        for opt in pmr_option_labels:
+            pmr_try_list.append({'label': opt, 'selected': opt in responses})
+        # If any PMR-related option selected, set pmr_wants_try
+        if any(item['selected'] for item in pmr_try_list):
+            pmr_wants_try = True
+            pmr_try_text = ', '.join([item['label'] for item in pmr_try_list if item['selected']])
+    else:
+        # fallback to previous implementation_feedback key if present
+        if implementation_feedback.get('pmr_again'):
+            pmr_wants_try = True
+            pmr_try_text = implementation_feedback.get('pmr_again')
+            # also include as simple list
+            pmr_try_list = [{'label': pmr_try_text, 'selected': True}]
+
+    # Build psychoeducation feedback list similar to pmr_try_list
+    psychoeducation_feedback_list = []
+    
+    # Known psychoeducation option labels
+    psychoeducation_option_labels = [
+        'I liked learning about how the world around us affects people, and I want to talk to someone more about this.',
+        'I liked learning about how the world around us affects people, and I want to see or read more about it.',
+        'To be honest, I found some of this stuff a little boring, but I want to talk more about thoughts, feelings, and emotions.',
+        "To be honest, I didn't find what we talked about so far very interesting or helpful.",
+    ]
+    
+    if feedback_db and feedback_db.responses:
+        # Build a selection list for psychoeducation options based on stored responses
+        responses = feedback_db.responses or []
+        for opt in psychoeducation_option_labels:
+            psychoeducation_feedback_list.append({'label': opt, 'selected': opt in responses})
+
+    # Build attention check context in the same order as the worksheet screenshot
     attention_check_data = []
     question_text_map = {
         'neg_p6_q1': 'Why might Mike react more to Coach Ramos\'s comments than Jackie does?',
@@ -897,34 +1187,174 @@ def _build_beautiful_summary_context(session_key):
         'emo_p2_q3': 'It\'s strange that Dave is fighting with his mom, as kids are usually just avoidant after a major life event.',
         'emo_p2_q4': 'Dave may keep thinking about his grandfather, and feeling sad in the room, because he is being "triggered".',
     }
+    # Explicitly group Mike items first, then Dave items, to match the worksheet layout.
+    attention_order = ['neg_p6_q1', 'neg_p7_q1', 'emo_p2_q1', 'emo_p2_q2', 'emo_p2_q3', 'emo_p2_q4']
+    attention_lookup = {check.question_id: check for check in attention_checks}
 
+    for question_id in attention_order:
+        check = attention_lookup.get(question_id)
+        question_data = {
+            'question_id': question_id,
+            'text': question_text_map.get(question_id, ''),
+            'attempts': 0,
+            'answered': False,
+        }
+        if check:
+            question_data['attempts'] = check.incorrect_attempts + 1  # +1 to include the correct attempt
+            question_data['answered'] = True
+        attention_check_data.append(question_data)
+
+    # Fetch journal entries from DB
+    journal_db = JournalEntry.objects.filter(session_key=session_key).first()
+    journal_entries = {}
+    if journal_db:
+        journal_entries = {
+            'things_to_change': journal_db.things_to_change,
+            'answer1': journal_db.experiences_shaped_me,  # map to answer1 for compatibility
+            'raw_content': journal_db.experiences_shaped_me,
+        }
+
+    # Build journaling feedback list from any saved FeedbackSurveyResponse.responses
+    journaling_feedback_list = []
+    journaling_option_labels = [
+        'I like writing about these things, and I want to share it with a family member or friend.',
+        'I like writing about these things, and I want to share it with a counselor.',
+        "I like writing about these things, but I don't want to share with anyone.",
+        "I don't like writing about these things. I would rather talk to someone.",
+        "I don't like writing or talking about these things. It makes me feel worse.",
+    ]
+    if feedback_db and feedback_db.responses:
+        saved = feedback_db.responses or []
+        for label in journaling_option_labels:
+            journaling_feedback_list.append({'label': label, 'selected': label in saved})
+
+    journaling_part1_progress = 0.0
+    journaling_part2_progress = 0.0
+    journaling_part3_progress = 0.0
+
+    # Journaling part 1: Things I Want to Change
+    if journal_db and (journal_db.things_to_change or '').strip():
+        journaling_part1_progress = 1.0
+
+    # Journaling part 2: Experiences That Shaped Me
+    if journal_db and (journal_db.experiences_shaped_me or '').strip():
+        journaling_part2_progress = 1.0
+
+    # Journaling part 3: Journaling Feedback modal submit
+    if feedback_db and feedback_db.responses:
+        saved = feedback_db.responses or []
+        if any(label in saved for label in journaling_option_labels):
+            journaling_part3_progress = 1.0
+
+    # Journaling is split into 3 submitted parts.
+    journaling_progress = (journaling_part1_progress + journaling_part2_progress + journaling_part3_progress) / 3.0
+
+    # Build Positive Activity Plan feeling list from FeedbackSurveyResponse.responses
+    activity_plan_list = []
+    activity_option_labels = [
+        'I think this positive planned activity will happen',
+        "I'm excited",
+        'But I\'d love to talk to a counselor about it to make sure it happens!',
+        "I don't think this will happen",
+        "I'm not sure this will happen",
+        "But I'd like to talk to a counselor to give me help to make it happen",
+        'I would like to share it with someone else at school',
+        "I don't want to share this with anyone",
+        "But I'd be open to talking to a counselor about it",
+        "I don't want to talk to a counselor about it",
+    ]
+    if feedback_db and feedback_db.responses:
+        saved = feedback_db.responses or []
+        for label in activity_option_labels:
+            activity_plan_list.append({'label': label, 'selected': label in saved})
+
+    pmr_part1_progress = 1.0 if (pmr_response and pmr_response.selected_feelings) else 0.0
+    pmr_part2_progress = 0.0
+    if feedback_db and feedback_db.responses:
+        pmr_saved = feedback_db.responses or []
+        if any(label in pmr_saved for label in pmr_option_labels):
+            pmr_part2_progress = 1.0
+
+    # PMR is split into two submitted parts; each part contributes half of PMR's skill weight.
+    pmr_skill_progress = (pmr_part1_progress + pmr_part2_progress) / 2.0
+
+    # Positive Planned Activities: split into 5 parts - who, where, what, when, and feeling
+    posplan_part_who = 1.0 if (posplan_db and (posplan_db.who or '').strip()) else 0.0
+    posplan_part_where = 1.0 if (posplan_db and (posplan_db.where or '').strip()) else 0.0
+    posplan_part_what = 1.0 if (posplan_db and (posplan_db.what or '').strip()) else 0.0
+    posplan_part_when = 1.0 if (posplan_db and (posplan_db.when or '').strip()) else 0.0
+
+    posplan_part5_progress = 0.0
+    if feedback_db and feedback_db.responses:
+        saved = feedback_db.responses or []
+        if any(label in saved for label in activity_option_labels):
+            posplan_part5_progress = 1.0
+
+    posplan_skill_progress = (posplan_part_who + posplan_part_where + posplan_part_what + posplan_part_when + posplan_part5_progress) / 5.0
+    skill_progress = (pmr_skill_progress + journaling_progress + posplan_skill_progress) / 3.0
+
+    # Compute per-section fractional progress (0..1) so overall percent is accurate.
+    # Positive/Negative: fraction = answered categories / 4
+    # Thoughts: completed trigger set => full
+    # Skills: PMR, Journaling, and Positive Planned Activities each contribute one-third
+    try:
+        positive_progress = min(len(positive_events) / 4.0, 1.0)
+    except Exception:
+        positive_progress = 0.0
+
+    # Negative events are composed of the four interactive cards, the two attention-check
+    # quiz questions, and the Iron & Sponge quiz. Cards contribute 50% of the section,
+    # the two quiz questions contribute 25%, and Iron & Sponge contributes 25%.
+    try:
+        cards_frac = min(len(negative_events) / 4.0, 1.0)
+    except Exception:
+        cards_frac = 0.0
+
+    attention_check_ids = {'neg_p6_q1', 'neg_p7_q1'}
+    attention_check_completed = 0
     for check in attention_checks:
-        attention_check_data.append({
-            'text': question_text_map.get(check.question_id, check.get_question_id_display()),
-            'attempts': check.incorrect_attempts + 1,  # +1 to include the correct attempt
-        })
+        if check.question_id in attention_check_ids and check.answered_correctly:
+            attention_check_completed += 1
+    attention_frac = min(attention_check_completed / 2.0, 1.0)
 
-    # Approximate section completion from persisted session-linked responses.
+    quiz_frac = 0.0
+    if iron_sponge_db and iron_sponge_db.responses_json:
+        try:
+            quiz_frac = min(len(iron_sponge_db.responses_json.keys()) / 9.0, 1.0)
+        except Exception:
+            quiz_frac = 1.0
+    negative_progress = (cards_frac * 0.5) + (attention_frac * 0.25) + (quiz_frac * 0.25)
+
+    # Count only fully completed sections for the 'Sections complete: X/4' label
     sections_completed_count = sum([
-        1 if positive_events else 0,
-        1 if negative_events else 0,
-        1 if (pmr_response or feedback_db) else 0,
-        1 if activity_plan else 0,
+        1 if positive_progress >= 1.0 else 0,
+        1 if negative_progress >= 1.0 else 0,
+        1 if thoughts_progress >= 1.0 else 0,
+        1 if skill_progress >= 1.0 else 0,
     ])
+
+    # Overall percent is the average of the four section progresses (0..100)
+    overall_percent = int(round(((positive_progress + negative_progress + thoughts_progress + skill_progress) / 4.0) * 100))
 
     return {
         'participant_id': session_key,
         'nickname': nickname,
         'sections_completed_count': sections_completed_count,
+        'overall_percent': overall_percent,
         'positive_events': positive_events,
         'negative_events': negative_events,
         'pmr_feedback': pmr_feedback,
-        # Journal narrative answers are stored in localStorage in current implementation.
-        'journal_entries': {},
+        'pmr_wants_try': pmr_wants_try,
+        'pmr_try_text': pmr_try_text,
+        'pmr_try_list': pmr_try_list,
+        'psychoeducation_feedback_list': psychoeducation_feedback_list,
+        'journal_entries': journal_entries,
         'activity_plan': activity_plan,
         'iron_sponge': iron_sponge,
         'implementation_feedback': implementation_feedback,
         'attention_check': attention_check_data,
+        'journaling_feedback_list': journaling_feedback_list,
+        'activity_plan_list': activity_plan_list,
         'current_session_key': session_key,
     }
 
@@ -933,10 +1363,7 @@ def beautiful_summary_view(request, session_key=None):
     """Render redesigned summary sheet in a standalone, print-friendly page."""
     if not session_key:
         session_key = request.session.session_key
-    if not session_key:
-        return HttpResponse('No session found. Please complete an activity first.', status=404)
-
-    context = _build_beautiful_summary_context(session_key)
+    context = _build_beautiful_summary_context(session_key or '')
     return render(request, 'accounts/summary_download_page.html', context)
 
 
@@ -944,10 +1371,7 @@ def download_beautiful_summary(request, session_key=None):
     """Download redesigned summary as a standalone HTML file."""
     if not session_key:
         session_key = request.session.session_key
-    if not session_key:
-        return HttpResponse('No session found. Please complete an activity first.', status=404)
-
-    context = _build_beautiful_summary_context(session_key)
+    context = _build_beautiful_summary_context(session_key or '')
     html = render_to_string('accounts/summary_download_page.html', context, request=request)
     safe_name = ''.join(c if c.isalnum() or c in ('-', '_') else '_' for c in context['nickname']).strip('_') or 'participant'
 
@@ -1182,17 +1606,3 @@ def download_summary(request, session_key=None):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
-
-def _replace_in_paragraph(paragraph, old_text, new_text):
-    """Replace text in a paragraph while preserving formatting."""
-    for run in paragraph.runs:
-        if old_text in run.text:
-            run.text = run.text.replace(old_text, new_text)
-            return True
-    # Fallback: text spans multiple runs
-    if old_text in paragraph.text:
-        new_full = paragraph.text.replace(old_text, new_text)
-        for i, run in enumerate(paragraph.runs):
-            run.text = new_full if i == 0 else ''
-        return True
-    return False

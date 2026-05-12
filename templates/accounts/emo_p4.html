@@ -494,6 +494,24 @@
       showNextButtonMotivational();
     }
 
+    function getTriggerSelectionsFromDOM() {
+      return Array.from(document.querySelectorAll('input[name="triggerChoice"]:checked')).map(input => input.value);
+    }
+
+    function updateTriggerProgress() {
+      const selectedCount = getTriggerSelectionsFromDOM().length;
+      const percent = 50 + Math.round((selectedCount / 4) * 25);
+      const progressBar = document.getElementById('triggerProgressBar');
+      const progressText = document.getElementById('triggerProgressText');
+
+      if (progressBar) {
+        progressBar.style.width = `${percent}%`;
+      }
+      if (progressText) {
+        progressText.textContent = `${percent}%`;
+      }
+    }
+
     // Mark video as complete
     function markVideoComplete() {
       markComplete('emo_p4');
@@ -589,6 +607,8 @@
       const submitBtn = document.getElementById('triggerSubmit');
       const thanksMsg = document.getElementById('triggerThanks');
 
+      updateTriggerProgress();
+
       // Revisit behavior: always show submit button and hide thank-you message.
       if (submitBtn) submitBtn.style.display = 'inline-block';
       if (thanksMsg) thanksMsg.classList.remove('show');
@@ -596,6 +616,7 @@
       const updateSubmitState = () => {
         const any = checkboxes.some(cb => cb.checked);
         if (submitBtn) submitBtn.disabled = !any;
+        updateTriggerProgress();
       };
       checkboxes.forEach(cb => cb.addEventListener('change', updateSubmitState));
       // Initialize button state for restored checkbox values.
@@ -652,6 +673,11 @@
           if (submitBtn) submitBtn.style.display = 'none';
           if (thanksMsg) thanksMsg.classList.add('show');
         } catch (e) {}
+
+        const progressBar = document.getElementById('triggerProgressBar');
+        const progressText = document.getElementById('triggerProgressText');
+        if (progressBar) progressBar.style.width = '75%';
+        if (progressText) progressText.textContent = '75%';
 
         // mark page complete and show next
         triggerSubmitted = true;

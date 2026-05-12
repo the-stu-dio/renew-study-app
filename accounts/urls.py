@@ -72,7 +72,10 @@ urlpatterns = [
     path('submit-feedback-survey/', views.submit_feedback_survey, name='submit_feedback_survey'),
     path('submit-journaling-survey/', views.submit_journaling_survey, name='submit_journaling_survey'),
     path('submit-pmr-survey/', views.submit_pmr_survey, name='submit_pmr_survey'),
+    path('submit-pmr-full/', views.submit_pmr_full, name='submit_pmr_full'),
+    path('submit-posplan-survey/', views.submit_posplan_survey, name='submit_posplan_survey'),
     path('save-attention-check/', views.save_attention_check, name='save_attention_check'),
+    path('save-journal-entry/', views.save_journal_entry, name='save_journal_entry'),
     
     path('export-to-qualtrics/', views.export_to_qualtrics, name='export_to_qualtrics'),
     path('save-iron-sponge/', views.save_iron_sponge, name='save_iron_sponge'),
@@ -81,9 +84,7 @@ urlpatterns = [
    
     path('completion-video/', views.completion_video, name='completion_video'),
 
-    # Summary sheet download
-    path('download-summary/', views.download_summary, name='download_summary'),
-    path('download-summary/<str:session_key>/', views.download_summary, name='download_summary_session'),
+    # Summary sheet download (beautiful summary only)
     path('summary-beautiful/', views.beautiful_summary_view, name='beautiful_summary'),
     path('summary-beautiful/<str:session_key>/', views.beautiful_summary_view, name='beautiful_summary_session'),
     path('download-summary-beautiful/', views.download_beautiful_summary, name='download_beautiful_summary'),

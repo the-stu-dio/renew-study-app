@@ -871,33 +871,69 @@
       });
     });
 
-    // Survey form submission
-    submitButton.addEventListener('click', function() {
+    // Survey form submission: send to server and persist locally as fallback
+    submitButton.addEventListener('click', async function() {
       if (selectedOptions.size === 0) return;
-      
+
       submitButton.disabled = true;
       submitButton.textContent = 'Submitting...';
-      
+
+      const payload = {
+        responses: Array.from(selectedOptions),
+        nickname: (window.RENEWStorage && window.RENEWStorage.getNickname && window.RENEWStorage.getNickname()) || localStorage.getItem('nickname') || ''
+      };
+
+      // Helper to get CSRF token from cookies
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+      }
+
+      let savedToServer = false;
+      try {
+        const resp = await fetch('{% url "submit_journaling_survey" %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken') || ''
+          },
+          credentials: 'same-origin',
+          body: JSON.stringify(payload)
+        });
+
+        if (resp.ok) {
+          const j = await resp.json();
+          console.log('Journaling survey saved on server:', j);
+          savedToServer = true;
+        } else {
+          console.warn('Server rejected journaling survey:', resp.status);
+        }
+      } catch (err) {
+        console.warn('Failed to POST journaling survey to server:', err);
+      }
+
+      // Always persist locally (for offline / fallback)
       const surveyData = {
         responses: Array.from(selectedOptions),
         timestamp: Date.now()
       };
-      
-      if (saveSurveyResponse('journaling_survey', surveyData)) {
-        // Stop audio if playing
-        const audio = document.getElementById('surveyAudio');
-        if (audio && surveyAudioPlaying) {
-          audio.pause();
-          audio.currentTime = 0;
-          surveyAudioPlaying = false;
-        }
-        
-        closeSurvey();
-        // Success alert removed - survey closes silently
-      } else {
-        alert('Error submitting survey. Please try again.');
-        submitButton.disabled = false;
-        submitButton.textContent = 'Submit Feedback';
+      saveSurveyResponse('journaling_survey', surveyData);
+
+      // Stop audio if playing
+      const audio = document.getElementById('surveyAudio');
+      if (audio && surveyAudioPlaying) {
+        audio.pause();
+        audio.currentTime = 0;
+        surveyAudioPlaying = false;
+      }
+
+      closeSurvey();
+
+      if (!savedToServer) {
+        // Inform user that response was saved locally but couldn't be sent
+        console.warn('Journaling feedback saved locally; server sync failed.');
       }
     });
     
@@ -915,10 +951,11 @@ function closeSurvey() {
   surveyOverlay.classList.remove('show');
 }
 
-// Close when clicking outside modal
+// Keep journaling feedback modal persistent until user submits.
+// Clicking outside should not dismiss it.
 surveyOverlay.addEventListener('click', function(e) {
   if (e.target === surveyOverlay) {
-    closeSurvey();
+    e.stopPropagation();
   }
 });
 

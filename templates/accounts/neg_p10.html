@@ -390,8 +390,30 @@
 
     // Mark section as complete
     function markSectionComplete() {
+      try {
+        // Update the shared renew_study_data structure so other pages (profile, map)
+        // detect the section as complete. Some pages look for completed_sections
+        // while others check progress.neg_p11, so we set both to be safe.
+        let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        if (!data.completed_sections) data.completed_sections = [];
+        if (!data.progress) data.progress = {};
+
+        if (!data.completed_sections.includes('negative_events')) {
+          data.completed_sections.push('negative_events');
+        }
+
+        // Keep compatibility with checks that expect progress.neg_p11
+        data.progress.neg_p11 = true;
+        // Also mark this final page as done
+        data.progress.neg_p10 = true;
+
+        localStorage.setItem('renew_study_data', JSON.stringify(data));
+      } catch (e) {
+        console.error('Error marking negative section complete in renew_study_data:', e);
+      }
+
+      // Also keep the existing simple per-page markers for backward compatibility
       markComplete('neg_p10');
-      markComplete('negative_events_section');
       console.log('Negative Events section marked as complete');
     }
 

@@ -42,14 +42,14 @@
             animation: fadeInUp 0.8s ease-out;
         }
         .video-wrapper {
-            position: relative;
-            margin-bottom: 30px;
-            animation: fadeInUp 0.8s ease-out 0.2s both;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-            overflow: hidden;
-            width: 70vw;
-            max-width: 1200px;
+              position: relative;
+              margin-bottom: 30px;
+              animation: fadeInUp 0.8s ease-out 0.2s both;
+              border-radius: 16px;
+              box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+              overflow: hidden;
+            width: min(900px, calc(100vw - 80px));
+            max-width: none;
             margin-left: auto;
             margin-right: auto;
         }
@@ -63,6 +63,20 @@
             border-radius: 16px;
             object-fit: contain;
             background: #000;
+        }
+
+        .video-embed video::-webkit-media-controls-panel {
+            padding-left: 16px;
+            padding-right: 44px;
+            box-sizing: border-box;
+        }
+
+        .video-embed video::-webkit-media-controls-volume-slider-container {
+            margin-right: 10px;
+        }
+
+        .video-embed video::-webkit-media-controls-mute-button {
+            margin-right: 10px;
         }
         
         .completion-message {

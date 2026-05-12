@@ -374,12 +374,12 @@
           </div>
           
           <div class="sub-options" id="sub_will_happen">
-            <div class="sub-option" onclick="selectSubOption('excited')">
-              <input type="radio" name="will_happen_sub" value="excited" id="sub_excited">
+            <div class="sub-option" onclick="toggleSubOption('excited')">
+              <input type="checkbox" name="will_happen_sub" value="excited" id="sub_excited">
               <label for="sub_excited" class="sub-option-text">😊 I'm excited</label>
             </div>
-            <div class="sub-option" onclick="selectSubOption('counselor_help')">
-              <input type="radio" name="will_happen_sub" value="counselor_help" id="sub_counselor_help">
+            <div class="sub-option" onclick="toggleSubOption('counselor_help')">
+              <input type="checkbox" name="will_happen_sub" value="counselor_help" id="sub_counselor_help">
               <label for="sub_counselor_help" class="sub-option-text">💬 But I'd love to talk to a counselor about it to make sure it happens!</label>
             </div>
           </div>
@@ -390,16 +390,16 @@
           </div>
           
           <div class="sub-options" id="sub_wont_happen">
-            <div class="sub-option" onclick="selectSubOption('counselor_help_make')">
-              <input type="radio" name="wont_happen_sub" value="counselor_help_make" id="sub_counselor_help_make">
+            <div class="sub-option" onclick="toggleSubOption('counselor_help_make')">
+              <input type="checkbox" name="wont_happen_sub" value="counselor_help_make" id="sub_counselor_help_make">
               <label for="sub_counselor_help_make" class="sub-option-text">💪 But I'd like to talk to a counselor to give me help to make it happen</label>
             </div>
-            <div class="sub-option" onclick="selectSubOption('someone_else')">
-              <input type="radio" name="wont_happen_sub" value="someone_else" id="sub_someone_else">
+            <div class="sub-option" onclick="toggleSubOption('someone_else')">
+              <input type="checkbox" name="wont_happen_sub" value="someone_else" id="sub_someone_else">
               <label for="sub_someone_else" class="sub-option-text">👥 And I don't want to share this with a counselor, but I would like to share it with someone else at school</label>
             </div>
-            <div class="sub-option" onclick="selectSubOption('no_sharing')">
-              <input type="radio" name="wont_happen_sub" value="no_sharing" id="sub_no_sharing">
+            <div class="sub-option" onclick="toggleSubOption('no_sharing')">
+              <input type="checkbox" name="wont_happen_sub" value="no_sharing" id="sub_no_sharing">
               <label for="sub_no_sharing" class="sub-option-text">🤐 And I don't want to share this with a counselor, and I don't want to share it with anyone</label>
             </div>
           </div>
@@ -410,12 +410,12 @@
           </div>
           
           <div class="sub-options" id="sub_not_sure">
-            <div class="sub-option" onclick="selectSubOption('open_counselor')">
-              <input type="radio" name="not_sure_sub" value="open_counselor" id="sub_open_counselor">
+            <div class="sub-option" onclick="toggleSubOption('open_counselor')">
+              <input type="checkbox" name="not_sure_sub" value="open_counselor" id="sub_open_counselor">
               <label for="sub_open_counselor" class="sub-option-text">🤝 But I'd be open to talking to a counselor about it</label>
             </div>
-            <div class="sub-option" onclick="selectSubOption('no_counselor')">
-              <input type="radio" name="not_sure_sub" value="no_counselor" id="sub_no_counselor">
+            <div class="sub-option" onclick="toggleSubOption('no_counselor')">
+              <input type="checkbox" name="not_sure_sub" value="no_counselor" id="sub_no_counselor">
               <label for="sub_no_counselor" class="sub-option-text">🚫 I don't want to talk to a counselor about it</label>
             </div>
           </div>
@@ -456,7 +456,7 @@
   <script>
     const pageId = 'posplan_summary_p3';
     let selectedMainOption = null;
-    let selectedSubOption = null;
+    let selectedSubOptions = new Set();
     
     // Audio players
     const audioWillHappen = document.getElementById('audioWillHappen');
@@ -530,12 +530,12 @@
       }
     }
 
-    function saveFeelingResponse(mainOption, subOption) {
+    function saveFeelingResponse(mainOption, subOptionsArray) {
       try {
         let data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
         if (!data.posplan_summary) data.posplan_summary = {};
         data.posplan_summary.feeling = mainOption;
-        data.posplan_summary.feeling_sub = subOption;
+        data.posplan_summary.feeling_sub = subOptionsArray || [];
         data.posplan_summary.feeling_timestamp = Date.now();
         localStorage.setItem('renew_study_data', JSON.stringify(data));
         return true;
@@ -550,11 +550,11 @@
         const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
         return {
           main: data.posplan_summary?.feeling || null,
-          sub: data.posplan_summary?.feeling_sub || null
+          sub: data.posplan_summary?.feeling_sub || []
         };
       } catch (e) {
         console.error('Error getting feeling response:', e);
-        return { main: null, sub: null };
+        return { main: null, sub: [] };
       }
     }
 
@@ -572,10 +572,10 @@
       document.querySelectorAll('.sub-options').forEach(sub => sub.classList.remove('show'));
       document.getElementById('sub_' + value).classList.add('show');
       
-      // Clear sub-option selection
-      selectedSubOption = null;
+      // Clear sub-option selection set
+      selectedSubOptions = new Set();
       document.querySelectorAll('.sub-option').forEach(opt => opt.classList.remove('selected'));
-      document.querySelectorAll('.sub-option input[type="radio"]').forEach(radio => radio.checked = false);
+      document.querySelectorAll('.sub-option input[type="checkbox"]').forEach(chk => chk.checked = false);
       
       // Play appropriate audio based on selection
       playAudioForOption(value);
@@ -616,26 +616,45 @@
       }
     }
 
-    function selectSubOption(value) {
+    function toggleSubOption(value) {
       event.stopPropagation(); // Prevent parent option click
-      selectedSubOption = value;
-      
-      // Update visual selection
-      const parent = event.currentTarget.closest('.sub-options');
-      parent.querySelectorAll('.sub-option').forEach(opt => opt.classList.remove('selected'));
-      event.currentTarget.classList.add('selected');
-      
-      // Check radio button
-      const radioId = value.includes('excited') || value.includes('counselor_help') && !value.includes('make') ? 
-                      'sub_' + value : 'sub_' + value;
-      document.getElementById(radioId).checked = true;
-      
-      // Save response
-      saveFeelingResponse(selectedMainOption, selectedSubOption);
-      
-      // Mark page complete and show next button with special effects
-      markComplete(pageId);
-      showNextButtonMotivational();
+      const checkbox = document.getElementById('sub_' + value);
+      const wrapper = checkbox.closest('.sub-option');
+      if (selectedSubOptions.has(value)) {
+        selectedSubOptions.delete(value);
+        wrapper.classList.remove('selected');
+        checkbox.checked = false;
+      } else {
+        selectedSubOptions.add(value);
+        wrapper.classList.add('selected');
+        checkbox.checked = true;
+      }
+
+      // Persist selection locally and to server
+      const subsArray = Array.from(selectedSubOptions);
+      saveFeelingResponse(selectedMainOption, subsArray);
+
+      (async function(){
+        const payload = { selected: [selectedMainOption].concat(subsArray.filter(Boolean)), nickname: localStorage.getItem('nickname') || '' };
+        try {
+          const csrftoken = (document.cookie.split('; ').find(r => r.startsWith('csrftoken=')) || '').split('=')[1] || '';
+          await fetch('{% url "submit_posplan_survey" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+            credentials: 'same-origin',
+            body: JSON.stringify(payload)
+          });
+          console.log('Posplan feeling saved to server', payload);
+        } catch (err) {
+          console.warn('Failed to POST posplan feeling to server:', err);
+        }
+      })();
+
+      // Mark page complete when at least one main + any subs selected
+      if (selectedMainOption && selectedSubOptions.size > 0) {
+        markComplete(pageId);
+        showNextButtonMotivational();
+      }
     }
 
     // Load existing response

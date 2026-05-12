@@ -665,7 +665,26 @@
       saveButton.textContent = 'Saving...';
       saveButton.disabled = true;
       
-      if (saveJournalEntry('things_to_change', textarea.value)) {
+      // Save to localStorage
+      saveJournalEntry('things_to_change', textarea.value);
+      
+      // Also save to database
+      let nickname = '';
+      try {
+        nickname = (window.RENEWStorage && typeof RENEWStorage.getNickname === 'function') ? RENEWStorage.getNickname() : (JSON.parse(localStorage.getItem('renew_study_data')||'{}').nickname || '');
+      } catch (e) {
+        nickname = '';
+      }
+      fetch('/accounts/save-journal-entry/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          things_to_change: textarea.value,
+          nickname: nickname
+        })
+      }).catch(err => console.error('Error saving to DB:', err));
+      
+      if (true) {
         // Mark this page as completed
         markComplete('journal_option1');
         
