@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RENEW Beautiful Summary</title>
+  <title>RENEW Summary</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -84,10 +83,9 @@
 </head>
 <body>
   <div class="topbar">
-    <div class="topbar-title">RENEW Beautiful Summary</div>
+    <div class="topbar-title">RENEW Summary</div>
     <div class="action-group">
       <a class="action-btn action-link" href="{% url 'hub' %}">Back to Hub</a>
-      <button class="action-btn" type="button" onclick="downloadSummaryPdf()">Download PDF</button>
       <button class="action-btn" type="button" onclick="downloadInteractiveHtml()">Download Interactive HTML</button>
     </div>
   </div>
@@ -199,10 +197,27 @@
       window.addEventListener('DOMContentLoaded', () => setTimeout(cleanupPdfOverlay, 20));
     }
 
+    function hideHubButtonInExportedFile() {
+      if (window.location.protocol === 'file:') {
+        document.querySelectorAll('.action-link').forEach(el => el.remove());
+      }
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      setTimeout(hideHubButtonInExportedFile, 20);
+    } else {
+      window.addEventListener('DOMContentLoaded', () => setTimeout(hideHubButtonInExportedFile, 20));
+    }
+
       function downloadInteractiveHtml() {
         const doctype = '<!doctype html>';
         // capture the current full document so expanded/collapsed states persist
-        const html = doctype + document.documentElement.outerHTML;
+        // but remove the hub link from the downloaded copy.
+        const parser = new DOMParser();
+        const clonedDocument = parser.parseFromString(doctype + document.documentElement.outerHTML, 'text/html');
+        clonedDocument.querySelectorAll('.action-link').forEach(el => el.remove());
+        let html = doctype + clonedDocument.documentElement.outerHTML;
+        html = html.replace(/<a\b[^>]*class="[^"]*action-link[^"]*"[^>]*>Back to Hub<\/a>/i, '');
         const blob = new Blob([html], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
