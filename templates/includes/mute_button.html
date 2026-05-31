@@ -7,14 +7,43 @@
 		right: auto;
 	}
 
-	body.intro-page #admin-unlock {
-		left: 84px;
+	body.intro-page #subtitle-toggle {
+		left: auto;
 		right: auto;
 	}
+
+	body.intro-page #admin-unlock {
+		left: 148px;
+		right: auto;
+	}
+
+	#subtitle-toggle {
+		position: absolute;
+		right: 25px;
+		bottom: 110px;
+		z-index: 1200;
+		border-radius: 999px;
+		width: 44px;
+		height: 44px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 14px;
+		box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+		padding: 0;
+	}
+
+	#subtitle-toggle.is-active {
+		background-color: #5a3e8c;
+		color: #fff;
+	}
 </style>
+	<button id="subtitle-toggle" aria-pressed="true" title="Toggle subtitles">CC</button>
+
 <div style="display:flex;gap:8px;align-items:center">
 	<button id="mute-toggle" aria-pressed="false" title="Mute videos">🔊</button>
 	<button id="admin-unlock" title="Enter admin code" style="border-radius:8px;padding:8px">🔑</button>
 </div>
 <script src="{% static 'js/mute.js' %}"></script>
 <script src="{% static 'js/admin.js' %}?v=20260504a"></script>
+<script src="{% static 'js/captions.js' %}?v=20260531a"></script>
