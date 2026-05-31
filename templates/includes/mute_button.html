@@ -1,7 +1,14 @@
 
 {% load static %}
-<!-- Mute toggle include -->
+<!-- Mute toggle include (aligned with upstream repo) -->
 <style>
+	/* keep video wrapper overflow visible when controls sit outside */
+	body.intro-page .video-wrapper,
+	body:not(.intro-page) .video-wrapper {
+		overflow: visible !important;
+	}
+
+	/* Positioning for intro page controls */
 	body.intro-page #mute-toggle {
 		left: 20px;
 		right: auto;
@@ -17,6 +24,7 @@
 		right: auto;
 	}
 
+	/* Subtitle toggle placement */
 	#subtitle-toggle {
 		position: absolute;
 		right: 25px;
@@ -38,6 +46,7 @@
 		color: #fff;
 	}
 </style>
+
 	<button id="subtitle-toggle" aria-pressed="true" title="Toggle subtitles">CC</button>
 
 <div style="display:flex;gap:8px;align-items:center">
@@ -47,3 +56,62 @@
 <script src="{% static 'js/mute.js' %}"></script>
 <script src="{% static 'js/admin.js' %}?v=20260504a"></script>
 <script src="{% static 'js/captions.js' %}?v=20260531a"></script>
+
+<script>
+// Move the subtitle toggle (`#subtitle-toggle`) into the closest video wrapper
+// and pin it to the bottom-right of the video so it appears consistently
+// for both intro and non-intro videos.
+(function() {
+	function placeSubtitleButton() {
+		try {
+			var btn = document.getElementById('subtitle-toggle');
+			if (!btn) return;
+
+			// Find a visible video inside a .video-wrapper, prefer the first visible one
+			var wrappers = Array.from(document.querySelectorAll('.video-wrapper'));
+			var targetWrapper = null;
+			for (var i = 0; i < wrappers.length; i++) {
+				var w = wrappers[i];
+				// consider wrapper if it contains a video element
+				if (w.querySelector('video')) {
+					// is it visible?
+					if (w.offsetParent !== null) { targetWrapper = w; break; }
+					if (!targetWrapper) targetWrapper = w;
+				}
+			}
+
+			// fallback: any video element's parent
+			if (!targetWrapper) {
+				var v = document.querySelector('video');
+				if (v) targetWrapper = v.closest('.video-wrapper') || v.parentElement;
+			}
+
+			if (!targetWrapper) return;
+
+			// ensure the wrapper is positioned so absolute children are relative to it
+			var cs = window.getComputedStyle(targetWrapper);
+			if (cs.position === 'static') targetWrapper.style.position = 'relative';
+
+			// append the button into the wrapper
+			if (btn.parentElement !== targetWrapper) targetWrapper.appendChild(btn);
+
+			// style it to bottom-right
+			btn.style.position = 'absolute';
+			btn.style.right = '5px';
+			btn.style.bottom = '5px';
+			btn.style.zIndex = '1205';
+		} catch (err) {
+			console.warn('Failed to place subtitle toggle', err);
+		}
+	}
+
+	document.addEventListener('DOMContentLoaded', function() {
+		placeSubtitleButton();
+		// also try after a short delay in case videos are injected later
+		setTimeout(placeSubtitleButton, 400);
+	});
+
+	// Re-run on resize/orientation change
+	window.addEventListener('resize', function() { setTimeout(placeSubtitleButton, 50); });
+})();
+</script>

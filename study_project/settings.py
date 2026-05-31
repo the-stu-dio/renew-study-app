@@ -59,6 +59,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'public', 'static')
 # For development - tells Django where to find static files
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
+    BASE_DIR / 'section_icons',
 ]
 
 # Media files (user uploads)

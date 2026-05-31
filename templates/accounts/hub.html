@@ -78,6 +78,11 @@
         text-decoration: none;
     }
 
+    .hub-button.locked {
+        opacity: 0.6;
+        filter: grayscale(20%);
+    }
+
     .hub-button::before {
         content: '';
         position: absolute;
@@ -368,6 +373,7 @@
     .adventure-button { animation: fadeInUp 0.8s ease-out 0.6s both; }
     .discoveries-button { animation: fadeInUp 0.8s ease-out 0.8s both; }
     .notes-button { animation: fadeInUp 0.8s ease-out 1.0s both; }
+    .review-button { animation: fadeInUp 0.8s ease-out 1.2s both; }
 
     @keyframes fadeInUp {
         from {
@@ -494,7 +500,12 @@
         <a href="#" onclick="viewBeautifulSummary(event)" class="hub-button" style="border-color: #7c3aed;">
             <div class="button-icon">🎨</div>
             <div class="button-title">Summary</div>
-            <div class="button-description">Open a polished summary page and save as PDF</div>
+            <div class="button-description">Open a polished summary page and save it</div>
+        </a>
+        
+        <a href="#" class="hub-button review-button" onclick="reviewRenew(event)" style="border-color: #5a3e8c;">
+            <div class="button-icon">🔁</div>
+            <div class="button-title">Review RENEW</div>
         </a>
     </div>
 </div>
@@ -555,6 +566,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Check if this is the first visit to hub
         checkFirstVisit();
+        // Update review button availability
+        checkReviewAvailability();
     } else {
         // No nickname found, redirect to nickname page
         window.location.href = "{% url 'nickname' %}";
@@ -570,35 +583,9 @@ function checkFirstVisit() {
         setTimeout(() => {
             showWelcomeModal();
         }, 1000); // Show after 1 second to let page load
-        
+
         // Mark as visited
         localStorage.setItem('renew_hub_visited', 'true');
-    }
-}
-
-function showWelcomeModal() {
-    const modal = document.getElementById('welcomeModal');
-    const welcomeAudio = document.getElementById('welcomeAudio');
-    const startButton = document.getElementById('startButton');
-    
-    modal.classList.add('show');
-    
-    // Play welcome audio
-    if (welcomeAudio) {
-        welcomeAudio.play().catch(error => {
-            console.log('Audio autoplay prevented:', error);
-            // If autoplay is prevented, enable button immediately
-            startButton.disabled = false;
-        });
-        
-        // When welcome audio ends, enable button (no congratulations audio in welcome modal)
-        welcomeAudio.addEventListener('ended', function() {
-            console.log('Welcome audio ended, enabling button');
-            startButton.disabled = false;
-        }, { once: true });
-    } else {
-        // If audio element doesn't exist, enable button
-        startButton.disabled = false;
     }
 }
 
@@ -668,6 +655,70 @@ async function syncSummaryData() {
         }
     } catch (err) { console.error('Posplan sync error:', err); }
 
+}
+
+function reviewRenew(e) {
+    e.preventDefault();
+    const btn = document.querySelector('.hub-button.review-button');
+    const adminUnlocked = (typeof isAdminUnlocked === 'function') ? isAdminUnlocked() : (localStorage.getItem('renew_admin_unlocked') === '1');
+    if (btn && btn.classList.contains('locked') && !adminUnlocked) {
+        alert('Complete all sections first.');
+        return;
+    }
+    const reviewUrl = "{% url 'review_renew' %}";
+    window.location.href = reviewUrl;
+}
+
+function checkReviewAvailability() {
+    try {
+        const data = JSON.parse(localStorage.getItem('renew_study_data') || '{}');
+        const progress = data.progress || {};
+        const completed = data.completed_sections || [];
+        const responses = data.responses || {};
+
+        const pageGroups = [
+            {
+                pageIds: ['pos_p1', 'pos_p2', 'pos_p3', 'pos_p4', 'pos_p5'],
+                legacyDone: completed.includes('positive_events') || progress.pos_p4 || (responses.positive_events && Object.keys(responses.positive_events).length >= 4)
+            },
+            {
+                pageIds: ['neg_p1', 'neg_p2', 'neg_p3', 'neg_p4', 'neg_p5', 'neg_p6', 'neg_p7', 'neg_p8', 'neg_p9', 'neg_p10'],
+                legacyDone: completed.includes('negative_events') || progress.neg_p11
+            },
+            {
+                pageIds: ['emo_p1', 'emo_p2', 'emo_p3', 'emo_p4', 'emo_p5'],
+                legacyDone: completed.includes('thoughts_feelings') || progress.emo_p5
+            },
+            {
+                pageIds: ['skill_p1', 'skill_p2', 'skill_p3', 'skill_p4'],
+                legacyDone: completed.includes('skills') || progress.skills_complete || progress.skills
+            }
+        ];
+
+        const completedCount = pageGroups.reduce((total, group) => {
+            const pageCount = group.pageIds.filter(pageId => localStorage.getItem('completed_' + pageId) === 'true').length;
+            if (pageCount > 0) {
+                return total + pageCount;
+            }
+            if (group.legacyDone) {
+                return total + group.pageIds.length;
+            }
+            return total;
+        }, 0);
+
+        const remainingCount = Math.max(24 - completedCount, 0);
+
+        const btn = document.querySelector('.hub-button.review-button');
+        // Allow admin override if admin helper is loaded
+        const adminUnlocked = (typeof isAdminUnlocked === 'function') ? isAdminUnlocked() : (localStorage.getItem('renew_admin_unlocked') === '1');
+        if (btn) {
+            if (remainingCount === 0 || adminUnlocked) {
+                btn.classList.remove('locked');
+            } else {
+                btn.classList.add('locked');
+            }
+        }
+    } catch (err) { console.error('checkReviewAvailability error', err); }
 }
 
 async function viewBeautifulSummary(e) {

@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Review RENEW{% endblock %}
+
+{% block extra_css %}
+<style>
+    body, html { background: #f4f0fb; }
+    .review-container {
+        min-height: auto;
+        display: flex;
+        align-items: flex-start; /* move up */
+        justify-content: flex-start; /* shift left */
+        padding: 8px 40px; /* reduce top spacing and add left padding */
+        box-sizing: border-box;
+        width: 100%;
+    }
+    .boxes-row-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        justify-content: flex-start;
+    }
+
+    .boxes-row {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        justify-content: flex-start; /* ensure row is left-aligned */
+        margin-top: 8px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 6px;
+    }
+
+    .review-link { display: inline-block; text-decoration: none; }
+    .review-link:focus { outline: none; }
+
+    .boxes-label {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #5a3e8c;
+        white-space: nowrap;
+    }
+    .review-box {
+        width: 64px;
+        height: 64px;
+        border: 3px solid #5a3e8c;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 6px 18px rgba(90,62,140,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .box-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* fill the entire box */
+        display: block;
+    }
+    .back-button {
+        position: fixed;
+        left: 18px;
+        bottom: 18px;
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+        text-decoration: none;
+        z-index: 1200;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    }
+    .back-button:hover { background-color: #5a6268; transform: translateY(-2px); }
+    @media (max-width: 480px) {
+        .boxes-row { gap: 10px; }
+        .review-box { width: 48px; height: 48px; }
+        .box-img { object-fit: cover; }
+        .back-button { left: 12px; bottom: 12px; padding: 8px 12px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="review-container">
+    <a href="{% url 'hub' %}" class="back-button">← Back</a>
+    <div class="boxes-row-wrapper">
+        <div class="boxes-row" role="list" aria-label="Review boxes">
+            <a href="{% url 'pos_p1' %}" class="review-link" role="listitem" aria-label="Positive Events Part 1">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Pos1.png' %}" alt="Pos 1">
+                </div>
+            </a>
+
+            <a href="{% url 'pos_p2' %}" class="review-link" role="listitem" aria-label="Positive Events Part 2">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Pos2.png' %}" alt="Pos 2">
+                </div>
+            </a>
+
+            <a href="{% url 'pos_p3' %}" class="review-link" role="listitem" aria-label="Positive Events Part 3">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Pos3.png' %}" alt="Pos 3">
+                </div>
+            </a>
+            <a href="{% url 'pos_p4' %}" class="review-link" role="listitem" aria-label="Positive Events Part 4">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Pos4.png' %}" alt="Pos 4">
+                </div>
+            </a>
+
+            <a href="{% url 'pos_p5' %}" class="review-link" role="listitem" aria-label="Positive Events Part 5">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Pos5.png' %}" alt="Pos 5">
+                </div>
+            </a>
+        </div>
+        <div class="boxes-label" aria-hidden="true">Positive Events</div>
+    </div>
+</div>
+<!-- Negative Events row -->
+<div class="review-container" style="margin-top:6px">
+    <div class="boxes-row-wrapper">
+        <div class="boxes-row" role="list" aria-label="Negative review boxes">
+            <a href="{% url 'neg_p1' %}" class="review-link" role="listitem" aria-label="Negative Events Part 1">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Neg1.png' %}" alt="Neg 1">
+                </div>
+            </a>
+            <a href="{% url 'neg_p2' %}" class="review-link" role="listitem" aria-label="Negative Events Part 2">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Neg2.png' %}" alt="Neg 2">
+                </div>
+            </a>
+            <a href="{% url 'neg_p3' %}" class="review-link" role="listitem" aria-label="Negative Events Part 3">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Neg3.png' %}" alt="Neg 3">
+                </div>
+            </a>
+            <a href="{% url 'neg_p4' %}" class="review-link" role="listitem" aria-label="Negative Events Part 4">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Neg4.png' %}" alt="Neg 4">
+                </div>
+            </a>
+            <a href="{% url 'neg_p5' %}" class="review-link" role="listitem" aria-label="Negative Events Part 5">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Neg5.png' %}" alt="Neg 5">
+                </div>
+            </a>
+            <a href="{% url 'neg_p6' %}" class="review-link" role="listitem" aria-label="Negative Events Part 6">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Neg6.png' %}" alt="Neg 6">
+                </div>
+            </a>
+            <a href="{% url 'neg_p7' %}" class="review-link" role="listitem" aria-label="Negative Events Part 7">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Neg7.png' %}" alt="Neg 7">
+                </div>
+            </a>
+            <a href="{% url 'neg_p8' %}" class="review-link" role="listitem" aria-label="Negative Events Part 8">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Neg8.png' %}" alt="Neg 8">
+                </div>
+            </a>
+            <a href="{% url 'neg_p9' %}" class="review-link" role="listitem" aria-label="Negative Events Part 9">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Neg9.png' %}" alt="Neg 9">
+                </div>
+            </a>
+            <a href="{% url 'neg_p10' %}" class="review-link" role="listitem" aria-label="Negative Events Part 10">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Neg10.png' %}" alt="Neg 10">
+                </div>
+            </a>
+        </div>
+        <div class="boxes-label" aria-hidden="true">Negative Events</div>
+    </div>
+</div>
+<!-- Thoughts & Feelings row -->
+<div class="review-container" style="margin-top:6px">
+    <div class="boxes-row-wrapper">
+        <div class="boxes-row" role="list" aria-label="Thoughts and Feelings review boxes">
+            <a href="{% url 'emo_p1' %}" class="review-link" role="listitem" aria-label="Thoughts & Feelings Part 1">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'THF1.png' %}" alt="THF 1">
+                </div>
+            </a>
+            <a href="{% url 'emo_p2' %}" class="review-link" role="listitem" aria-label="Thoughts & Feelings Part 2">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'THF2.png' %}" alt="THF 2">
+                </div>
+            </a>
+            <a href="{% url 'emo_p3' %}" class="review-link" role="listitem" aria-label="Thoughts & Feelings Part 3">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'THF3.png' %}" alt="THF 3">
+                </div>
+            </a>
+            <a href="{% url 'emo_p4' %}" class="review-link" role="listitem" aria-label="Thoughts & Feelings Part 4">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'THF4.png' %}" alt="THF 4">
+                </div>
+            </a>
+            <a href="{% url 'emo_p5' %}" class="review-link" role="listitem" aria-label="Thoughts & Feelings Part 5">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'THF5.png' %}" alt="THF 5">
+                </div>
+            </a>
+        </div>
+        <div class="boxes-label" aria-hidden="true">Thoughts &amp; Feelings</div>
+    </div>
+</div>
+<!-- Skills row -->
+<div class="review-container" style="margin-top:6px">
+    <div class="boxes-row-wrapper">
+        <div class="boxes-row" role="list" aria-label="Skills review boxes">
+            <a href="{% url 'skill_p1' %}" class="review-link" role="listitem" aria-label="Skills Part 1">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Skills1.png' %}" alt="Skills 1">
+                </div>
+            </a>
+            <a href="{% url 'skill_p2' %}" class="review-link" role="listitem" aria-label="Skills Part 2">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Skills2.png' %}" alt="Skills 2">
+                </div>
+            </a>
+            <a href="{% url 'skill_p3' %}" class="review-link" role="listitem" aria-label="Skills Part 3">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Skills3.png' %}" alt="Skills 3">
+                </div>
+            </a>
+            <a href="{% url 'skill_p4' %}" class="review-link" role="listitem" aria-label="Skills Part 4">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'Skills4.png' %}" alt="Skills 4">
+                </div>
+            </a>
+        </div>
+        <div class="boxes-label" aria-hidden="true">Skills</div>
+    </div>
+</div>
+{% endblock %}

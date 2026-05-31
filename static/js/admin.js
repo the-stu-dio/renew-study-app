@@ -432,6 +432,16 @@
     panel.hidden = false;
     panel.style.display = 'block';
 
+    // If this is the Negative section and we're on part 9 (or later), nudge the panel down
+    // to avoid overlapping UI elements (e.g., the previous navigation button).
+    try {
+      if (!panel.classList.contains('in-sidebar') && jumpConfig.section === 'negative' && (jumpConfig.currentIndex || 1) >= 9) {
+        panel.style.top = '88px';
+      } else if (!panel.classList.contains('in-sidebar')) {
+        panel.style.top = '';
+      }
+    } catch (e) { /* ignore */ }
+
     const normalized = normalizePath(path);
     const partButtons = Array.from(panel.querySelectorAll('.admin-part-btn'));
     partButtons.forEach(btn => {

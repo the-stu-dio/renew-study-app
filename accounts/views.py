@@ -32,6 +32,10 @@ def hub_view(request):
     """Main hub page"""
     return render(request, 'accounts/hub.html')
 
+def review_renew_view(request):
+    """Review RENEW landing page - shows small boxes for quick review"""
+    return render(request, 'accounts/review_renew.html')
+
 def profile_view(request):
     """User profile page - data loaded from localStorage"""
     return render(request, 'accounts/profile.html')

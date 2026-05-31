@@ -202,6 +202,32 @@
             box-shadow: 0 6px 18px rgba(0,0,0,0.12);
             padding: 0;
         }
+
+        .renew-caption-overlay {
+            position: absolute;
+            left: 50%;
+                --renew-caption-bottom: 50px;
+                bottom: var(--renew-caption-bottom);
+            transform: translateX(-50%);
+            z-index: 30;
+            max-width: min(92%, 820px);
+            padding: 10px 16px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.68);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.35;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.18s ease;
+        }
+
+        .renew-caption-overlay.is-visible {
+            opacity: 1;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -440,6 +466,115 @@
     document.addEventListener('DOMContentLoaded', function() {
         RENEWStorage.init();
         RENEWStorage.checkNicknameAndRedirect();
+        // Attach caption overlays to any video elements with a data-track attribute
+        try {
+            const videos = document.querySelectorAll('video[data-track]');
+            videos.forEach(video => {
+                try {
+                    const src = video.dataset.track;
+                    if (!src) return;
+
+                    const container = video.parentElement;
+                    if (!container) return;
+
+                    if (getComputedStyle(container).position === 'static') {
+                        container.style.position = 'relative';
+                    }
+
+                    let overlay = container.querySelector('.renew-caption-overlay[data-for="' + video.id + '"]');
+                    if (!overlay) {
+                        overlay = document.createElement('div');
+                        overlay.className = 'renew-caption-overlay';
+                        overlay.dataset.for = video.id;
+                        overlay.setAttribute('aria-live', 'polite');
+                        container.appendChild(overlay);
+                    }
+
+                    const parseTimestamp = (value) => {
+                        const parts = value.trim().split(':');
+                        let hours = 0;
+                        let minutes = 0;
+                        let seconds = 0;
+
+                        if (parts.length === 3) {
+                            hours = Number(parts[0]);
+                            minutes = Number(parts[1]);
+                            seconds = Number(parts[2]);
+                        } else if (parts.length === 2) {
+                            minutes = Number(parts[0]);
+                            seconds = Number(parts[1]);
+                        }
+
+                        return (hours * 3600) + (minutes * 60) + seconds;
+                    };
+
+                    const parseVtt = (text) => {
+                        const normalized = text.replace(/\r/g, '').replace(/^WEBVTT[\s\S]*?\n\n/, 'WEBVTT\n\n');
+                        const blocks = normalized.split(/\n\n+/);
+                        const cues = [];
+
+                        blocks.forEach(block => {
+                            const lines = block.split('\n').map(line => line.trim()).filter(Boolean);
+                            if (lines.length < 2) return;
+
+                            const timeLineIndex = lines.findIndex(line => line.includes('-->'));
+                            if (timeLineIndex === -1) return;
+
+                            const [startPart, endPart] = lines[timeLineIndex].split('-->').map(item => item.trim().split(' ')[0]);
+                            const start = parseTimestamp(startPart);
+                            const end = parseTimestamp(endPart);
+                            const textLines = lines.slice(timeLineIndex + 1);
+
+                            if (Number.isFinite(start) && Number.isFinite(end) && textLines.length) {
+                                cues.push({ start, end, text: textLines.join('\n') });
+                            }
+                        });
+
+                        return cues;
+                    };
+
+                    const showCaption = (text) => {
+                        if (text) {
+                            overlay.textContent = text;
+                            overlay.classList.add('is-visible');
+                        } else {
+                            overlay.textContent = '';
+                            overlay.classList.remove('is-visible');
+                        }
+                    };
+
+                    const updateCaption = () => {
+                        const currentTime = video.currentTime || 0;
+                        const activeCue = video._renewCues && video._renewCues.find(cue => currentTime >= cue.start && currentTime <= cue.end);
+                        showCaption(activeCue ? activeCue.text : '');
+                    };
+
+                    fetch(src, { cache: 'no-store' })
+                        .then(response => response.text())
+                        .then(text => {
+                            video._renewCues = parseVtt(text);
+                            updateCaption();
+                        })
+                        .catch(error => {
+                            console.warn('Failed to load captions', error);
+                        });
+
+                    video.addEventListener('loadedmetadata', updateCaption);
+                    video.addEventListener('timeupdate', updateCaption);
+                    video.addEventListener('seeked', updateCaption);
+                    video.addEventListener('play', updateCaption);
+                    video.addEventListener('pause', updateCaption);
+                    video.addEventListener('ended', () => showCaption(''));
+
+                    setTimeout(updateCaption, 100);
+                    setTimeout(updateCaption, 500);
+                } catch (err) {
+                    console.warn('Failed to attach subtitles to video', err);
+                }
+            });
+        } catch (e) {
+            console.warn('Subtitle setup failed', e);
+        }
     });
 
     // Global functions for templates to use

@@ -9,6 +9,7 @@ urlpatterns = [
     path('nickname/', views.nickname_view, name='nickname'),
     path('welcome/', views.welcome_view, name='welcome'),
     path('hub/', views.hub_view, name='hub'),
+    path('review-renew/', views.review_renew_view, name='review_renew'),
     path('profile/', views.profile_view, name='profile'),  # NEW: Profile page
    
     path('adventure-map/', views.adventure_map_view, name='adventure_map'),

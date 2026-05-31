@@ -23,7 +23,7 @@
       .renew-caption-overlay {
         position: absolute;
         left: 50%;
-        bottom: 166px;
+        bottom: var(--renew-caption-bottom, 40px);
         transform: translateX(-50%);
         z-index: 9999;
         max-width: min(92%, 840px);
@@ -41,6 +41,10 @@
         opacity: 0;
         transition: opacity 0.18s ease;
         white-space: pre-wrap;
+      }
+
+      body.intro-page .renew-caption-overlay {
+        --renew-caption-bottom: 54px;
       }
 
       .renew-caption-overlay.is-visible {
@@ -108,7 +112,7 @@
   }
 
   function ensureContainer(video) {
-    const container = video.closest('.video-container') || video.parentElement;
+    const container = video.closest('.video-wrapper') || video.closest('.video-container') || video.parentElement;
     if (!container) return null;
 
     if (getComputedStyle(container).position === 'static') {
@@ -144,6 +148,13 @@
     if (toggleButton && !container.contains(toggleButton)) {
       container.appendChild(toggleButton);
     }
+
+    // Move the action stack into the video container so it can be positioned
+    // next to each video without affecting layout flow.
+    try {
+      const actionStack = document.querySelector('.renew-video-actions');
+      if (actionStack && !container.contains(actionStack)) container.appendChild(actionStack);
+    } catch (e) {}
 
     let nativeTrack = video.querySelector('track[data-renew-captions="true"]');
     if (!nativeTrack) {
@@ -250,8 +261,11 @@
     if (!videos.length) {
       const toggleButton = getToggleButton();
       if (toggleButton) toggleButton.remove();
-      const fullscreenButton = getFullscreenButton();
-      if (fullscreenButton) fullscreenButton.remove();
+      const actionStack = document.querySelector('.renew-video-actions');
+      if (actionStack) {
+        actionStack.classList.add('is-floating');
+        document.body.appendChild(actionStack);
+      }
       return;
     }
 
