@@ -134,7 +134,7 @@
     return overlay;
   }
 
-  function attachVideo(video) {
+  function attachVideo(video, attachToggleButton) {
     const src = video.dataset.track;
     if (!src) return;
 
@@ -145,15 +145,24 @@
     const toggleButton = getToggleButton();
     let captionsEnabled = getCaptionPreference();
 
-    if (toggleButton && !container.contains(toggleButton)) {
-      container.appendChild(toggleButton);
+    if (toggleButton && attachToggleButton) {
+      if (!container.contains(toggleButton)) {
+        container.appendChild(toggleButton);
+      }
+      toggleButton.style.position = 'absolute';
+      toggleButton.style.right = '16px';
+      toggleButton.style.bottom = '16px';
+      toggleButton.style.zIndex = '1205';
+      toggleButton.style.display = 'flex';
     }
 
     // Move the action stack into the video container so it can be positioned
     // next to each video without affecting layout flow.
     try {
       const actionStack = document.querySelector('.renew-video-actions');
-      if (actionStack && !container.contains(actionStack)) container.appendChild(actionStack);
+      if (actionStack && attachToggleButton && !container.contains(actionStack)) {
+        container.appendChild(actionStack);
+      }
     } catch (e) {}
 
     let nativeTrack = video.querySelector('track[data-renew-captions="true"]');
@@ -263,13 +272,20 @@
       if (toggleButton) toggleButton.remove();
       const actionStack = document.querySelector('.renew-video-actions');
       if (actionStack) {
+        actionStack.style.display = 'none';
         actionStack.classList.add('is-floating');
         document.body.appendChild(actionStack);
       }
       return;
     }
 
-    videos.forEach(attachVideo);
+    const visibleVideos = Array.from(videos).filter(video => video.offsetParent !== null || video.getClientRects().length > 0);
+    const activeVideo = visibleVideos[0] || videos[0];
+
+    const actionStack = document.querySelector('.renew-video-actions');
+    if (actionStack) actionStack.style.display = '';
+
+    videos.forEach(video => attachVideo(video, video === activeVideo));
   }
 
   if (document.readyState === 'loading') {
