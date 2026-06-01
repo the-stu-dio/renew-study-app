@@ -18,6 +18,10 @@ db.sqlite3
 static/videos/
 videos/
 
+# allow subtitle VTTs
+!static/videos/subtitles/
+!static/videos/subtitles/*.vtt
+
 # Secrets
 .env
 
