@@ -675,6 +675,7 @@ function checkReviewAvailability() {
         const progress = data.progress || {};
         const completed = data.completed_sections || [];
         const responses = data.responses || {};
+        const skillsCompleted = completed.includes('skills') || progress.skills_complete || progress.skills;
 
         const pageGroups = [
             {
@@ -691,11 +692,15 @@ function checkReviewAvailability() {
             },
             {
                 pageIds: ['skill_p1', 'skill_p2', 'skill_p3', 'skill_p4'],
-                legacyDone: completed.includes('skills') || progress.skills_complete || progress.skills
+                sectionOnly: true,
+                legacyDone: skillsCompleted
             }
         ];
 
         const completedCount = pageGroups.reduce((total, group) => {
+            if (group.sectionOnly) {
+                return total + (group.legacyDone ? group.pageIds.length : 0);
+            }
             const pageCount = group.pageIds.filter(pageId => localStorage.getItem('completed_' + pageId) === 'true').length;
             if (pageCount > 0) {
                 return total + pageCount;
