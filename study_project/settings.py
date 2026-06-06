@@ -58,11 +58,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'public', 'static')
 
 # For development - tells Django where to find static files
 STATICFILES_DIRS = [
+    # All static assets (js, videos, and the icon images under static/ and
+    # static/section_icons_new/) live here so they ship with the cPanel deploy,
+    # which copies the 'static' folder.
     BASE_DIR / 'static',
-    BASE_DIR / 'section_icons',
-    # Served under a 'section_icons_new/' prefix so its Pos1-Pos5 don't
-    # shadow the same-named icons in 'section_icons'.
-    ('section_icons_new', BASE_DIR / 'section_icons_new'),
 ]
 
 # Media files (user uploads)
