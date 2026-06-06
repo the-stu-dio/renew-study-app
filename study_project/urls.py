@@ -4,6 +4,7 @@ from django.urls import path, include
 from django.shortcuts import redirect
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 def home_redirect(request):
     # Since we're using localStorage, we can't check user data server-side
@@ -16,7 +17,8 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
 ]
 
-# Serve static files during development
+# Serve static files via the staticfiles finders (reads STATICFILES_DIRS, i.e. the
+# deployed `static/` folder) so it works on cPanel/Passenger without running collectstatic.
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += staticfiles_urlpatterns()
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
