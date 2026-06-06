@@ -371,7 +371,6 @@
   <div class="container">
     <div class="header">
       <h1>Things I Want to Change</h1>
-      <a href="{% url 'journal_p2' %}" class="prev-button-overlay">Let's check out the other option!</a>
     </div>
 
     <div class="notepad-wrapper">
@@ -397,7 +396,7 @@
         <div class="character-count" id="characterCount" style="display: none;">0 characters (minimum 50 recommended)</div>
         
         <div style="display: flex; gap: 15px; align-items: center;">
-          <button type="button" class="save-button" id="saveButton">Save My Reflection</button>
+          <button type="button" class="save-button" id="saveButton">Let's check out the other option!</button>
           <a href="{% url 'journal_p2' %}" class="next-button" id="nextOptionButton" style="display: none;">Complete the Journaling Section</a>
         </div>
         
@@ -650,9 +649,23 @@
     }
 
     // Save and mark complete
+    // After saving, continue: if the OTHER option isn't done yet this is the first
+    // reflection (-> go to the other option); otherwise it's the second (-> other skills).
+    var journalNavigated = false;
+    function journalGoNext() {
+      if (journalNavigated) return;
+      journalNavigated = true;
+      if (isComplete('journal_option2')) {
+        // Both journal prompts complete -> Skill Focus page shows the "Great Job" banner
+        window.location.href = "{% url 'skill_p4' %}?journal_complete=1";
+      } else {
+        window.location.href = "{% url 'journal_option2' %}";
+      }
+    }
+
     saveButton.addEventListener('click', function() {
       if (!textarea.value.trim()) {
-        alert('Please write something in your journal before saving.');
+        alert('Please write something in your journal before continuing.');
         return;
       }
 
@@ -682,7 +695,10 @@
           things_to_change: textarea.value,
           nickname: nickname
         })
-      }).catch(err => console.error('Error saving to DB:', err));
+      }).then(function () { journalGoNext(); }).catch(function () { journalGoNext(); });
+
+      // Navigate once the reflection is saved (fallback in case the request hangs)
+      setTimeout(journalGoNext, 1500);
       
       if (true) {
         // Mark this page as completed
@@ -692,8 +708,7 @@
         saveButton.textContent = 'Saved! ✓';
         saveButton.style.backgroundColor = '#28a745';
         
-        // Show next button next to save button (no completion message)
-        nextOptionButton.style.display = 'inline-block';
+        // No "Complete the Journaling Section" button — the continue button navigates automatically.
         
         setTimeout(() => {
           saveButton.textContent = 'Save My Reflection';
@@ -721,7 +736,12 @@
 
       // Load existing content
       loadExistingContent();
-      
+
+      // Label the continue button: first reflection -> other option; second -> other skills
+      saveButton.textContent = isComplete('journal_option2')
+        ? "Let's check out other skills"
+        : "Let's check out the other option!";
+
       // If already completed, show completion message
       if (isComplete('journal_option1')) {
         completionMessage.classList.add('visible');

@@ -1189,9 +1189,15 @@
     // Update finish button visibility
     function updateFinishButtonVisibility() {
         const actionButtons = document.querySelector('.action-buttons');
-        
-        if (checkAllSectionsCompleted()) {
-            console.log('All sections completed - showing finish button');
+
+        // Admin (RENEWADMIN) users jump through the app without writing the real completion
+        // flags, so also reveal the finish button when admin mode is unlocked.
+        const adminUnlocked = (typeof isAdminUnlocked === 'function')
+            ? isAdminUnlocked()
+            : (localStorage.getItem('renew_admin_unlocked') === '1');
+
+        if (adminUnlocked || checkAllSectionsCompleted()) {
+            console.log('Showing finish button (admin or all sections completed)');
             actionButtons.style.display = 'flex';
         } else {
             console.log('Sections incomplete - hiding finish button');

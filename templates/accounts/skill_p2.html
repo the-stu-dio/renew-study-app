@@ -432,6 +432,29 @@
     document.addEventListener('DOMContentLoaded', function() {
       const videoPlayer = document.getElementById('videoPlayer');
 
+      // Optional start timestamp passed via ?t=<seconds> (WCHU5 -> 0:20)
+      const startTime = parseFloat(new URLSearchParams(window.location.search).get('t'));
+      if (videoPlayer && !isNaN(startTime) && startTime > 0) {
+        let seekApplied = false;
+        const seekToStart = function() {
+          if (seekApplied) return;
+          const seekable = videoPlayer.seekable;
+          const ready = seekable && seekable.length > 0 && startTime <= seekable.end(seekable.length - 1);
+          if (ready || videoPlayer.duration >= startTime) {
+            try {
+              videoPlayer.currentTime = startTime;
+              seekApplied = true;
+            } catch (e) {
+              console.error('Seek failed:', e);
+            }
+          }
+        };
+        videoPlayer.addEventListener('loadedmetadata', seekToStart);
+        videoPlayer.addEventListener('loadeddata', seekToStart);
+        videoPlayer.addEventListener('canplay', seekToStart);
+        seekToStart();
+      }
+
       if (isComplete('skill_p2')) {
         showNavigationButtons();
       }

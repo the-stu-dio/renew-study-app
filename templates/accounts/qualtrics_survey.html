@@ -6,7 +6,13 @@
 <title>Final Survey</title>
 <style>
 body { margin:0; padding:0; font-family: Arial, sans-serif; }
-.survey-header { background: #2c3e50; color:white; padding:20px; text-align:center; }
+.survey-header { background: #2c3e50; color:white; padding:20px; text-align:center; position:relative; }
+.back-btn {
+    position:absolute; left:20px; top:50%; transform:translateY(-50%);
+    background:#6c757d; color:white; border:none; padding:10px 18px;
+    border-radius:8px; cursor:pointer; font-size:1rem; font-weight:600;
+}
+.back-btn:hover { background:#5a6268; }
 .survey-container { width:100%; height: calc(100vh - 120px); } /* Adjusted for button */
 .survey-iframe { width:100%; height:100%; border:none; }
 .data-transfer { background: #f8f9fa; padding:20px; text-align:center; border-bottom:1px solid #ddd; }
@@ -29,7 +35,7 @@ body { margin:0; padding:0; font-family: Arial, sans-serif; }
 <body>
 
 <div class="survey-header">
-    <!-- Optional header -->
+    <button type="button" class="back-btn" onclick="goBack()">← Back</button>
 </div>
 
 <div class="data-transfer" id="dataTransferSection">
@@ -49,6 +55,17 @@ body { margin:0; padding:0; font-family: Arial, sans-serif; }
 <script>
 const completeBtn = document.getElementById('completeBtn');
 const iframe = document.getElementById('qualtricsIframe');
+
+// Enable "Complete Study" only when the Qualtrics End-of-Survey page signals completion.
+window.addEventListener('message', function (event) {
+    // Diagnostic: log everything the iframe sends so we can see if Qualtrics is signalling.
+    console.log('[final-survey] postMessage received -> origin:', event.origin, '| data:', event.data);
+    if (typeof event.origin === 'string' && event.origin.indexOf('qualtrics.com') === -1) return;
+    if (event.data === 'renew_survey_complete') {
+        completeBtn.disabled = false;
+        console.log('[final-survey] Complete Study ENABLED via Qualtrics signal');
+    }
+});
 
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
@@ -125,9 +142,18 @@ function startQualtricsSurvey() {
     document.getElementById('surveyContainer').style.display = 'block';
     document.getElementById('dataTransferSection').style.display = 'none';
 
+    // Keep "Complete Study" grayed out until Qualtrics signals that the participant reached
+    // the final page (via postMessage from the survey -- see the listener near the top).
     completeBtn.disabled = true;
-    // Enable button after 30s minimum or add your own Qualtrics detection logic
-    setTimeout(() => { completeBtn.disabled = false; }, 30000);
+    // Safety net: if the Qualtrics signal never arrives, enable the button after a fallback
+    // delay so participants can never get permanently stuck on a gray button.
+    const COMPLETE_FALLBACK_MS = 8000;
+    setTimeout(() => { completeBtn.disabled = false; }, COMPLETE_FALLBACK_MS);
+}
+
+function goBack() {
+    // Always return to the RENEW home hub
+    window.location.href = "{% url 'hub' %}";
 }
 
 function parseJournalAnswer(journalEntries, answerKey) {

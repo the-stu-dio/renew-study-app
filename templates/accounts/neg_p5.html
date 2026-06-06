@@ -430,6 +430,32 @@
     document.addEventListener('DOMContentLoaded', function() {
       const videoPlayer = document.getElementById('videoPlayer');
 
+      // Optional start timestamp passed via ?t=<seconds> (e.g. Neg6 -> 0:12, Neg7 -> 0:27)
+      const startTime = parseFloat(new URLSearchParams(window.location.search).get('t'));
+      if (videoPlayer && !isNaN(startTime) && startTime > 0) {
+        let seekApplied = false;
+        const seekToStart = function() {
+          if (seekApplied) return;
+          // Only seek once the requested time is within the seekable range,
+          // otherwise the assignment is silently ignored (stays at 0).
+          const seekable = videoPlayer.seekable;
+          const ready = seekable && seekable.length > 0 && startTime <= seekable.end(seekable.length - 1);
+          if (ready || videoPlayer.duration >= startTime) {
+            try {
+              videoPlayer.currentTime = startTime;
+              seekApplied = true;
+            } catch (e) {
+              console.error('Seek failed:', e);
+            }
+          }
+        };
+        // Try across several load milestones so the seek lands regardless of timing.
+        videoPlayer.addEventListener('loadedmetadata', seekToStart);
+        videoPlayer.addEventListener('loadeddata', seekToStart);
+        videoPlayer.addEventListener('canplay', seekToStart);
+        seekToStart();
+      }
+
       if (isComplete('neg_p5')) {
         showNavigationButtons();
       }

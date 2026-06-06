@@ -93,32 +93,41 @@
     <a href="{% url 'hub' %}" class="back-button">← Back</a>
     <div class="boxes-row-wrapper">
         <div class="boxes-row" role="list" aria-label="Review boxes">
-            <a href="{% url 'pos_p1' %}" class="review-link" role="listitem" aria-label="Positive Events Part 1">
+            <!-- Pos1, Pos2 -> Positive Events - Part 1 -->
+            <a href="{% url 'pos_p1' %}" class="review-link" role="listitem" aria-label="Positive Events - Part 1">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'Pos1.png' %}" alt="Pos 1">
+                    <img class="box-img" src="{% static 'section_icons_new/Pos1.png' %}" alt="Pos 1">
                 </div>
             </a>
 
-            <a href="{% url 'pos_p2' %}" class="review-link" role="listitem" aria-label="Positive Events Part 2">
+            <a href="{% url 'pos_p1' %}?t=14" class="review-link" role="listitem" aria-label="Positive Events - Part 1">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'Pos2.png' %}" alt="Pos 2">
+                    <img class="box-img" src="{% static 'section_icons_new/Pos2.png' %}" alt="Pos 2">
                 </div>
             </a>
 
-            <a href="{% url 'pos_p3' %}" class="review-link" role="listitem" aria-label="Positive Events Part 3">
+            <!-- Pos3, Pos4, Pos5 -> Positive Events - Part 2 -->
+            <a href="{% url 'pos_p2' %}" class="review-link" role="listitem" aria-label="Positive Events - Part 2">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'Pos3.png' %}" alt="Pos 3">
+                    <img class="box-img" src="{% static 'section_icons_new/Pos3.png' %}" alt="Pos 3">
                 </div>
             </a>
-            <a href="{% url 'pos_p4' %}" class="review-link" role="listitem" aria-label="Positive Events Part 4">
+            <a href="{% url 'pos_p2' %}?t=12" class="review-link" role="listitem" aria-label="Positive Events - Part 2">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'Pos4.png' %}" alt="Pos 4">
+                    <img class="box-img" src="{% static 'section_icons_new/Pos4.png' %}" alt="Pos 4">
                 </div>
             </a>
 
-            <a href="{% url 'pos_p5' %}" class="review-link" role="listitem" aria-label="Positive Events Part 5">
+            <a href="{% url 'pos_p2' %}?t=26" class="review-link" role="listitem" aria-label="Positive Events - Part 2">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'Pos5.png' %}" alt="Pos 5">
+                    <img class="box-img" src="{% static 'section_icons_new/Pos5.png' %}" alt="Pos 5">
+                </div>
+            </a>
+
+            <!-- Pos6 -> What kind of positive events impact you? -->
+            <a href="{% url 'pos_p3' %}" class="review-link" role="listitem" aria-label="What kind of positive events impact you?">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/Pos6.png' %}" alt="Pos 6">
                 </div>
             </a>
         </div>
@@ -129,91 +138,165 @@
 <div class="review-container" style="margin-top:6px">
     <div class="boxes-row-wrapper">
         <div class="boxes-row" role="list" aria-label="Negative review boxes">
-            <a href="{% url 'neg_p1' %}" class="review-link" role="listitem" aria-label="Negative Events Part 1">
+            <!-- Neg1, Neg2 -> Admin Jump 1 (neg_p1) -->
+            <a href="{% url 'neg_p1' %}" class="review-link" role="listitem" aria-label="Admin Jump 1">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'Neg1.png' %}" alt="Neg 1">
+                    <img class="box-img" src="{% static 'section_icons_new/Neg1.png' %}" alt="Neg 1">
                 </div>
             </a>
-            <a href="{% url 'neg_p2' %}" class="review-link" role="listitem" aria-label="Negative Events Part 2">
+            <a href="{% url 'neg_p1' %}?t=26" class="review-link" role="listitem" aria-label="Admin Jump 1">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'Neg2.png' %}" alt="Neg 2">
+                    <img class="box-img" src="{% static 'section_icons_new/Neg2.png' %}" alt="Neg 2">
                 </div>
             </a>
-            <a href="{% url 'neg_p3' %}" class="review-link" role="listitem" aria-label="Negative Events Part 3">
+            <!-- Neg3 -> Admin Jump 2 (neg_p2) -->
+            <a href="{% url 'neg_p2' %}" class="review-link" role="listitem" aria-label="Admin Jump 2">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'Neg3.png' %}" alt="Neg 3">
+                    <img class="box-img" src="{% static 'section_icons_new/Neg3.png' %}" alt="Neg 3">
                 </div>
             </a>
-            <a href="{% url 'neg_p4' %}" class="review-link" role="listitem" aria-label="Negative Events Part 4">
+            <!-- Neg4 -> Admin Jump 4 (neg_p4) -->
+            <a href="{% url 'neg_p4' %}" class="review-link" role="listitem" aria-label="Admin Jump 4">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'Neg4.png' %}" alt="Neg 4">
+                    <img class="box-img" src="{% static 'section_icons_new/Neg4.png' %}" alt="Neg 4">
                 </div>
             </a>
-            <a href="{% url 'neg_p5' %}" class="review-link" role="listitem" aria-label="Negative Events Part 5">
+            <!-- Neg5, Neg6, Neg7 -> Admin Jump 5 (neg_p5) -->
+            <a href="{% url 'neg_p5' %}" class="review-link" role="listitem" aria-label="Admin Jump 5">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'Neg5.png' %}" alt="Neg 5">
+                    <img class="box-img" src="{% static 'section_icons_new/Neg5.png' %}" alt="Neg 5">
                 </div>
             </a>
-            <a href="{% url 'neg_p6' %}" class="review-link" role="listitem" aria-label="Negative Events Part 6">
+            <a href="{% url 'neg_p5' %}?t=12" class="review-link" role="listitem" aria-label="Admin Jump 5">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'Neg6.png' %}" alt="Neg 6">
+                    <img class="box-img" src="{% static 'section_icons_new/Neg6.png' %}" alt="Neg 6">
                 </div>
             </a>
-            <a href="{% url 'neg_p7' %}" class="review-link" role="listitem" aria-label="Negative Events Part 7">
+            <a href="{% url 'neg_p5' %}?t=27" class="review-link" role="listitem" aria-label="Admin Jump 5">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'Neg7.png' %}" alt="Neg 7">
+                    <img class="box-img" src="{% static 'section_icons_new/Neg7.png' %}" alt="Neg 7">
                 </div>
             </a>
-            <a href="{% url 'neg_p8' %}" class="review-link" role="listitem" aria-label="Negative Events Part 8">
+            <!-- Neg8 -> Admin Jump 6 (neg_p6) -->
+            <a href="{% url 'neg_p6' %}" class="review-link" role="listitem" aria-label="Admin Jump 6">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'Neg8.png' %}" alt="Neg 8">
-                </div>
-            </a>
-            <a href="{% url 'neg_p9' %}" class="review-link" role="listitem" aria-label="Negative Events Part 9">
-                <div class="review-box" >
-                    <img class="box-img" src="{% static 'Neg9.png' %}" alt="Neg 9">
-                </div>
-            </a>
-            <a href="{% url 'neg_p10' %}" class="review-link" role="listitem" aria-label="Negative Events Part 10">
-                <div class="review-box" >
-                    <img class="box-img" src="{% static 'Neg10.png' %}" alt="Neg 10">
+                    <img class="box-img" src="{% static 'section_icons_new/Neg8.png' %}" alt="Neg 8">
                 </div>
             </a>
         </div>
         <div class="boxes-label" aria-hidden="true">Negative Events</div>
     </div>
 </div>
-<!-- Thoughts & Feelings row -->
+<!-- How We're Different row -->
 <div class="review-container" style="margin-top:6px">
     <div class="boxes-row-wrapper">
-        <div class="boxes-row" role="list" aria-label="Thoughts and Feelings review boxes">
-            <a href="{% url 'emo_p1' %}" class="review-link" role="listitem" aria-label="Thoughts & Feelings Part 1">
+        <div class="boxes-row" role="list" aria-label="How We're Different review boxes">
+            <!-- HWD1 -> Admin Jump Negative 7 (neg_p7) -->
+            <a href="{% url 'neg_p7' %}" class="review-link" role="listitem" aria-label="Admin Jump Negative 7">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'THF1.png' %}" alt="THF 1">
+                    <img class="box-img" src="{% static 'section_icons_new/HWD1.png' %}" alt="HWD 1">
                 </div>
             </a>
-            <a href="{% url 'emo_p2' %}" class="review-link" role="listitem" aria-label="Thoughts & Feelings Part 2">
+            <!-- HWD2 -> Admin Jump Negative 8 (neg_p8) -->
+            <a href="{% url 'neg_p8' %}" class="review-link" role="listitem" aria-label="Admin Jump Negative 8">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'THF2.png' %}" alt="THF 2">
+                    <img class="box-img" src="{% static 'section_icons_new/HWD2.png' %}" alt="HWD 2">
                 </div>
             </a>
-            <a href="{% url 'emo_p3' %}" class="review-link" role="listitem" aria-label="Thoughts & Feelings Part 3">
+            <!-- HWD3 -> Admin Jump Negative 8 (neg_p8) at 0:29 -->
+            <a href="{% url 'neg_p8' %}?t=29" class="review-link" role="listitem" aria-label="Admin Jump Negative 8">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'THF3.png' %}" alt="THF 3">
+                    <img class="box-img" src="{% static 'section_icons_new/HWD3.png' %}" alt="HWD 3">
                 </div>
             </a>
-            <a href="{% url 'emo_p4' %}" class="review-link" role="listitem" aria-label="Thoughts & Feelings Part 4">
+            <!-- HWD4 -> Admin Jump Negative 8 (neg_p8) at 0:42 -->
+            <a href="{% url 'neg_p8' %}?t=42" class="review-link" role="listitem" aria-label="Admin Jump Negative 8">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'THF4.png' %}" alt="THF 4">
+                    <img class="box-img" src="{% static 'section_icons_new/HWD4.png' %}" alt="HWD 4">
                 </div>
             </a>
-            <a href="{% url 'emo_p5' %}" class="review-link" role="listitem" aria-label="Thoughts & Feelings Part 5">
+            <!-- HWD5 -> Admin Jump Negative 9 (neg_p9) -->
+            <a href="{% url 'neg_p9' %}" class="review-link" role="listitem" aria-label="Admin Jump Negative 9">
                 <div class="review-box" >
-                    <img class="box-img" src="{% static 'THF5.png' %}" alt="THF 5">
+                    <img class="box-img" src="{% static 'section_icons_new/HWD5.png' %}" alt="HWD 5">
                 </div>
             </a>
         </div>
-        <div class="boxes-label" aria-hidden="true">Thoughts &amp; Feelings</div>
+        <div class="boxes-label" aria-hidden="true">How We're Different</div>
+    </div>
+</div>
+<!-- How We Respond to Negative Events row -->
+<div class="review-container" style="margin-top:6px">
+    <div class="boxes-row-wrapper">
+        <div class="boxes-row" role="list" aria-label="How We Respond to Negative Events review boxes">
+            <!-- HWRTNE1 -> AJT1 (emo_p1) -->
+            <a href="{% url 'emo_p1' %}" class="review-link" role="listitem" aria-label="AJT 1">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/HWRTNE1.png' %}" alt="HWRTNE 1">
+                </div>
+            </a>
+            <!-- HWRTNE2 -> AJT1 (emo_p1) at 0:20 -->
+            <a href="{% url 'emo_p1' %}?t=20" class="review-link" role="listitem" aria-label="AJT 1">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/HWRTNE2.png' %}" alt="HWRTNE 2">
+                </div>
+            </a>
+            <!-- HWRTNE3 -> AJT1 (emo_p1) at 0:32 -->
+            <a href="{% url 'emo_p1' %}?t=32" class="review-link" role="listitem" aria-label="AJT 1">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/HWRTNE3.png' %}" alt="HWRTNE 3">
+                </div>
+            </a>
+            <!-- HWRTNE4 -> AJT2 (emo_p2) -->
+            <a href="{% url 'emo_p2' %}" class="review-link" role="listitem" aria-label="AJT 2">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/HWRTNE4.png' %}" alt="HWRTNE 4">
+                </div>
+            </a>
+            <!-- HWRTNE5 -> AJT2 (emo_p2) at 0:20 -->
+            <a href="{% url 'emo_p2' %}?t=20" class="review-link" role="listitem" aria-label="AJT 2">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/HWRTNE5.png' %}" alt="HWRTNE 5">
+                </div>
+            </a>
+            <!-- HWRTNE6 -> AJT3 (emo_p3) -->
+            <a href="{% url 'emo_p3' %}" class="review-link" role="listitem" aria-label="AJT 3">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/HWRTNE6.png' %}" alt="HWRTNE 6">
+                </div>
+            </a>
+            <!-- HWRTNE7 -> AJT3 (emo_p3) at 0:20 -->
+            <a href="{% url 'emo_p3' %}?t=20" class="review-link" role="listitem" aria-label="AJT 3">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/HWRTNE7.png' %}" alt="HWRTNE 7">
+                </div>
+            </a>
+            <!-- HWRTNE8 -> AJT3 (emo_p3) at 0:44 -->
+            <a href="{% url 'emo_p3' %}?t=44" class="review-link" role="listitem" aria-label="AJT 3">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/HWRTNE8.png' %}" alt="HWRTNE 8">
+                </div>
+            </a>
+            <!-- HWRTNE9 -> AJT4 (emo_p4) -->
+            <a href="{% url 'emo_p4' %}" class="review-link" role="listitem" aria-label="AJT 4">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/HWRTNE9.png' %}" alt="HWRTNE 9">
+                </div>
+            </a>
+            <!-- HWRTNE10 -> AJT4 (emo_p4) at 0:14 -->
+            <a href="{% url 'emo_p4' %}?t=14" class="review-link" role="listitem" aria-label="AJT 4">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/HWRTNE10.png' %}" alt="HWRTNE 10">
+                </div>
+            </a>
+            <!-- HWRTNE11 -> AJT4 (emo_p4) at 0:29 -->
+            <a href="{% url 'emo_p4' %}?t=29" class="review-link" role="listitem" aria-label="AJT 4">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/HWRTNE11.png' %}" alt="HWRTNE 11">
+                </div>
+            </a>
+        </div>
+        <div class="boxes-label" aria-hidden="true">How We Respond to Negative Events</div>
     </div>
 </div>
 <!-- Skills row -->
@@ -242,6 +325,140 @@
             </a>
         </div>
         <div class="boxes-label" aria-hidden="true">Skills</div>
+    </div>
+</div>
+<!-- What Can Help Us row -->
+<div class="review-container" style="margin-top:6px">
+    <div class="boxes-row-wrapper">
+        <div class="boxes-row" role="list" aria-label="What Can Help Us review boxes">
+            <!-- WCHU1 -> AJS1 (skill_p1) -->
+            <a href="{% url 'skill_p1' %}" class="review-link" role="listitem" aria-label="What Can Help Us 1">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/WCHU1.png' %}" alt="WCHU 1">
+                </div>
+            </a>
+            <!-- WCHU2 -> AJS1 (skill_p1) at 0:18 -->
+            <a href="{% url 'skill_p1' %}?t=18" class="review-link" role="listitem" aria-label="What Can Help Us 2">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/WCHU2.png' %}" alt="WCHU 2">
+                </div>
+            </a>
+            <!-- WCHU3 -> AJS1 (skill_p1) at 0:32 -->
+            <a href="{% url 'skill_p1' %}?t=32" class="review-link" role="listitem" aria-label="What Can Help Us 3">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/WCHU3.png' %}" alt="WCHU 3">
+                </div>
+            </a>
+            <!-- WCHU4 -> AJS2 (skill_p2) -->
+            <a href="{% url 'skill_p2' %}" class="review-link" role="listitem" aria-label="What Can Help Us 4">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/WCHU4.png' %}" alt="WCHU 4">
+                </div>
+            </a>
+            <!-- WCHU5 -> AJS2 (skill_p2) at 0:17 -->
+            <a href="{% url 'skill_p2' %}?t=17" class="review-link" role="listitem" aria-label="What Can Help Us 5">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/WCHU5.png' %}" alt="WCHU 5">
+                </div>
+            </a>
+            <!-- WCHU6 -> AJS3 (skill_p3) -->
+            <a href="{% url 'skill_p3' %}" class="review-link" role="listitem" aria-label="What Can Help Us 6">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/WCHU6.png' %}" alt="WCHU 6">
+                </div>
+            </a>
+            <!-- WCHU7 -> AJS3 (skill_p3) at 0:12 -->
+            <a href="{% url 'skill_p3' %}?t=12" class="review-link" role="listitem" aria-label="What Can Help Us 7">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/WCHU7.png' %}" alt="WCHU 7">
+                </div>
+            </a>
+        </div>
+        <div class="boxes-label" aria-hidden="true">What Can Help Us</div>
+    </div>
+</div>
+<!-- Relaxation row -->
+<div class="review-container" style="margin-top:6px">
+    <div class="boxes-row-wrapper">
+        <div class="boxes-row" role="list" aria-label="Relaxation review boxes">
+            <!-- R1 -> AJPMR1 (pmr_p1) -->
+            <a href="{% url 'pmr_p1' %}" class="review-link" role="listitem" aria-label="Relaxation 1">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/R1.png' %}" alt="R 1">
+                </div>
+            </a>
+            <!-- R2 -> AJPMR1 (pmr_p1) at 1:31 -->
+            <a href="{% url 'pmr_p1' %}?t=91" class="review-link" role="listitem" aria-label="Relaxation 2">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/R2.png' %}" alt="R 2">
+                </div>
+            </a>
+            <!-- R3 -> AJPMR1 (pmr_p1) at 1:31 -->
+            <a href="{% url 'pmr_p1' %}?t=91" class="review-link" role="listitem" aria-label="Relaxation 3">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/R3.png' %}" alt="R 3">
+                </div>
+            </a>
+        </div>
+        <div class="boxes-label" aria-hidden="true">Relaxation</div>
+    </div>
+</div>
+<!-- Journaling row -->
+<div class="review-container" style="margin-top:6px">
+    <div class="boxes-row-wrapper">
+        <div class="boxes-row" role="list" aria-label="Journaling review boxes">
+            <!-- J1 -> AJJ1 (journal_p1) -->
+            <a href="{% url 'journal_p1' %}" class="review-link" role="listitem" aria-label="Journaling 1">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/J1.png' %}" alt="J 1">
+                </div>
+            </a>
+            <!-- J2 -> AJJ2 (journal_p2) -->
+            <a href="{% url 'journal_p2' %}" class="review-link" role="listitem" aria-label="Journaling 2">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/J2.png' %}" alt="J 2">
+                </div>
+            </a>
+        </div>
+        <div class="boxes-label" aria-hidden="true">Journaling</div>
+    </div>
+</div>
+<!-- Positive Planned Activity row -->
+<div class="review-container" style="margin-top:6px">
+    <div class="boxes-row-wrapper">
+        <div class="boxes-row" role="list" aria-label="Positive Planned Activity review boxes">
+            <!-- PPA1 -> AJPPA1 (posplan_p1) -->
+            <a href="{% url 'posplan_p1' %}" class="review-link" role="listitem" aria-label="Positive Planned Activity 1">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/PPA1.png' %}" alt="PPA 1">
+                </div>
+            </a>
+            <!-- PPA2 -> AJPPA2 (posplan_p2) -->
+            <a href="{% url 'posplan_p2' %}" class="review-link" role="listitem" aria-label="Positive Planned Activity 2">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/PPA2.png' %}" alt="PPA 2">
+                </div>
+            </a>
+            <!-- PPA3 -> AJPPA3 (posplan_p3) -->
+            <a href="{% url 'posplan_p3' %}" class="review-link" role="listitem" aria-label="Positive Planned Activity 3">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/PPA3.png' %}" alt="PPA 3">
+                </div>
+            </a>
+            <!-- PPA4 -> AJPPA4 (posplan_p4) at 0:00 -->
+            <a href="{% url 'posplan_p4' %}" class="review-link" role="listitem" aria-label="Positive Planned Activity 4">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/PPA4.png' %}" alt="PPA 4">
+                </div>
+            </a>
+            <!-- PPA5 -> AJPPA5 (posplan_p5) at 0:00 -->
+            <a href="{% url 'posplan_p5' %}" class="review-link" role="listitem" aria-label="Positive Planned Activity 5">
+                <div class="review-box" >
+                    <img class="box-img" src="{% static 'section_icons_new/PPA5.png' %}" alt="PPA 5">
+                </div>
+            </a>
+        </div>
+        <div class="boxes-label" aria-hidden="true">Positive Planned Activity</div>
     </div>
 </div>
 {% endblock %}
