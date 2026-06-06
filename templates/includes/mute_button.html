@@ -14,6 +14,15 @@
 		right: auto;
 	}
 
+	/* Pin the admin (🔑) button to the bottom-left corner, mirroring the
+	   bottom-right mute button */
+	#admin-unlock {
+		position: fixed;
+		left: 20px;
+		bottom: 20px;
+		z-index: 1200;
+	}
+
 	body.intro-page #admin-unlock {
 		left: 148px;
 		right: auto;
