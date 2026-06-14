@@ -740,9 +740,18 @@
 
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
+      // Re-entering the journaling activity: start a fresh "visited prompts"
+      // session so the student is walked through both prompts again (the
+      // continue button only offers "other skills" after they've seen both).
+      try {
+        sessionStorage.removeItem('renew_journal_seen_option1');
+        sessionStorage.removeItem('renew_journal_seen_option2');
+        sessionStorage.removeItem('renew_journal_order');
+      } catch (e) {}
+
       // Play audio when page loads (only once)
       playPageAudio();
-      
+
       // Mark this page as complete
       markComplete('journal_p2');
       

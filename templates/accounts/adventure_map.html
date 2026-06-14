@@ -626,6 +626,239 @@
             font-size: 15px;
         }
     }
+
+    /* =====================================================================
+       Themed adventure map: a winding trail with section "stations" that
+       light up as they unlock, and the student's avatar walking the path.
+       ===================================================================== */
+    .adventure-map {
+        position: relative;
+        width: 100%;
+        max-width: 760px;
+        margin: 30px auto 0;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 18px 45px rgba(90, 62, 140, 0.28),
+                    inset 0 0 0 4px rgba(255, 255, 255, 0.55);
+        animation: fadeInUp 0.8s ease-out 0.3s both;
+    }
+
+    /* Aspect ratio lock (100 : 130) so SVG viewBox maps 1:1 to the box. */
+    .adventure-map::before {
+        content: '';
+        display: block;
+        padding-top: 130%;
+    }
+
+    .map-inner {
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(180deg,
+                #bfe6ff 0%, #d4edff 20%,
+                #cdeeb0 20%, #aadd84 55%, #8fce6a 100%);
+    }
+
+    .map-scenery span {
+        position: absolute;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        opacity: 0.92;
+        filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.12));
+    }
+
+    .map-path {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .trail-base {
+        stroke: #e0b88a;
+        stroke-width: 6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .trail-edge {
+        stroke: #c79a66;
+        stroke-width: 7.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .trail-dash {
+        stroke: #fff8ec;
+        stroke-width: 1.4;
+        stroke-linecap: round;
+        stroke-dasharray: 0.1 4.4;
+        opacity: 0.9;
+    }
+
+    .map-finish {
+        position: absolute;
+        transform: translate(-50%, -85%);
+        font-size: clamp(28px, 8vw, 52px);
+        z-index: 4;
+        filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.25));
+    }
+
+    .map-finish.reached {
+        animation: avatarBob 0.9s ease-in-out infinite;
+    }
+
+    .station-layer { position: absolute; inset: 0; z-index: 5; }
+
+    .station {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        width: 26%;
+        max-width: 150px;
+        text-align: center;
+        text-decoration: none !important;
+        color: #3a2b66;
+    }
+
+    .station-disc {
+        width: clamp(46px, 13vw, 80px);
+        height: clamp(46px, 13vw, 80px);
+        margin: 0 auto;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        font-size: clamp(20px, 6vw, 36px);
+        border: 4px solid #ffffff;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+        transition: transform 0.2s ease;
+    }
+
+    .station.completed .station-disc { background: linear-gradient(135deg, #34c759, #1ea34a); }
+    .station.current  .station-disc,
+    .station.unlocked .station-disc { background: linear-gradient(135deg, #7c4dff, #5a3e8c); }
+    .station.locked   .station-disc { background: #b6b1c6; filter: grayscale(0.55); }
+
+    .station.current .station-disc { animation: stationPulse 1.7s ease-in-out infinite; }
+
+    /* As the avatar reaches a station it "lights up": a pop plus a bright
+       golden glow flash. Overrides the idle pulse while active. */
+    .station.lit .station-disc { animation: stationLight 0.75s ease; }
+
+    @keyframes stationLight {
+        0% {
+            transform: scale(1);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+            filter: brightness(1);
+        }
+        35% {
+            transform: scale(1.32);
+            box-shadow: 0 0 24px 7px rgba(255, 212, 94, 0.95), 0 6px 14px rgba(0, 0, 0, 0.25);
+            filter: brightness(1.35);
+        }
+        100% {
+            transform: scale(1);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+            filter: brightness(1);
+        }
+    }
+
+    .station-emoji { line-height: 1; }
+
+    .station-badge {
+        position: absolute;
+        right: -4px;
+        bottom: -4px;
+        width: 38%;
+        height: 38%;
+        min-width: 18px;
+        min-height: 18px;
+        border-radius: 50%;
+        background: #fff;
+        color: #1ea34a;
+        font-size: clamp(11px, 3vw, 18px);
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+    }
+
+    .station-lock {
+        position: absolute;
+        right: -2px;
+        bottom: -2px;
+        font-size: clamp(13px, 3.4vw, 20px);
+        filter: none;
+    }
+
+    .station-label { margin-top: 8px; }
+
+    .station-name {
+        display: inline-block;
+        font-weight: 700;
+        font-size: clamp(11px, 2.7vw, 15px);
+        background: rgba(255, 255, 255, 0.88);
+        border-radius: 10px;
+        padding: 2px 9px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+    }
+
+    .station-status {
+        display: block;
+        margin-top: 3px;
+        font-size: clamp(9px, 2.3vw, 12px);
+        font-weight: 600;
+        color: #5a3e8c;
+    }
+
+    .station.completed .station-status { color: #1a8a3f; }
+    .station.locked .station-status,
+    .station.locked .station-name { color: #6f6b80; }
+
+    a.station, .station[role="button"] { cursor: pointer; }
+    a.station:hover .station-disc,
+    .station[role="button"]:hover .station-disc { transform: scale(1.09); }
+
+    .map-avatar {
+        position: absolute;
+        transform: translate(-50%, -100%);
+        z-index: 7;
+        font-size: clamp(24px, 6.4vw, 44px);
+        pointer-events: none;
+        will-change: left, top;
+    }
+
+    .map-avatar .avatar-emoji {
+        display: block;
+        filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.3));
+    }
+
+    .map-avatar.walking .avatar-emoji { animation: avatarBob 0.42s ease-in-out infinite; }
+
+    @keyframes avatarBob {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-16%); }
+    }
+
+    @keyframes stationPulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(124, 77, 255, 0.55), 0 6px 14px rgba(0, 0, 0, 0.25); }
+        50%      { box-shadow: 0 0 0 12px rgba(124, 77, 255, 0), 0 6px 14px rgba(0, 0, 0, 0.25); }
+    }
+
+    @keyframes stationPop {
+        0%   { transform: scale(1); }
+        40%  { transform: scale(1.28); }
+        100% { transform: scale(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .map-avatar.walking .avatar-emoji,
+        .station.current .station-disc,
+        .station.lit .station-disc,
+        .map-finish.reached { animation: none; }
+    }
 </style>
 {% endblock %}
 
@@ -668,8 +901,31 @@
         Your learning journey! Complete each section to unlock the next.
     </p>
 
-    <div class="sections-grid" id="sectionsGrid">
-        <!-- Sections will be populated by JavaScript -->
+    <div class="adventure-map" id="adventureMap">
+        <div class="map-inner">
+            <div class="map-scenery" aria-hidden="true">
+                <span style="left:14%;top:7%;font-size:clamp(26px,7.5vw,48px)">☁️</span>
+                <span style="left:72%;top:4%;font-size:clamp(26px,7.5vw,48px)">☁️</span>
+                <span style="left:88%;top:46%;font-size:clamp(22px,6vw,40px)">🌲</span>
+                <span style="left:9%;top:30%;font-size:clamp(22px,6vw,40px)">🌳</span>
+                <span style="left:55%;top:68%;font-size:clamp(20px,5.4vw,36px)">🌳</span>
+                <span style="left:9%;top:66%;font-size:clamp(20px,5.4vw,34px)">🪨</span>
+                <span style="left:90%;top:74%;font-size:clamp(20px,5.4vw,36px)">🌲</span>
+                <span style="left:42%;top:20%;font-size:clamp(18px,5vw,32px)">⛰️</span>
+            </div>
+            <svg class="map-path" viewBox="0 0 100 130" preserveAspectRatio="none" aria-hidden="true">
+                <path class="trail-edge" fill="none"></path>
+                <path class="trail-base" fill="none"></path>
+                <path class="trail-dash" fill="none"></path>
+            </svg>
+            <div class="map-finish" id="mapFinish" style="left:50%;top:7.7%">🏁</div>
+            <div class="station-layer" id="stationLayer">
+                <!-- Stations are populated by JavaScript -->
+            </div>
+            <div class="map-avatar" id="mapAvatar">
+                <span class="avatar-emoji" id="avatarEmoji">🧑‍🎓</span>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -1050,74 +1306,228 @@ localStorage.setItem('adventure_map_visited', 'true');
         }
     }
     
-    // Generate sections HTML
-    const sectionsGrid = document.getElementById('sectionsGrid');
-    sectionsGrid.innerHTML = `
-        ${generateSectionCard('positive', 'Positive Events', '🌟', 'pos_p1', 
-            'Explore uplifting stories and experiences that bring joy and hope.', 
-            true, positiveCompleted)}
-            
-        ${generateSectionCard('negative', 'Negative Events', '⚡', 'neg_p1',
-            'Learn to navigate challenging situations and build resilience.',
-            positiveCompleted, negativeCompleted)}
-            
-        ${generateSectionCard('thoughts', 'Thoughts and Feelings', '🧠', 'emo_p1',
-            'Explore the connection between your thoughts, emotions, and experiences.',
-            negativeCompleted, thoughtsCompleted, 'thoughts-feelings')}
-            
-        ${generateSectionCard('skills', 'Skills', '🎯', 'skill_p1',
-            'Develop and practice essential life skills and strategies.',
-            thoughtsCompleted, skillsCompleted, 'skills', true, feedbackCompleted)}
-    `;
+    // Render the themed adventure map (stations + winding path + avatar).
+    renderAdventureMap(positiveCompleted, negativeCompleted, thoughtsCompleted, skillsCompleted, feedbackCompleted);
 }
 
-function generateSectionCard(id, title, icon, urlKey, description, unlocked, completed, extraClass = '', needsSurvey = false, surveyCompleted = false) {
-    let statusClass, statusText, cardClass, linkStart = '', linkEnd = '', topIcon = '';
-    const sectionUrl = URL_MAPPINGS[urlKey];
-    
-    if (completed) {
-        statusClass = 'status-completed';
-        statusText = 'Completed!';
-        cardClass = `completed ${extraClass}`;
-        topIcon = '<div class="complete-icon">✅</div>';
-        linkStart = `<a href="${sectionUrl}">`;
-        linkEnd = '</a>';
-    } else if (unlocked) {
-        if (extraClass === 'thoughts-feelings') {
-            statusClass = 'status-thoughts-feelings';
+/* -------------------------------------------------------------------------
+   Adventure map rendering
+   ------------------------------------------------------------------------- */
+
+// Station coordinates in the SVG viewBox space (0..100 wide, 0..130 tall),
+// laid out as a winding trail from the bottom (start) to the top (finish).
+const STATION_POS = [
+    { x: 26, y: 113 }, // Positive Events
+    { x: 74, y: 88 },  // Negative Events
+    { x: 28, y: 58 },  // Thoughts & Feelings
+    { x: 72, y: 30 }   // Skills
+];
+const MAP_START = { x: 50, y: 126 };
+const MAP_FINISH = { x: 50, y: 10 };
+const VIEWBOX_H = 130;
+
+// Swap this for an <img> later if you want a custom character.
+const AVATAR_HTML = '🧑‍🎓';
+
+function pctTop(y) { return (y / VIEWBOX_H) * 100; }
+
+// Build a smooth curve that passes *through* every point (Catmull-Rom -> bezier),
+// so each station sits exactly on the trail.
+function smoothPath(points) {
+    if (points.length < 2) return '';
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i - 1] || points[i];
+        const p1 = points[i];
+        const p2 = points[i + 1];
+        const p3 = points[i + 2] || p2;
+        const c1x = p1.x + (p2.x - p0.x) / 6;
+        const c1y = p1.y + (p2.y - p0.y) / 6;
+        const c2x = p2.x - (p3.x - p1.x) / 6;
+        const c2y = p2.y - (p3.y - p1.y) / 6;
+        d += ` C ${c1x.toFixed(2)} ${c1y.toFixed(2)}, ${c2x.toFixed(2)} ${c2y.toFixed(2)}, ${p2.x} ${p2.y}`;
+    }
+    return d;
+}
+
+// Find the 0..1 fraction along the path closest to a given point.
+function fractionForPoint(pathEl, target) {
+    const total = pathEl.getTotalLength();
+    if (!total) return 0;
+    let bestLen = 0, bestDist = Infinity;
+    const steps = 500;
+    for (let i = 0; i <= steps; i++) {
+        const len = (total * i) / steps;
+        const pt = pathEl.getPointAtLength(len);
+        const dx = pt.x - target.x, dy = pt.y - target.y;
+        const dist = dx * dx + dy * dy;
+        if (dist < bestDist) { bestDist = dist; bestLen = len; }
+    }
+    return bestLen / total;
+}
+
+function generateStation(index, section, isCurrent) {
+    const url = URL_MAPPINGS[section.url];
+    const left = STATION_POS[index].x;
+    const top = pctTop(STATION_POS[index].y);
+    const styleAttr = `style="left:${left}%;top:${top}%;"`;
+
+    let stateClass, statusText, badge = '', href = null, onclick = null;
+
+    if (section.completed) {
+        stateClass = 'completed';
+        statusText = 'Completed';
+        badge = '<span class="station-badge">✓</span>';
+        href = url;
+    } else if (section.unlocked) {
+        stateClass = isCurrent ? 'current' : 'unlocked';
+        statusText = index === 0 ? 'Start here!' : 'Now available!';
+        if (section.needsSurvey && !section.surveyCompleted) {
+            onclick = 'handleSkillsClick()';
         } else {
-            statusClass = 'status-unlocked';
-        }
-        statusText = id === 'positive' ? 'Ready to Start!' : 'Now Available!';
-        cardClass = `unlocked ${extraClass}`;
-        
-        if (needsSurvey && !surveyCompleted) {
-            linkStart = '<div onclick="handleSkillsClick()" style="cursor: pointer;">';
-            linkEnd = '</div>';
-        } else {
-            linkStart = `<a href="${sectionUrl}">`;
-            linkEnd = '</a>';
+            href = url;
         }
     } else {
-        statusClass = 'status-locked';
-        statusText = getUnlockMessage(id);
-        cardClass = `locked ${extraClass}`;
-        topIcon = '<div class="lock-icon">🔒</div>';
-        linkStart = '<div>';
-        linkEnd = '</div>';
+        stateClass = 'locked';
+        statusText = getUnlockMessage(section.id);
+        badge = '<span class="station-lock">🔒</span>';
     }
-    
-    return `
-        ${linkStart}
-            <div class="section-card ${cardClass} ${id}">
-                ${topIcon}
-                <div class="section-icon">${icon}</div>
-                <div class="section-title">${title}</div>
-                <div class="section-description">${description}</div>
-                <div class="section-status ${statusClass}">${statusText}</div>
-            </div>
-        ${linkEnd}
-    `;
+
+    const inner = `
+        <div class="station-disc">
+            <span class="station-emoji">${section.icon}</span>
+            ${badge}
+        </div>
+        <div class="station-label">
+            <span class="station-name">${section.title}</span>
+            <span class="station-status">${statusText}</span>
+        </div>`;
+
+    if (href) {
+        return `<a class="station ${stateClass}" data-index="${index}" ${styleAttr} href="${href}">${inner}</a>`;
+    }
+    if (onclick) {
+        return `<div class="station ${stateClass}" data-index="${index}" ${styleAttr} role="button" tabindex="0" onclick="${onclick}">${inner}</div>`;
+    }
+    return `<div class="station ${stateClass}" data-index="${index}" ${styleAttr}>${inner}</div>`;
+}
+
+function renderAdventureMap(positiveCompleted, negativeCompleted, thoughtsCompleted, skillsCompleted, feedbackCompleted) {
+    const sections = [
+        { id: 'positive', title: 'Positive Events', icon: '🌟', url: 'pos_p1', unlocked: true, completed: !!positiveCompleted },
+        { id: 'negative', title: 'Negative Events', icon: '⚡', url: 'neg_p1', unlocked: !!positiveCompleted, completed: !!negativeCompleted },
+        { id: 'thoughts', title: 'Thoughts & Feelings', icon: '🧠', url: 'emo_p1', unlocked: !!negativeCompleted, completed: !!thoughtsCompleted },
+        { id: 'skills', title: 'Skills', icon: '🎯', url: 'skill_p1', unlocked: !!thoughtsCompleted, completed: !!skillsCompleted, needsSurvey: true, surveyCompleted: !!feedbackCompleted }
+    ];
+
+    // The current objective is the first unlocked-but-not-completed station.
+    const currentIndex = sections.findIndex(s => s.unlocked && !s.completed);
+
+    // Draw the trail through start -> stations -> finish.
+    const pathPoints = [MAP_START].concat(STATION_POS).concat([MAP_FINISH]);
+    const d = smoothPath(pathPoints);
+    document.querySelectorAll('#adventureMap .trail-edge, #adventureMap .trail-base, #adventureMap .trail-dash')
+        .forEach(p => p.setAttribute('d', d));
+
+    // Render stations.
+    document.getElementById('stationLayer').innerHTML =
+        sections.map((s, i) => generateStation(i, s, i === currentIndex)).join('');
+
+    // Position the avatar and walk it along the trail to the current spot.
+    const basePath = document.querySelector('#adventureMap .trail-base');
+    const avatar = document.getElementById('mapAvatar');
+    const emoji = document.getElementById('avatarEmoji');
+    if (emoji) emoji.innerHTML = AVATAR_HTML;
+    if (!basePath || !avatar) return;
+
+    const completedCount = sections.filter(s => s.completed).length;
+    const stationFracs = STATION_POS.map(p => fractionForPoint(basePath, p));
+    const total = basePath.getTotalLength();
+
+    // The avatar stands at the current objective (next station to do), or at
+    // the finish once everything is done.
+    function objectiveFrac(count) {
+        return count >= 4 ? 1 : stationFracs[Math.min(count, 3)];
+    }
+    const targetFrac = objectiveFrac(completedCount);
+
+    // Walk from wherever the avatar was on the previous visit (remembered
+    // across page loads) so finishing a section continues from the last
+    // station instead of replaying the whole journey from the trailhead.
+    // The very first visit walks in from the start (frac 0).
+    let fromFrac = 0;
+    try {
+        const prev = localStorage.getItem('renew_map_progress');
+        if (prev !== null && !isNaN(parseInt(prev, 10))) {
+            fromFrac = objectiveFrac(parseInt(prev, 10));
+        }
+        localStorage.setItem('renew_map_progress', String(completedCount));
+    } catch (e) { /* ignore */ }
+
+    function place(frac) {
+        const pt = basePath.getPointAtLength(total * Math.max(0, Math.min(1, frac)));
+        avatar.style.left = pt.x + '%';
+        avatar.style.top = pctTop(pt.y) + '%';
+    }
+
+    // Light up each station the moment the avatar reaches it on the path.
+    // Stations already behind the avatar's starting point were lit on earlier
+    // visits, so mark them as done (no re-pop) — only the newly reached
+    // station(s) light up during this walk.
+    const lit = stationFracs.map(f => f <= fromFrac + 0.004);
+    function lightStationsUpTo(frac) {
+        stationFracs.forEach((f, i) => {
+            if (!lit[i] && frac >= f - 0.004) {
+                lit[i] = true;
+                const st = document.querySelector('#stationLayer .station[data-index="' + i + '"]');
+                if (st) {
+                    st.classList.add('lit');
+                    setTimeout(() => st.classList.remove('lit'), 750);
+                }
+            }
+        });
+    }
+
+    function onArrive() {
+        if (completedCount >= 4) {
+            const finish = document.getElementById('mapFinish');
+            if (finish) finish.classList.add('reached');
+        }
+    }
+
+    const reduce = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    place(fromFrac);
+    // Reduced motion, or no progress since last visit -> just place it.
+    if (reduce || Math.abs(targetFrac - fromFrac) < 0.001) {
+        place(targetFrac);
+        onArrive();
+        return;
+    }
+
+    // Animate the walk from the avatar's last station to the current
+    // objective, lighting up each station as the avatar reaches it.
+    const duration = Math.min(2600, 700 + Math.abs(targetFrac - fromFrac) * 2200);
+    let startTs = null;
+    avatar.classList.add('walking');
+    function frame(ts) {
+        if (startTs === null) startTs = ts;
+        let t = (ts - startTs) / duration;
+        if (t > 1) t = 1;
+        const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // easeInOutQuad
+        const curFrac = fromFrac + (targetFrac - fromFrac) * eased;
+        place(curFrac);
+        lightStationsUpTo(curFrac);
+        if (t < 1) {
+            requestAnimationFrame(frame);
+        } else {
+            avatar.classList.remove('walking');
+            lightStationsUpTo(targetFrac);
+            onArrive();
+        }
+    }
+    requestAnimationFrame(frame);
 }
 
 function getUnlockMessage(sectionId) {

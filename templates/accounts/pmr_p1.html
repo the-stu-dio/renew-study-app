@@ -1070,7 +1070,12 @@
         
         // Set flag that survey was submitted
         sidebarSurveySubmitted = true;
-        
+
+        // Move the adventure-trail avatar forward one step.
+        if (window.RENEWTrail && window.RENEWTrail.advance) {
+          window.RENEWTrail.advance();
+        }
+
         // Hide submit button and show the main Next button above video with motivational animation
         submitButton.style.display = 'none';
         showNextButtonMotivational();

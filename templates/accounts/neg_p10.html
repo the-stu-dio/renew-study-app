@@ -448,12 +448,19 @@
       // Mark section as complete
       markSectionComplete();
       
-      // Play congratulatory audio
+      // Play congratulatory audio immediately. If the browser blocks autoplay,
+      // RENEWEffects retries on the first user interaction so the voiceover is
+      // never silently dropped. (Play directly rather than via playAudio so a
+      // retry never resets it to the start; still register it as the current
+      // audio so the delayed clip below interrupts it as intended.)
       const congratsAudio = document.getElementById('congratsAudio');
       if (congratsAudio) {
-        setTimeout(() => {
-          playAudio(congratsAudio);
-        }, 1500); // Play after 1.5 seconds to let animations start
+        currentlyPlayingAudio = congratsAudio;
+        if (window.RENEWEffects && window.RENEWEffects.playWhenAllowed) {
+          window.RENEWEffects.playWhenAllowed(congratsAudio);
+        } else {
+          congratsAudio.play().catch(e => console.log('Audio play failed:', e));
+        }
       }
       
       // Play delayed audio after 4 seconds (using playAudio to respect overlap prevention)

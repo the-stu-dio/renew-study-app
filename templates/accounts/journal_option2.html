@@ -641,8 +641,11 @@
     function journalGoNext() {
       if (journalNavigated) return;
       journalNavigated = true;
-      if (isComplete('journal_option1')) {
-        // Both journal prompts complete -> Skill Focus page shows the "Great Job" banner
+      // Route based on whether the OTHER prompt has been visited THIS session.
+      // That way, even if both prompts were completed in a previous session,
+      // re-opening a prompt still sends the student to the other prompt first,
+      // and only offers "other skills" once they've been through both this time.
+      if (sessionStorage.getItem('renew_journal_seen_option1')) {
         window.location.href = "{% url 'skill_p4' %}?journal_complete=1";
       } else {
         window.location.href = "{% url 'journal_option1' %}";
@@ -663,7 +666,7 @@
       
       // Save to localStorage
       saveJournalEntry('experiences_shaped_me', answer1.value);
-      
+
       // Also save to database
       let nickname = '';
       try {
@@ -714,16 +717,21 @@
 
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
+      // Mark this prompt as visited this session (used to decide the button).
+      try { sessionStorage.setItem('renew_journal_seen_option2', '1'); } catch (e) {}
+
       // Auto-play the prompt audio when page loads
       playPromptAudio();
-      
+
       // Load existing content
       loadExistingContent();
 
-      // Label the continue button: first reflection -> other option; second -> other skills
+      // Label based on whether the OTHER prompt has been visited this session:
+      // if not, point there; otherwise head to the other skills. (Avoids
+      // jumping straight to "other skills" on a revisit.)
       var saveBtn = document.getElementById('saveButton');
       if (saveBtn) {
-        saveBtn.textContent = isComplete('journal_option1')
+        saveBtn.textContent = sessionStorage.getItem('renew_journal_seen_option1')
           ? "Let's check out other skills"
           : "Let's check out the other option!";
       }

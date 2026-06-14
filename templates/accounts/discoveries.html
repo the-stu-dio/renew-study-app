@@ -4,13 +4,6 @@
 
 {% block extra_css %}
 <style>
-    /* Override base.html logout button positioning */
-    body > div[style*="position: fixed"] {
-        top: 10px !important;
-        right: 10px !important;
-        z-index: 9999 !important;
-    }
-
     body, html {
         margin: 0;
         padding: 20px;
@@ -22,34 +15,10 @@
     }
 
     .discoveries-container {
-        max-width: 900px;
+        max-width: 980px;
         margin: 0 auto;
         padding: 20px;
         position: relative;
-    }
-
-    .page-header {
-        text-align: center;
-        margin-bottom: 50px;
-        animation: fadeInUp 0.8s ease-out;
-        clear: both;
-    }
-
-    .page-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #5a3e8c;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-    }
-
-    .page-subtitle {
-        font-size: 1.2rem;
-        color: #666;
-        margin-bottom: 30px;
     }
 
     .back-button {
@@ -65,7 +34,6 @@
         font-weight: 600;
         transition: all 0.3s ease;
     }
-
     .back-button:hover {
         background: #4a3474;
         transform: translateY(-2px);
@@ -74,101 +42,142 @@
         text-decoration: none;
     }
 
-    .discoveries-grid {
-        display: grid;
-        gap: 30px;
-        margin-top: 30px;
-    }
-
-    .discovery-section {
-        background: #fff;
-        border-radius: 16px;
-        padding: 30px;
-        box-shadow: 0 8px 25px rgba(90, 62, 140, 0.1);
-        border: 2px solid #e8d9f3;
-        transition: all 0.3s ease;
+    .page-header {
+        text-align: center;
+        margin: 60px 0 30px;
         animation: fadeInUp 0.8s ease-out;
     }
-
-    .discovery-section.completed {
-        border-color: #28a745;
-        background: linear-gradient(135deg, #fff 0%, #f8fff8 100%);
-    }
-
-    .discovery-section.locked {
-        opacity: 0.6;
-        background: #f8f9fa;
-        border-color: #dee2e6;
-    }
-
-    .section-header {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 20px;
-    }
-
-    .section-icon {
+    .page-title {
         font-size: 2.5rem;
-    }
-
-    .section-title {
-        font-size: 1.8rem;
         font-weight: 700;
         color: #5a3e8c;
-        margin: 0;
+        margin-bottom: 10px;
+    }
+    .page-subtitle { font-size: 1.15rem; color: #666; margin: 0 0 22px; }
+
+    /* Progress bar */
+    .disc-progress {
+        max-width: 460px;
+        margin: 0 auto;
+    }
+    .disc-progress-track {
+        height: 14px;
+        background: #e7ddf5;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    .disc-progress-fill {
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, #5a3e8c, #7c3aed);
+        border-radius: 999px;
+        transition: width 0.8s ease;
+    }
+    .disc-progress-text {
+        margin-top: 8px;
+        font-weight: 600;
+        color: #5a3e8c;
     }
 
-    .discovery-section.completed .section-title {
-        color: #28a745;
+    .disc-cat { margin-top: 40px; animation: fadeInUp 0.8s ease-out; }
+    .disc-cat h2 {
+        font-size: 1.4rem;
+        color: #5a3e8c;
+        margin: 0 0 16px;
+        border-bottom: 2px solid #e8d9f3;
+        padding-bottom: 8px;
+    }
+    .disc-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 18px;
     }
 
-    .discovery-section.locked .section-title {
-        color: #6c757d;
+    .disc-card {
+        position: relative;
+        background: #fff;
+        border-radius: 16px;
+        padding: 22px 20px;
+        box-shadow: 0 6px 18px rgba(90, 62, 140, 0.10);
+        border: 2px solid #e8d9f3;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        overflow: hidden;
+    }
+    .disc-card.unlocked:hover { transform: translateY(-3px); box-shadow: 0 12px 26px rgba(90, 62, 140, 0.18); }
+
+    .disc-card.locked {
+        border-style: dashed;
+        border-color: #d6cce6;
+        background: #f7f4fb;
+        box-shadow: none;
+    }
+    .disc-card.locked .d-icon { filter: grayscale(1); opacity: 0.5; }
+    .disc-card.locked .d-title { color: #a99fc0; }
+
+    .d-icon { font-size: 2.6rem; line-height: 1; margin-bottom: 10px; }
+    .d-title { font-size: 1.15rem; font-weight: 700; color: #5a3e8c; margin-bottom: 8px; }
+    .d-label { font-size: 0.82rem; font-weight: 600; color: #8a78ad; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
+    .d-body {
+        font-size: 1rem;
+        color: #3a2f55;
+        background: #f3eefb;
+        border-left: 4px solid #7c3aed;
+        border-radius: 8px;
+        padding: 10px 12px;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+    .d-desc { font-size: 0.98rem; color: #555; margin-bottom: 10px; }
+    .d-hint { font-size: 0.9rem; color: #9a90b3; font-style: italic; }
+    .d-earned {
+        display: inline-block;
+        background: #e9f9ee;
+        color: #1ea34a;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 4px 12px;
+        border-radius: 999px;
     }
 
-    .locked-message {
-        text-align: center;
-        color: #6c757d;
-        font-style: italic;
-        padding: 40px 20px;
-        background: #f8f9fa;
-        border-radius: 12px;
-        border: 2px dashed #dee2e6;
+    /* Badges look like medals */
+    .disc-card.badge { text-align: center; }
+    .disc-card.badge.unlocked {
+        border-color: #f3c64b;
+        background: linear-gradient(135deg, #fffdf5, #fff6da);
+    }
+    .disc-card.badge .d-icon {
+        width: 70px; height: 70px; margin: 0 auto 12px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: radial-gradient(circle at 50% 35%, #ffe9a8, #f3c64b);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .disc-card.badge.locked .d-icon { background: #e6e0ef; }
+
+    .d-new {
+        position: absolute;
+        top: 10px; right: 10px;
+        background: #ff5d8f;
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 9px;
+        border-radius: 999px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .disc-card.is-new { animation: discPop 0.7s ease; border-color: #ff5d8f; }
+    @keyframes discPop { 0% { transform: scale(0.96); } 45% { transform: scale(1.04); } 100% { transform: scale(1); } }
+
+    /* (The recap hero card's styles are injected by discoveries.js so the same
+        card can be reused on the profile and completion pages.) */
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) {
+        .disc-card.is-new, .disc-progress-fill, .disc-cat, .page-header { animation: none; transition: none; }
     }
 
-    .unlock-hint {
-        margin-top: 15px;
-        font-size: 0.9rem;
-        color: #007bff;
-    }
-
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* Responsive design */
     @media (max-width: 600px) {
-        .discoveries-container {
-            padding: 15px;
-        }
-        
-        .page-title {
-            font-size: 2rem;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .discovery-section {
-            padding: 20px;
-        }
+        .page-title { font-size: 2rem; }
+        .disc-cards { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}
@@ -176,220 +185,97 @@
 {% block content %}
 <a href="{% url 'hub' %}" class="back-button">← Back to Hub</a>
 <div class="discoveries-container">
-    
     <div class="page-header">
-        <h1 class="page-title">
-            🔍 My Discoveries
-        </h1>
-        <p class="page-subtitle" id="pageSubtitle">
-            Here are the insights you've unlocked on your journey!
-        </p>
+        <h1 class="page-title">🔍 My Discoveries</h1>
+        <p class="page-subtitle" id="pageSubtitle">Your collection of discoveries grows as you explore!</p>
+        <div class="disc-progress">
+            <div class="disc-progress-track"><div class="disc-progress-fill" id="progressFill"></div></div>
+            <div class="disc-progress-text" id="progressText">0 of 0 discovered</div>
+        </div>
     </div>
 
-    <div class="discoveries-grid" id="discoveriesGrid">
-        <!-- Content will be populated by JavaScript -->
-    </div>
+    <div data-renew-recap="show-locked"></div>
 
-    <div id="emptyState" style="text-align: center; margin-top: 50px; color: #666; display: none;">
-        <h3>🌱 Your discoveries will grow as you explore!</h3>
-        <p>Complete activities and write notes to unlock personalized insights about yourself.</p>
-        <a href="{% url 'adventure_map' %}" style="background: #5a3e8c; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 15px; display: inline-block;">
+    <div id="collection"></div>
+
+    <div id="emptyState" style="text-align: center; margin-top: 40px; color: #666; display: none;">
+        <h3>🌱 Your collection is empty… for now!</h3>
+        <p>Complete activities to earn personalized discoveries about yourself.</p>
+        <a href="{% url 'adventure_map' %}" style="background:#5a3e8c;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:12px;display:inline-block;">
             Start Your Adventure! 🗺️
         </a>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    loadDiscoveries();
-});
+document.addEventListener('DOMContentLoaded', function () {
+    var D = window.RENEWDiscoveries;
+    if (!D) return;
 
-function loadDiscoveries() {
-    // Get data from localStorage
-    let data = {};
-    let nickname = '';
-    
-    try {
-        const renewData = localStorage.getItem('renew_study_data');
-        if (renewData) {
-            data = JSON.parse(renewData);
-            nickname = data.nickname || '';
-        }
-    } catch (e) {
-        console.error('Error loading data:', e);
-    }
-    
-    // Update subtitle with nickname
+    var items = D.list();
+    var newlyIds = D.newlyViewableIds();
+    var unlockedCount = items.filter(function (i) { return i.unlocked; }).length;
+
+    // Progress
+    var pct = items.length ? Math.round((unlockedCount / items.length) * 100) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = unlockedCount + ' of ' + items.length + ' discovered';
+
+    var nickname = '';
+    try { nickname = (JSON.parse(localStorage.getItem('renew_study_data') || '{}').nickname) || ''; } catch (e) {}
     if (nickname) {
-        document.getElementById('pageSubtitle').textContent = 
-            `Here are the insights you've unlocked on your journey, ${nickname}!`;
-        document.title = `My Discoveries - ${nickname}`;
+        document.getElementById('pageSubtitle').textContent =
+            'Your collection of discoveries grows as you explore, ' + nickname + '!';
+        document.title = 'My Discoveries - ' + nickname;
     }
-    
-    // Check completion status
-    const progress = data.progress || {};
-    const completedSections = data.completed_sections || [];
-    const responses = data.responses || {};
-    
-    const positiveCompleted = progress.pos_p4 || completedSections.includes('positive_events') || 
-                             (responses.positive_events && Object.keys(responses.positive_events).length >= 4);
-    const negativeCompleted = completedSections.includes('negative_events') || progress.neg_p11;
-    const thoughtsCompleted = completedSections.includes('thoughts_feelings') || progress.emo_p5;
-    
-    // Generate discoveries content
-    const discoveriesGrid = document.getElementById('discoveriesGrid');
-    discoveriesGrid.innerHTML = `
-        ${generatePositiveSection(positiveCompleted)}
-        ${generateNegativeSection(negativeCompleted, positiveCompleted)}
-        ${generateThoughtsSection(thoughtsCompleted, negativeCompleted, positiveCompleted)}
-    `;
-    
-    // Show empty state if nothing completed
-    if (!positiveCompleted && !negativeCompleted && !thoughtsCompleted) {
+
+    // Group by category, fixed order.
+    var ORDER = ['Positive Events', 'Negative Events', 'About You', 'Journaling', 'Skills', 'Badges'];
+
+    function renderCard(i) {
+        var isNew = newlyIds.indexOf(i.id) !== -1;
+        if (!i.unlocked) {
+            return '<div class="disc-card locked' + (i.badge ? ' badge' : '') + '">' +
+                       '<div class="d-icon">🔒</div>' +
+                       '<div class="d-title">???</div>' +
+                       '<div class="d-hint">' + D.escapeHtml(i.hint) + '</div>' +
+                   '</div>';
+        }
+        var inner;
+        if (i.badge) {
+            inner = '<div class="d-desc">' + D.escapeHtml(i.body) + '</div><div class="d-earned">✓ Earned</div>';
+        } else {
+            inner = (i.label ? '<div class="d-label">' + D.escapeHtml(i.label) + '</div>' : '') +
+                    '<div class="d-body">' + (i.verbatim ? '“' + D.escapeHtml(i.body) + '”' : D.escapeHtml(i.body)) + '</div>';
+        }
+        return '<div class="disc-card unlocked' + (i.badge ? ' badge' : '') + (isNew ? ' is-new' : '') + '">' +
+                   (isNew ? '<div class="d-new">✨ New</div>' : '') +
+                   '<div class="d-icon">' + i.icon + '</div>' +
+                   '<div class="d-title">' + D.escapeHtml(i.title) + '</div>' +
+                   inner +
+               '</div>';
+    }
+
+    var html = ORDER.map(function (cat) {
+        var inCat = items.filter(function (i) { return i.cat === cat; });
+        if (!inCat.length) return '';
+        return '<div class="disc-cat"><h2>' + cat + '</h2><div class="disc-cards">' +
+               inCat.map(renderCard).join('') + '</div></div>';
+    }).join('');
+    document.getElementById('collection').innerHTML = html;
+    // The recap card renders itself into the [data-renew-recap] placeholder
+    // (handled by discoveries.js, shared across pages).
+
+    if (unlockedCount === 0) {
         document.getElementById('emptyState').style.display = 'block';
     }
-}
 
-function generatePositiveSection(completed) {
-    const sectionClass = completed ? 'completed' : 'locked';
-    
-    if (completed) {
-        return `
-            <div class="discovery-section ${sectionClass}">
-                <div class="section-header">
-                    <span class="section-icon">✨</span>
-                    <h2 class="section-title">Positive Events Discovery</h2>
-                </div>
-                <div style="margin-bottom: 25px;">
-                    <h4 style="color: #28a745; margin-bottom: 15px;">✨ Types of positive events</h4>
-                    <div style="background: #f0f8f0; padding: 25px; border-radius: 12px; border-left: 4px solid #28a745;">
-                        <ul style="list-style: none; padding: 0; margin: 0; font-size: 1.1rem; line-height: 2;">
-                            <li style="margin-bottom: 15px;">🎮 <strong>Recreational Positive Events:</strong> Events that can make us laugh or smile</li>
-                            <li style="margin-bottom: 15px;">🏆 <strong>Achievement Positive Events:</strong> Events that make us feel proud!</li>
-                            <li style="margin-bottom: 15px;">❤️ <strong>Relationship Positive Events:</strong> People who are important to us</li>
-                            <li style="margin-bottom: 0;">🌟 <strong>Other Types of Positive Events:</strong> Any other kinds of events that make us feel happy, proud, or safe!</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        `;
-    } else {
-        return `
-            <div class="discovery-section ${sectionClass}">
-                <div class="section-header">
-                    <span class="section-icon">✨</span>
-                    <h2 class="section-title">Positive Events Discovery</h2>
-                </div>
-                <div class="locked-message">
-                    <h4>🔒 This section is waiting for you!</h4>
-                    <p>Complete the Positive Events activities to unlock your personalized discoveries here.</p>
-                    <div class="unlock-hint">Visit the Adventure Map to get started! 🗺️</div>
-                </div>
-            </div>
-        `;
+    // Celebrate if there are freshly-earned discoveries to reveal, then clear
+    // the "New" markers so they don't show again next visit.
+    if (newlyIds.length && window.RENEWEffects && window.RENEWEffects.celebrate) {
+        window.RENEWEffects.celebrate();
     }
-}
-
-function generateNegativeSection(completed, positiveCompleted) {
-    const sectionClass = completed ? 'completed' : 'locked';
-    
-    if (completed) {
-        return `
-            <div class="discovery-section ${sectionClass}">
-                <div class="section-header">
-                    <span class="section-icon">💪</span>
-                    <h2 class="section-title">Negative Events Discovery</h2>
-                </div>
-                <div style="margin-bottom: 25px;">
-                    <h4 style="color: #28a745; margin-bottom: 15px;">💪 Types of negative events</h4>
-                    <div style="background: #f0f8f0; padding: 25px; border-radius: 12px; border-left: 4px solid #28a745;">
-                        <ul style="list-style: none; padding: 0; margin: 0; font-size: 1.1rem; line-height: 2;">
-                            <li style="margin-bottom: 15px;">🚨 <strong>Adverse Events:</strong> Going through or seeing scary things, or not having things you need like a home, food, or clean clothes</li>
-                            <li style="margin-bottom: 15px;">🏘️ <strong>Neighborhood Issues:</strong> Bad things that happen in the neighborhood, like seeing someone get hurt, people fighting, or not having safe places to go</li>
-                            <li style="margin-bottom: 15px;">🧩 <strong>Discrimination:</strong> Things people say to you or how it feels to be somewhere you know you’re not welcome</li>
-                            <li style="margin-bottom: 0;">😰 <strong>Stressors and Hassles:</strong> Everyday problems that can cause stress, like getting a bad grade, arguing with family, or having trouble with a friend</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 0;">
-                    <h4 style="color: #28a745; margin-bottom: 15px;">🤔 How "negative" are negative events?</h4>
-                    <div style="background: #f0f8f0; padding: 25px; border-radius: 12px; border-left: 4px solid #28a745;">
-                        <p style="color: #666; margin-bottom: 15px; font-size: 1.1rem;">It differs for everyone and may depend on:</p>
-                        <ul style="list-style: none; padding: 0; margin: 0; font-size: 1.1rem; line-height: 1.8;">
-                            <li style="margin-bottom: 10px;">1️⃣ What really happened during the event, like how often it happened or how scary it was.</li>
-                            <li style="margin-bottom: 10px;">2️⃣ Where we come from (e.g., culture, family)</li>
-                            <li style="margin-bottom: 0;">3️⃣ What we are born with - sponge vs. iron</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        `;
-    } else {
-        const message = positiveCompleted ? 
-            '<h4>🔓 Ready to unlock!</h4><p>You\'ve completed positive events! Now you can explore how to handle challenging situations.</p><div class="unlock-hint">Visit the Adventure Map to start the Negative Events section! 🗺️</div>' :
-            '<h4>🔒 Complete positive events first</h4><p>Finish the Positive Events section to unlock this discovery area.</p>';
-            
-        return `
-            <div class="discovery-section ${sectionClass}">
-                <div class="section-header">
-                    <span class="section-icon">💪</span>
-                    <h2 class="section-title">Negative Events Discovery</h2>
-                </div>
-                <div class="locked-message">
-                    ${message}
-                </div>
-            </div>
-        `;
-    }
-}
-
-function generateThoughtsSection(completed, negativeCompleted, positiveCompleted) {
-    const sectionClass = completed ? 'completed' : 'locked';
-    
-    if (completed) {
-        return `
-            <div class="discovery-section ${sectionClass}">
-                <div class="section-header">
-                    <span class="section-icon">🧠</span>
-                    <h2 class="section-title">Thoughts & Feelings Discovery</h2>
-                </div>
-                <div style="margin-bottom: 25px;">
-                    <h4 style="color: #28a745; margin-bottom: 15px;">🧠 How do we respond to negative events?</h4>
-                    <div style="background: #f0f8f0; padding: 25px; border-radius: 12px; border-left: 4px solid #28a745;">
-                        <ul style="list-style: none; padding: 0; margin: 0; font-size: 1.1rem; line-height: 2;">
-                            <li style="margin-bottom: 15px;">🚪 <strong>Avoidance:</strong> Trying not to be near the things you don't like or cause negative emotions</li>
-                            <li style="margin-bottom: 15px;">⚔️ <strong>Aggression:</strong> If we think someone or something can hurt them, they might want to hurt it first</li>
-                            <li style="margin-bottom: 0;">😶 <strong>Numbness:</strong> Not feeling any emotions about something</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                
-            </div>
-        `;
-    } else {
-        let message;
-        if (negativeCompleted) {
-            message = '<h4>🔓 Ready to unlock!</h4><p>You\'ve completed negative events! Now you can explore the fascinating world of thoughts and feelings.</p><div class="unlock-hint">Visit the Adventure Map to start the Thoughts & Feelings section! 🧠</div>';
-        } else if (positiveCompleted) {
-            message = '<h4>🔒 Complete negative events first</h4><p>Finish the Negative Events section to unlock this discovery area.</p>';
-        } else {
-            message = '<h4>🔒 Complete previous sections first</h4><p>Finish the Positive and Negative Events sections to unlock this discovery area.</p>';
-        }
-            
-        return `
-            <div class="discovery-section ${sectionClass}">
-                <div class="section-header">
-                    <span class="section-icon">🧠</span>
-                    <h2 class="section-title">Thoughts & Feelings Discovery</h2>
-                </div>
-                <div class="locked-message">
-                    ${message}
-                </div>
-            </div>
-        `;
-    }
-}
+    D.markViewed();
+});
 </script>
 {% endblock %}

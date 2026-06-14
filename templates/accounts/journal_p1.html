@@ -375,6 +375,15 @@
 
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
+      // Re-entering the journaling activity from the video: start a fresh
+      // "visited prompts" session so the student is walked through both prompts
+      // again before the continue button offers "other skills".
+      try {
+        sessionStorage.removeItem('renew_journal_seen_option1');
+        sessionStorage.removeItem('renew_journal_seen_option2');
+        sessionStorage.removeItem('renew_journal_order');
+      } catch (e) {}
+
       const videoPlayer = document.getElementById('videoPlayer');
 
       // Check if already completed

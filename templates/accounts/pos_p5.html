@@ -368,15 +368,18 @@
         
         console.log('Positive Events section marked as complete');
         
-        // Play congratulatory audio
+        // Play congratulatory audio immediately. If the browser blocks
+        // autoplay, RENEWEffects retries on the first user interaction so the
+        // voiceover is never silently dropped.
         const congratsAudio = document.getElementById('congratsAudio');
         if (congratsAudio) {
-          setTimeout(() => {
+          if (window.RENEWEffects && window.RENEWEffects.playWhenAllowed) {
+            window.RENEWEffects.playWhenAllowed(congratsAudio);
+          } else {
             congratsAudio.play().catch(error => {
               console.log('Audio autoplay prevented:', error);
-              // Autoplay was prevented, but that's okay - page continues normally
             });
-          }, 1500); // Play after 1.5 seconds to let animations start
+          }
         }
         
         // Play the delayed audio after 4 seconds

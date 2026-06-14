@@ -694,8 +694,13 @@
       const existingSharingResponse = getSharingResponse();
       if (existingSharingResponse) {
         selectedValue = existingSharingResponse;
-        document.getElementById('sharing_' + existingSharingResponse).checked = true;
-        document.querySelector(`[onclick="selectOption('${existingSharingResponse}')"]`).classList.add('selected');
+        // Null-safe: these option elements may not exist on this page. Without
+        // the guards, a missing element threw and aborted the rest of init —
+        // which is what was hiding the "Continue" button on revisit.
+        var sharingRadio = document.getElementById('sharing_' + existingSharingResponse);
+        if (sharingRadio) sharingRadio.checked = true;
+        var sharingOpt = document.querySelector('[onclick*="selectOption(\'' + existingSharingResponse + '\'"]');
+        if (sharingOpt) sharingOpt.classList.add('selected');
       }
       
       document.querySelectorAll('.summary-item').forEach(item => {

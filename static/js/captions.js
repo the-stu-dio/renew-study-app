@@ -152,7 +152,9 @@
       toggleButton.style.position = 'absolute';
       toggleButton.style.right = '16px';
       toggleButton.style.bottom = '16px';
-      toggleButton.style.zIndex = '1205';
+      // Keep it above the video but BELOW page modals/feedback surveys (which
+      // sit at z-index 1000+), so the CC button never floats over a question.
+      toggleButton.style.zIndex = '30';
       toggleButton.style.display = 'flex';
     }
 

@@ -943,8 +943,15 @@
       voiceStatus.textContent = 'Voice recognition not available';
     }
 
+    // Set once the user engages a card/modal, so the intro voiceover's
+    // "play on first interaction" fallback won't start on top of it.
+    let suppressBackgroundIntro = false;
+
     // Function to stop all audio
     function stopAllAudio() {
+      // A card/modal voiceover is taking over — don't let the intro autoplay.
+      suppressBackgroundIntro = true;
+
       // Stop background audio
       const backgroundAudio = document.getElementById('backgroundAudio');
       if (backgroundAudio) {
@@ -1135,8 +1142,12 @@
             console.log('Autoplay prevented, waiting for user interaction');
             
             const playOnInteraction = () => {
-              audio.play().catch(e => console.log('Audio play failed:', e));
-              // Remove listeners after first play
+              // If the interaction was clicking a card (which started its own
+              // voiceover via stopAllAudio), don't play the intro over it.
+              if (!suppressBackgroundIntro) {
+                audio.play().catch(e => console.log('Audio play failed:', e));
+              }
+              // Remove listeners after first interaction
               document.removeEventListener('click', playOnInteraction);
               document.removeEventListener('touchstart', playOnInteraction);
               document.removeEventListener('keydown', playOnInteraction);

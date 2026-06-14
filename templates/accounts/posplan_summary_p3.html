@@ -663,14 +663,23 @@
       
       if (existingResponse.main) {
         selectedMainOption = existingResponse.main;
-        document.getElementById('feeling_' + existingResponse.main).checked = true;
-        document.querySelector(`[onclick="selectOption('${existingResponse.main}')"]`).classList.add('selected');
-        document.getElementById('sub_' + existingResponse.main).classList.add('show');
-        
+        // Null-safe restoration: some of these elements (e.g. the selectSubOption
+        // option) may not exist. Without the guards a missing element threw and
+        // aborted init before the Next button was shown — which is what hid the
+        // "Continue" button on revisit.
+        var mainRadio = document.getElementById('feeling_' + existingResponse.main);
+        if (mainRadio) mainRadio.checked = true;
+        var mainOpt = document.querySelector('[onclick*="selectOption(\'' + existingResponse.main + '\'"]');
+        if (mainOpt) mainOpt.classList.add('selected');
+        var subContainer = document.getElementById('sub_' + existingResponse.main);
+        if (subContainer) subContainer.classList.add('show');
+
         if (existingResponse.sub) {
           selectedSubOption = existingResponse.sub;
-          document.getElementById('sub_' + existingResponse.sub).checked = true;
-          document.querySelector(`[onclick="selectSubOption('${existingResponse.sub}')"]`).classList.add('selected');
+          var subCheckbox = document.getElementById('sub_' + existingResponse.sub);
+          if (subCheckbox) subCheckbox.checked = true;
+          var subOpt = document.querySelector('[onclick*="selectSubOption(\'' + existingResponse.sub + '\'"]');
+          if (subOpt) subOpt.classList.add('selected');
         }
       }
 

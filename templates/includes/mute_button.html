@@ -24,7 +24,8 @@
 		position: absolute;
 		right: 16px;
 		bottom: 16px;
-		z-index: 1200;
+		/* Above the video, but below page modals/feedback surveys (z-index 1000+). */
+		z-index: 30;
 		border-radius: 999px;
 		width: 44px;
 		height: 44px;
@@ -50,4 +51,10 @@
 </div>
 <script src="{% static 'js/mute.js' %}"></script>
 <script src="{% static 'js/admin.js' %}?v=20260504a"></script>
-<script src="{% static 'js/captions.js' %}?v=20260531a"></script>
+<script src="{% static 'js/captions.js' %}?v=20260614a"></script>
+<!-- Global feedback layer: card-flip sounds, button click sounds, section celebrations -->
+<script src="{% static 'js/effects.js' %}?v=20260613k"></script>
+<!-- Adventure-style section progress trail + themed navigation -->
+<script src="{% static 'js/section_progress.js' %}?v=20260613q"></script>
+<!-- Discovery collection: earns collectibles from activities, toasts new ones -->
+<script src="{% static 'js/discoveries.js' %}?v=20260614d"></script>
