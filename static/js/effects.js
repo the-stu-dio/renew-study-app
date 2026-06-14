@@ -495,6 +495,24 @@
         if (!document.hidden) getCtx();
     });
 
+    // Release the audio context when leaving the page. Browsers cap the number
+    // of concurrent hardware AudioContexts (Chrome allows ~6). Because every
+    // page in this app creates its own context on load, navigating through many
+    // pages WITHOUT closing them piles up orphaned contexts that the browser
+    // only garbage-collects lazily. Once near the cap, each newly created
+    // context is slow to resume() — which is exactly why click sounds start
+    // crisp but grow more and more delayed the deeper into the session you go.
+    // Closing on the way out returns the hardware context to the pool so the
+    // next page always starts from a clean, fast one. (If the page is restored
+    // from the back/forward cache, getCtx() lazily recreates it on demand.)
+    function releaseCtx() {
+        if (audioCtx && audioCtx.state !== 'closed') {
+            try { audioCtx.close(); } catch (e) {}
+        }
+        audioCtx = null;
+    }
+    window.addEventListener('pagehide', releaseCtx);
+
     document.addEventListener('DOMContentLoaded', function () {
         // Create (and attempt to resume) the audio engine as early as page load
         // so it has a head start waking up before the first click — this trims
