@@ -1313,56 +1313,50 @@ function showPrivacyGuide() {
 function playReviewPopupAudio() {
     const reviewAudio = document.getElementById('reviewPopupAudio');
     const reviewButton = document.getElementById('privacyGuideButton');
-    
-    if (reviewAudio) {
-        reviewAudio.currentTime = 0;
-        reviewAudio.play().then(() => {
-            console.log('✅ Review popup audio playing');
-            
-            // Enable button when audio ends
-            reviewAudio.addEventListener('ended', function() {
-                console.log('✅ Audio ended, enabling button');
-                if (reviewButton) {
-                    reviewButton.disabled = false;
-                }
-            }, { once: true });
-            
-        }).catch((error) => {
-            console.log('❌ Audio play blocked:', error.message);
-            // If audio fails to play, enable button immediately
-            if (reviewButton) {
-                reviewButton.disabled = false;
-            }
-            
-            // Try again after user interaction
-            document.addEventListener('click', function playOnClick() {
-                reviewAudio.play().then(() => {
-                    console.log('✅ Audio started after user interaction');
-                    
-                    // Enable button when audio ends
-                    reviewAudio.addEventListener('ended', function() {
-                        console.log('✅ Audio ended, enabling button');
-                        if (reviewButton) {
-                            reviewButton.disabled = false;
-                        }
-                    }, { once: true });
-                    
-                }).catch((err) => {
-                    console.log('Audio play failed:', err.message);
-                    // If still fails, enable button
-                    if (reviewButton) {
-                        reviewButton.disabled = false;
-                    }
-                });
-                document.removeEventListener('click', playOnClick);
-            }, { once: true });
-        });
-    } else {
-        // If audio element doesn't exist, enable button immediately
-        if (reviewButton) {
-            reviewButton.disabled = false;
-        }
+
+    // Single, idempotent way to make the button usable. The button must NEVER
+    // be gated forever on a remote audio clip, so we enable it from several
+    // signals (audio ended, audio error/stall, or a fallback timeout) and
+    // guard against running twice.
+    let buttonEnabled = false;
+    function enableButton(reason) {
+        if (buttonEnabled) return;
+        buttonEnabled = true;
+        console.log('✅ Enabling review button (' + reason + ')');
+        if (reviewButton) reviewButton.disabled = false;
     }
+
+    // Hard fallback: regardless of what the remote audio does (stalls, gets
+    // paused by the mute toggle, errors mid-stream, never fires "ended"), the
+    // user can proceed after this long. This is what prevents the
+    // "button never appears" case. Sized just past the voiceover's length
+    // (~25.3s) so a normal playthrough always finishes first via "ended".
+    const FALLBACK_MS = 28000;
+    setTimeout(() => enableButton('fallback timeout'), FALLBACK_MS);
+
+    if (!reviewAudio) {
+        enableButton('no audio element');
+        return;
+    }
+
+    // Any terminal/interrupting audio state should free the button too.
+    reviewAudio.addEventListener('ended', () => enableButton('audio ended'), { once: true });
+    reviewAudio.addEventListener('error', () => enableButton('audio error'), { once: true });
+    reviewAudio.addEventListener('stalled', () => enableButton('audio stalled'), { once: true });
+
+    reviewAudio.currentTime = 0;
+    reviewAudio.play().then(() => {
+        console.log('✅ Review popup audio playing');
+        // Button will enable on the "ended" listener above (or the fallback).
+    }).catch((error) => {
+        console.log('❌ Audio play blocked:', error.message);
+        // Autoplay blocked: let the user proceed right away, and try to start
+        // the audio once they interact with the page.
+        enableButton('autoplay blocked');
+        document.addEventListener('click', function playOnClick() {
+            reviewAudio.play().catch((err) => console.log('Audio play failed:', err.message));
+        }, { once: true });
+    });
 }
 
 // Close privacy guide modal
