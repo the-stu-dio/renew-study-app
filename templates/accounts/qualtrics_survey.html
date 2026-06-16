@@ -30,6 +30,37 @@ body { margin:0; padding:0; font-family: Arial, sans-serif; }
 .transfer-btn:hover, .complete-btn:hover { background:#219a52; }
 .transfer-btn:disabled, .complete-btn:disabled { background:#95a5a6; cursor:not-allowed; }
 .loading-message { font-size:1.2rem; color:#2c3e50; margin-bottom:20px; }
+
+/* Completion success modal */
+.renew-complete-overlay {
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(44,62,80,0.55);
+    z-index:100000;
+    align-items:center; justify-content:center;
+    padding:20px;
+}
+.renew-complete-overlay.show { display:flex; }
+.renew-complete-card {
+    background:#fff; border-radius:20px;
+    max-width:440px; width:100%;
+    padding:40px 32px; text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,0.3);
+    animation:renewCompletePop 0.5s ease;
+}
+@keyframes renewCompletePop {
+    0% { transform:scale(0.9); opacity:0; }
+    100% { transform:scale(1); opacity:1; }
+}
+.renew-complete-card h2 { font-size:1.8rem; color:#27ae60; margin:0 0 14px; }
+.renew-complete-card p { font-size:1.1rem; color:#2c3e50; margin:0 0 24px; line-height:1.5; }
+.renew-complete-card .renew-complete-emoji { font-size:3rem; margin-bottom:10px; }
+.renew-complete-card button {
+    background:#27ae60; color:#fff; border:none;
+    padding:14px 30px; border-radius:10px;
+    font-size:1.05rem; font-weight:600; cursor:pointer;
+}
+.renew-complete-card button:hover { background:#219a52; }
 </style>
 </head>
 <body>
@@ -51,6 +82,16 @@ body { margin:0; padding:0; font-family: Arial, sans-serif; }
 <button id="completeBtn" class="complete-btn" onclick="completeStudy()" disabled>
     Complete Study
 </button>
+
+<!-- Completion success modal -->
+<div class="renew-complete-overlay" id="renewCompleteOverlay">
+    <div class="renew-complete-card">
+        <div class="renew-complete-emoji">🎉</div>
+        <h2>You've successfully completed RENEW!</h2>
+        <p>Thank you for participating. Your answers have been saved. You may now close this window.</p>
+        <button type="button" onclick="closeRenewComplete()">Done</button>
+    </div>
+</div>
 
 <script>
 const completeBtn = document.getElementById('completeBtn');
@@ -171,33 +212,40 @@ function countIronSponge(data, type) {
 }
 
 // -------------------------------
-// Clear all browser storage for this domain
+// Complete the study.
+// The participant's responses are already saved to the server database
+// throughout the program and submitted to Qualtrics when this page loads, so
+// there is nothing more to send here. We intentionally do NOT clear
+// localStorage / sessionStorage / cookies anymore — doing that wiped the
+// session and the saved answers from this browser. Just confirm success with a
+// celebratory message and leave the data intact.
 // -------------------------------
 function completeStudy() {
+    // Lock the button so it can't be clicked again.
+    completeBtn.disabled = true;
+    completeBtn.textContent = 'Completed ✓';
+
+    // Show the success modal.
+    var overlay = document.getElementById('renewCompleteOverlay');
+    if (overlay) overlay.classList.add('show');
+
+    // A little confetti + chime if the global effects layer is available.
     try {
-        // Clear localStorage
-        localStorage.clear();
+        if (window.RENEWEffects && window.RENEWEffects.celebrate) {
+            window.RENEWEffects.celebrate();
+        }
+    } catch (e) { /* non-critical */ }
+}
 
-        // Clear sessionStorage
-        sessionStorage.clear();
-
-        // Clear all cookies for current domain
-        document.cookie.split(";").forEach(function(c) { 
-            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-        });
-
-        alert('All browser storage cleared for this domain. Thank you for participating!');
-        console.log('All browser storage cleared for this domain');
-    } catch (error) {
-        console.error('Error clearing browser storage:', error);
-        alert('Error clearing browser storage. Please contact support.');
-    }
+function closeRenewComplete() {
+    var overlay = document.getElementById('renewCompleteOverlay');
+    if (overlay) overlay.classList.remove('show');
 }
 </script>
 
 
 
 <!-- Global feedback layer: card-flip sounds, button click sounds, section celebrations -->
-<script src="/static/js/effects.js?v=20260614e"></script>
+<script src="/static/js/effects.js?v=20260614l"></script>
 </body>
 </html>

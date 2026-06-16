@@ -1597,7 +1597,7 @@ function submitToQualtrics(data, isEmergency = false) {
     } else {
         voiceButton.classList.add('not-supported');
         voiceButton.disabled = true;
-        voiceStatus.textContent = 'Voice recognition not available';
+        voiceStatus.textContent = 'Voice typing is not supported in this browser. Please type your answer instead.';
     }
 
     // localStorage helper functions for journal entries

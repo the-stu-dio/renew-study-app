@@ -1266,13 +1266,19 @@ localStorage.setItem('adventure_map_visited', 'true');
     // Show congratulations modal if all sections are completed
     if (allSectionsCompleted) {
         console.log('All sections completed! Showing congratulations modal...');
-        document.getElementById('mapSubtitle').textContent = 
+        document.getElementById('mapSubtitle').textContent =
             `Amazing work, ${nickname}! You've completed your entire RENEW journey!`;
-        
-        // Show modal after a short delay for better UX
-        setTimeout(() => {
-            showCongratulationsModal();
-        }, 1000);
+
+        // Only show the congratulations modal the FIRST time the user completes
+        // everything — not every time they land back on the adventure map.
+        const congratsAlreadyShown = localStorage.getItem('renew_congratulations_shown') === 'true';
+        if (!congratsAlreadyShown) {
+            // Show modal after a short delay for better UX
+            setTimeout(() => {
+                showCongratulationsModal();
+            }, 1000);
+            localStorage.setItem('renew_congratulations_shown', 'true');
+        }
     } else {
         console.log('Not all sections completed yet. Missing:', {
             positive: !positiveCompleted,

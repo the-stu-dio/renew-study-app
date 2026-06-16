@@ -309,6 +309,40 @@
         var node = el.closest(BUTTON_SELECTOR);
         if (!node) return;
 
+        // Temporary download links (created in JS, clicked programmatically,
+        // then immediately removed with their blob URL revoked — e.g. "Download
+        // Interactive HTML") must fire their NATIVE click right away. If we
+        // deferred or replayed them, the element and its blob are gone by the
+        // time the replay runs, so the download fails (a dead/404 link). Leave
+        // them entirely untouched (no sound — the visible button already made
+        // one).
+        if (node.tagName === 'A' && node.hasAttribute('download')) {
+            return;
+        }
+
+        // Some controls must run their NATIVE click immediately and must never
+        // be intercept-and-replayed:
+        //  - Form-control labels and radio/checkbox inputs: a *synthetic*
+        //    label.click() forwards to the control in Chrome/Safari, but Firefox
+        //    deliberately does NOT forward programmatic label clicks to the
+        //    labeled control — so replaying leaves the radio unchecked and the
+        //    user stuck (e.g. the Iron & Sponge quiz).
+        //  - Accordion / dropdown headers ([class*="acc-header"]): these are
+        //    pure in-page toggles whose own click handler flips an aria-expanded
+        //    state; routing them through preventDefault + a deferred replay can
+        //    swallow the toggle, so the summary-sheet dropdowns stop opening.
+        //  - Anything marked [data-no-defer]: an explicit opt-out for actions
+        //    that must run inside the real user gesture. Browsers only permit
+        //    file downloads (and similar) from a genuine click, NOT from our
+        //    deferred setTimeout replay — so e.g. the "Download Interactive
+        //    HTML" button would silently fail (or 404) if deferred.
+        // For all of these, just play the sound and let the real click run.
+        if (el.closest('label, [class*="acc-header"], [data-no-defer]') ||
+            (el.tagName === 'INPUT' && (el.type === 'radio' || el.type === 'checkbox'))) {
+            Effects.clickSound();
+            return;
+        }
+
         // Modified / non-primary clicks (open-in-new-tab, middle-click, etc.):
         // give audible feedback but never interfere with the browser's action.
         if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
@@ -325,10 +359,32 @@
 
         Effects.clickSound();
 
-        // Hold the action, then replay the exact same click.
+        // Hold the action, then replay it after the sound has had a moment.
         e.preventDefault();
         e.stopImmediatePropagation();
+
+        // A plain navigation link (<a href>, same tab, no download, no custom
+        // onclick) is replayed by navigating explicitly. A *synthetic*
+        // anchor.click() is unreliable across browsers (notably Firefox, which
+        // may not follow the link on a programmatic click) — so "Back to Hub"
+        // style links could silently do nothing. window.location is reliable.
+        var navHref = null;
+        if (node.tagName === 'A' && node.getAttribute('href') &&
+            !node.target && !node.hasAttribute('download') &&
+            !node.hasAttribute('onclick')) {
+            var href = node.getAttribute('href');
+            // Skip in-page anchors and non-navigations (#, javascript:, mailto:, tel:).
+            if (href && href.charAt(0) !== '#' &&
+                !/^(javascript:|mailto:|tel:)/i.test(href)) {
+                navHref = node.href; // resolved absolute URL
+            }
+        }
+
         setTimeout(function () {
+            if (navHref) {
+                window.location.href = navHref;
+                return;
+            }
             replaying = true;
             try {
                 node.click();
@@ -478,6 +534,36 @@
         triggerCelebration();
     }
 
+    /* ----------------------------------------------------------------------
+     * Voice-input shim. The app's mic buttons use the Web Speech API
+     * (SpeechRecognition) for speech-to-text. Firefox does NOT implement that
+     * API at all — there is no flag to turn it on — so voice typing simply
+     * cannot work there. The per-page code already disables the button, but a
+     * greyed-out mic plus a "click the microphone to speak" placeholder still
+     * reads as broken. When the API is unavailable, hide the dead mic buttons
+     * outright and strip the mic hint from input placeholders, leaving a clean
+     * type-only experience. Chrome, Edge and Safari support the API, so this is
+     * a no-op there.
+     * -------------------------------------------------------------------- */
+    function hideUnsupportedVoiceInput() {
+        var hasSpeech = ('SpeechRecognition' in window) ||
+            ('webkitSpeechRecognition' in window);
+        if (hasSpeech) return;
+
+        var btns = document.querySelectorAll('.voice-button, #voiceButton');
+        for (var i = 0; i < btns.length; i++) {
+            btns[i].style.display = 'none';
+        }
+        var fields = document.querySelectorAll('textarea, input[type="text"]');
+        for (var j = 0; j < fields.length; j++) {
+            var ph = fields[j].placeholder;
+            if (ph && /click the microphone to speak/i.test(ph)) {
+                fields[j].placeholder =
+                    ph.replace(/\s*or click the microphone to speak\.*/i, '...');
+            }
+        }
+    }
+
     // Keep the audio context warm. Browsers suspend an idle/backgrounded
     // context (and iOS can "interrupt" it) after a while, which would silence
     // the click sounds. Resuming on *every* pointer/key gesture — not just the
@@ -522,6 +608,7 @@
         observeFlips();
         installSectionHook();
         celebrateOnCompletionScreen();
+        hideUnsupportedVoiceInput();
     });
 
     // Expose for manual use / debugging.

@@ -86,7 +86,7 @@
     <div class="topbar-title">RENEW Summary</div>
     <div class="action-group">
       <a class="action-btn action-link" href="{% url 'hub' %}">Back to Hub</a>
-      <button class="action-btn" type="button" onclick="downloadInteractiveHtml()">Download Interactive HTML</button>
+      <button class="action-btn" type="button" data-no-defer onclick="downloadInteractiveHtml()">Download Interactive HTML</button>
     </div>
   </div>
 
@@ -225,11 +225,16 @@
         a.download = 'RENEW-Interactive-Summary.html';
         document.body.appendChild(a);
         a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
+        // Firefox aborts the download if the anchor is removed and the blob URL
+        // is revoked synchronously — it hasn't started reading the blob yet.
+        // Defer cleanup so the download has time to begin (works in Chrome too).
+        setTimeout(function () {
+          a.remove();
+          URL.revokeObjectURL(url);
+        }, 2000);
       }
   </script>
 <!-- Global feedback layer: card-flip sounds, button click sounds, section celebrations -->
-<script src="/static/js/effects.js?v=20260614e"></script>
+<script src="/static/js/effects.js?v=20260614l"></script>
 </body>
 </html>
